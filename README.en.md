@@ -19,19 +19,31 @@ After generating the patch, follow the OpenHarmony contribution guidelines when 
 ```
 OpenHarmony - Qt
 │
-└───patch - source code patches
-	└── v5.15.17
-		├─ qtbase             # qtbase submodule patches
-		├─ qtsensors          # qtsensors submodule patches
-		├─ qtmultimedia       # qtmultimedia submodule patches
-		├─ qtdeclarative      # qtdeclarative submodule patches
-		├─ qtconnectivity     # qtconnectivity submodule patches
-		└─ qtquickcontrols    # qtquickcontrols submodule patches
-
-LICENSE* - license files (Apache, GPL, LGPL, etc.)
-OAT.xml   - OpenHarmony automated open-source review configuration
-README.md - Chinese README
-README.en.md - English README
+└───patch - Source code patches
+|____v5.15.12
+│   	│ qtbase - Patches for the qtbase submodule
+│   	│ qtsensors - Patches for the qtsensors submodule
+│   	│ qtmultimedia - Patches for the qtmultimedia submodule
+│   	│ qtdeclarative - Patches for the qtdeclarative submodule
+│   	│ qtconnectivity - Patches for the qtconnectivity submodule
+│   	│ qtquickcontrols - Patches for the qtquickcontrols submodule
+|____v5.15.17
+│   	│ qtbase - Patches for the qtbase submodule
+│   	│ qtsensors - Patches for the qtsensors submodule
+│   	│ qtmultimedia - Patches for the qtmultimedia submodule
+│   	│ qtdeclarative - Patches for the qtdeclarative submodule
+│   	│ qtconnectivity - Patches for the qtconnectivity submodule
+│   	│ qtquickcontrols - Patches for the qtquickcontrols submodule
+└───LICENSE - Apache License
+└───LICENSE.FDL - GNU Free Documentation License
+└───LICENSE.GPLv2 - GNU GENERAL PUBLIC LICENSE Version 2
+└───LICENSE.GPLv3 - GNU GENERAL PUBLIC LICENSE Version 3
+└───LICENSE.LGPLv3 - GNU LESSER GENERAL PUBLIC LICENSE Version 3
+└───LICENSE.LGPLv21 - GNU LESSER GENERAL PUBLIC LICENSE Version 2.1
+└───LICENSE.QT-LICENSE-AGREEMENT - QT LICENSE AGREEMENT
+└───OAT.xml - OAT configuration file, automated open source review tool for the OpenHarmony community
+└───README.md - Chinese version of the README
+└───README.en.md - English version of the README
 ```
 
 # Scripts
@@ -72,7 +84,7 @@ python build-qt-ohos.py --env_check
 python build-qt-ohos.py --exe_stage all --with_pack
 ```
 
-See `script/README.md` for full usage details and configuration options.
+See  [Instructions for Using the Compilation Script](https://gitcode.com/qtforohos/UserManual/blob/main/reference/%E7%BC%96%E8%AF%91%E8%84%9A%E6%9C%AC%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E.md) for full usage details and configuration options.
 
 # Using Qt For OpenHarmony
 

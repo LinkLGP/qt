@@ -14,6 +14,13 @@
 OpenHarmony - Qt
 │
 └───patch - 源码补丁
+|____v5.15.12
+│   	│ qtbase - qtbase子模块代码补丁
+│   	│ qtsensors - qtsensors子模块代码补丁
+│   	│ qtmultimedia - qtmultimedia子模块代码补丁
+│   	│ qtdeclarative - qtdeclarative子模块代码补丁
+│   	│ qtconnectivity - qtconnectivity子模块代码补丁
+│   	│ qtquickcontrols - qtquickcontrols子模块代码补丁
 |____v5.15.17
 │   	│ qtbase - qtbase子模块代码补丁
 │   	│ qtsensors - qtsensors子模块代码补丁
@@ -50,7 +57,7 @@ python build-qt-ohos.py --env_check
 python build-qt-ohos.py --exe_stage all --with_pack
 ```
 
-更多使用细节与配置请参见 `script/README.md`。
+更多使用细节与配置请参见 [编译脚本使用说明.md](https://gitcode.com/qtforohos/UserManual/blob/main/reference/%E7%BC%96%E8%AF%91%E8%84%9A%E6%9C%AC%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E.md)。
 
 # Qt For OpenHarmony 使用说明
 

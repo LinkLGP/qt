@@ -12747,10 +12747,10 @@ index 0dca1ee9c99..2847ebda694 100644
  
 diff --git a/src/corelib/text/qlocale_harmony.cpp b/src/corelib/text/qlocale_harmony.cpp
 new file mode 100644
-index 00000000000..6202c7a68da
+index 00000000000..eeac3cf125b
 --- /dev/null
 +++ b/src/corelib/text/qlocale_harmony.cpp
-@@ -0,0 +1,273 @@
+@@ -0,0 +1,274 @@
 +#include "qvariant.h"
 +#include "qlocale_p.h"
 +#include "qdatetime.h"
@@ -12893,6 +12893,9 @@ index 00000000000..6202c7a68da
 +        return QVariant();
 +    }
 +
++    if (!d->m_inited.loadAcquire())
++        d->readEnvironment();
++
 +    QReadLocker locker(&d->lock);
 +
 +    const QLocale &lc_numeric = d->lc_numeric;
@@ -12985,8 +12988,6 @@ index 00000000000..6202c7a68da
 +    case UILanguages: {
 +        if (!d->uiLanguages.isEmpty())
 +            return d->uiLanguages;
-+        if (!d->m_inited.loadAcquire())
-+            d->readEnvironment();
 +        QtOh::runOnJsUIThreadAndWait([d]{
 +            Napi::Value value = qSystemLocaleData()->m_ohSystemi18n->call("getSystemLanguages");
 +            Napi::Array lst = value.As<Napi::Array>();
@@ -14185,59 +14186,6 @@ index 3220201720e..cc1c674626f 100644
  };
  
  QT_END_NAMESPACE
-diff --git a/src/gui/kernel/qplatformdialoghelper.cpp b/src/gui/kernel/qplatformdialoghelper.cpp
-index 4ca5421bc1d..efa2a86288f 100644
---- a/src/gui/kernel/qplatformdialoghelper.cpp
-+++ b/src/gui/kernel/qplatformdialoghelper.cpp
-@@ -615,17 +615,48 @@ void QFileDialogOptions::setUseDefaultNameFilters(bool dnf)
-     d->useDefaultNameFilters = dnf;
- }
- 
-+#ifdef Q_OS_OPENHARMONY
-+QString openharmonyDefaultNameFilterString()
-+{
-+    return QCoreApplication::translate("QFileDialog", "All files(*)|.*");
-+}
-+#endif
-+
- void QFileDialogOptions::setNameFilters(const QStringList &filters)
- {
-+#ifdef Q_OS_OPENHARMONY
-+    bool aaDontUseNativeDialogs = QCoreApplication::testAttribute(Qt::AA_DontUseNativeDialogs) ||
-+                                  (d->options & QFileDialogOptions::DontUseNativeDialog);
-+    if(!aaDontUseNativeDialogs){
-+        d->useDefaultNameFilters = filters.size() == 1
-+            && filters.first() == openharmonyDefaultNameFilterString();
-+    }else{
-+        d->useDefaultNameFilters = filters.size() == 1
-+            && filters.first() == QFileDialogOptions::defaultNameFilterString();
-+    }
-+#else
-     d->useDefaultNameFilters = filters.size() == 1
-         && filters.first() == QFileDialogOptions::defaultNameFilterString();
-+#endif
-     d->nameFilters = filters;
- }
- 
- QStringList QFileDialogOptions::nameFilters() const
- {
-+#ifdef Q_OS_OPENHARMONY
-+    bool aaDontUseNativeDialogs = QCoreApplication::testAttribute(Qt::AA_DontUseNativeDialogs) ||
-+                                  (d->options & QFileDialogOptions::DontUseNativeDialog);
-+    if(!aaDontUseNativeDialogs){
-+        return d->useDefaultNameFilters ?
-+        QStringList(openharmonyDefaultNameFilterString()) : d->nameFilters;
-+    }else{
-+        return d->useDefaultNameFilters ?
-+        QStringList(QFileDialogOptions::defaultNameFilterString()) : d->nameFilters;
-+    }
-+#else
-     return d->useDefaultNameFilters ?
-         QStringList(QFileDialogOptions::defaultNameFilterString()) : d->nameFilters;
-+#endif
- }
- 
- /*!
 diff --git a/src/gui/kernel/qplatformdialoghelper.h b/src/gui/kernel/qplatformdialoghelper.h
 index ba800a696f6..19f64f3722e 100644
 --- a/src/gui/kernel/qplatformdialoghelper.h
@@ -15149,10 +15097,10 @@ index 00000000000..5b37164bb7b
 +};
 diff --git a/src/openharmony/entryability/EntryEmbeddedAbility.ets b/src/openharmony/entryability/EntryEmbeddedAbility.ets
 new file mode 100644
-index 00000000000..ece797b3440
+index 00000000000..1c2f05c9de4
 --- /dev/null
 +++ b/src/openharmony/entryability/EntryEmbeddedAbility.ets
-@@ -0,0 +1,62 @@
+@@ -0,0 +1,51 @@
 +import { hilog } from '@kit.PerformanceAnalysisKit';
 +import { UIExtensionContentSession, Want } from '@kit.AbilityKit';
 +import EmbeddedUIExtensionAbility from '@ohos.app.ability.EmbeddedUIExtensionAbility';
@@ -15166,7 +15114,6 @@ index 00000000000..ece797b3440
 +  private launchParams = ""
 +  private launchApplication = "libentry.so"
 +  private launchWant: Want  = {}
-+  private loadContentUrl: string = 'pages/Index'
 +  onCreate(launchParam: AbilityConstant.LaunchParam) {
 +    hilog.info(this.domain, this.tag, '%{public}s', 'Ability onCreate');
 +  }
@@ -15186,13 +15133,6 @@ index 00000000000..ece797b3440
 +  onSessionCreate(want: Want, session: UIExtensionContentSession) {
 +    hilog.info(this.domain, this.tag, '%{public}s', 'Ability onSessionCreate');
 +    this.launchWant = want;
-+    let localStore = new LocalStorage();
-+    localStore.setOrCreate('session', session);
-+    localStore.setOrCreate('idName', this.name);
-+    session.loadContent(this.loadContentUrl, localStore)
-+    let newAbility = this.launchWant.parameters?.newAbility as boolean;
-+    if (newAbility !== undefined)
-+      return;
 +    this.launchParamSet();
 +    qpa.startQtApplication(this, session);
 +  }
@@ -15203,9 +15143,6 @@ index 00000000000..ece797b3440
 +
 +  async launchParamSet(){
 +    let params:string[] = [];
-+    if(this.launchWant.uri != undefined){
-+      params.push(this.launchWant.uri)
-+    }
 +
 +    //NOTE：应用启动参数在此处添加
 +    this.launchParams = params.join(' ');
@@ -17339,10 +17276,10 @@ index 00000000000..51cbeb1f668
 +    $$PWD/qohdragevent.cpp
 diff --git a/src/plugins/platforms/openharmony/arkui/qohdragevent.cpp b/src/plugins/platforms/openharmony/arkui/qohdragevent.cpp
 new file mode 100644
-index 00000000000..1f91253edb4
+index 00000000000..a82764e03c8
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/arkui/qohdragevent.cpp
-@@ -0,0 +1,108 @@
+@@ -0,0 +1,111 @@
 +#include "qohdragevent.h"
 +#include "qohauxiliary.h"
 +#include "qohobjectholder.h"
@@ -17416,20 +17353,23 @@ index 00000000000..1f91253edb4
 +        LOGE("call OH_ArkUI_DragEvent_GetDataTypes failed. error:[%{public}d]", result);
 +        return resultList;
 +    }
-+    /* FIXME 临时处理方法,待系统侧明确方案后修改
-+     * 记得删除#include <database/udmf/udmf_meta.h>
-+     * 头文件包含
-+     */
-+    static QHash<QString, QString> sTypeMap {
-+        { UDMF_META_HTML, QStringLiteral("text/html") },
-+        { UDMF_META_PLAIN_TEXT,QStringLiteral("text/plain") },
-+        { UDMF_META_GENERAL_FILE_URI, QStringLiteral("text/uri-list") },
-+        { UDMF_META_OPENHARMONY_PIXEL_MAP, QStringLiteral("application/x-qt-image") }, };
-+
-+
++    
 +    for (int i = 0; i < typeCount; ++i) {
-+        const QString ohType = QString::fromLocal8Bit(types.at(i));
-+        resultList << sTypeMap.value(ohType, ohType);
++        const QString ohType = QString::fromUtf8(types.at(i));
++        if ((ohType == QString::fromUtf8(UDMF_META_GENERAL_FILE)) ||
++            (ohType == QString::fromUtf8(UDMF_META_IMAGE)) ||
++            (ohType == QString::fromUtf8(UDMF_META_VIDEO)))
++            resultList <<  QStringLiteral("text/uri-list");
++        else if ((ohType == QString::fromUtf8(UDMF_META_TEXT)) ||
++                 (ohType == QString::fromUtf8(UDMF_META_PLAIN_TEXT)) ||
++                 (ohType == QString::fromUtf8(UDMF_META_SCRIPT)))
++            resultList << QStringLiteral("text/plain");
++        else if (ohType == QString::fromUtf8(UDMF_META_HTML))
++            resultList << QStringLiteral("text/html");
++        else if (ohType == QString::fromUtf8(UDMF_META_OPENHARMONY_PIXEL_MAP))
++            resultList << QStringLiteral("application/x-qt-image");
++        else
++            resultList << ohType;
 +    }
 +    return resultList;
 +}
@@ -18897,10 +18837,10 @@ index 00000000000..07852b11db4
 +    $$PWD/qjsabilityinfo.cpp
 diff --git a/src/plugins/platforms/openharmony/jsclass/qjsability.cpp b/src/plugins/platforms/openharmony/jsclass/qjsability.cpp
 new file mode 100644
-index 00000000000..4a91953c96a
+index 00000000000..14fca6f5fc7
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/jsclass/qjsability.cpp
-@@ -0,0 +1,73 @@
+@@ -0,0 +1,86 @@
 +#include "qjswant.h"
 +#include "qjsability.h"
 +#include "qjscontext.h"
@@ -18962,6 +18902,19 @@ index 00000000000..4a91953c96a
 +    });
 +}
 +
++QList<QByteArray> QJsAbility::launchQtParams() const
++{
++    return QtOh::runOnJsUIThreadWithResult([this]{
++        QList<QByteArray> result;
++        QJsWant *want = launchWant();
++        if (want) {
++            result << want->launchParams();
++        }
++        result << QByteArray::fromStdString(get("launchParams").ToString()).split(' ');
++        return result;
++    });
++}
++
 +void QJsAbility::terminateSelf()
 +{
 +    if (m_canTerminateSelf)
@@ -18976,7 +18929,7 @@ index 00000000000..4a91953c96a
 +QT_END_NAMESPACE
 diff --git a/src/plugins/platforms/openharmony/jsclass/qjsability.h b/src/plugins/platforms/openharmony/jsclass/qjsability.h
 new file mode 100644
-index 00000000000..db972250caf
+index 00000000000..ba4ad1dfb3e
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/jsclass/qjsability.h
 @@ -0,0 +1,48 @@
@@ -19013,7 +18966,7 @@ index 00000000000..db972250caf
 +
 +    QByteArray launchQtApplication() const;
 +
-+    virtual QList<QByteArray> launchQtParams() const = 0;
++    virtual QList<QByteArray> launchQtParams() const;
 +
 +    virtual AbilityType abilityType() const = 0;
 +
@@ -19171,10 +19124,10 @@ index 00000000000..4c6949c07e4
 +#endif // QJSABILITYINFO_H
 diff --git a/src/plugins/platforms/openharmony/jsclass/qjsabilitystage.cpp b/src/plugins/platforms/openharmony/jsclass/qjsabilitystage.cpp
 new file mode 100644
-index 00000000000..b6dddc6d714
+index 00000000000..34316ea2b8a
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/jsclass/qjsabilitystage.cpp
-@@ -0,0 +1,158 @@
+@@ -0,0 +1,194 @@
 +#include <mutex>
 +#include <qpa/qwindowsysteminterface.h>
 +
@@ -19199,9 +19152,14 @@ index 00000000000..b6dddc6d714
 +
 +    static void attachAbilityStage(const Napi::CallbackInfo& info);
 +
++    void setAcceptWant();
++    void setNewProcessRequest();
++
 +private:
 +    bool m_created;
 +    Napi::FunctionReference m_funcRef;
++    Napi::FunctionReference m_onNewProcessRequest;
++    Napi::FunctionReference m_onAcceptWant;
 +};
 +
 +QJsAbilityStagePrivate::QJsAbilityStagePrivate(QJsAbilityStage * const qq)
@@ -19227,35 +19185,8 @@ index 00000000000..b6dddc6d714
 +    Napi::Object stage = info[0].As<Napi::Object>();
 +    QJsAbilityStage::instance()->setObject(stage);
 +    QJsAbilityStage::instance()->d_func()->m_created = true;
-+
-+    /*
-+     * 返回ability的Key，如果已存在则直接拉起，否则创建新的ability。
-+     * @param want
-+     * @returns
-+     */
-+    Napi::Function onAcceptWant = Napi::Function::New(info.Env(), [](const Napi::CallbackInfo& info){
-+        if (info.Length() < 1)
-+            return Napi::String::From(info.Env(), QJsWant::defaultWindowName.toUtf8().constData());
-+        static bool first = true;
-+        QString key;
-+        QJsWant want(info[0].As<Napi::Object>());
-+        if (!want.hasWindowName()) {
-+            if (first) {
-+                first = false;
-+                key = QJsWant::defaultWindowName;
-+            } else {
-+                auto ability = qNativeWindowManager->defaultAbility();
-+                if (ability == nullptr)
-+                    key = QJsWant::defaultWindowName;
-+                else
-+                    key = ability->name();
-+            }
-+        } else {
-+            key = want.windowName();
-+        }
-+        return Napi::String::From(info.Env(), key.toUtf8().constData());
-+    });
-+    QJsAbilityStage::instance()->set("onAcceptWant", onAcceptWant);
++    QJsAbilityStage::instance()->d_func()->setAcceptWant();
++    QJsAbilityStage::instance()->d_func()->setNewProcessRequest();
 +
 +#if OHOS_SDK_VERSION >= 15
 +    Napi::Function prepareToTerminateAsync = Napi::Function::New(QJsAbilityStage::instance()->env(), [](const Napi::CallbackInfo& info){
@@ -19293,6 +19224,64 @@ index 00000000000..b6dddc6d714
 +    Q_UNUSED(info);
 +    LOGW("support for api 15 and above is available.");
 +#endif
++}
++
++void QJsAbilityStagePrivate::setAcceptWant()
++{
++    /*
++     * 返回ability的Key，如果已存在则直接拉起，否则创建新的ability。
++     * @param want
++     * @returns
++     */
++
++    Napi::Function old = QJsAbilityStage::instance()->get("onAcceptWant").As<Napi::Function>();
++    m_onAcceptWant = Napi::Persistent(old);
++    Napi::Function onAcceptWant = QNapi::create([this](const Napi::CallbackInfo& info){
++        std::vector<napi_value> args;
++        args.reserve(info.Length());
++        for (size_t i = 0; i < info.Length(); i++) {
++            args.push_back(info[i]);
++        }
++        auto result = m_onAcceptWant.Call(info.This(), args);
++        QString key = QNapi::get<QString>(result);
++        if (!key.isEmpty())
++            return result;
++        if (info.Length() < 1)
++            return QNapi::create(QJsWant::defaultWindowName);
++
++        static bool first = true;
++        QJsWant want(info[0].As<Napi::Object>());
++        if (!want.hasWindowName()) {
++            if (first) {
++                first = false;
++                key = QJsWant::defaultWindowName;
++            } else {
++                auto ability = qNativeWindowManager->defaultAbility();
++                if (ability == nullptr)
++                    key = QJsWant::defaultWindowName;
++                else
++                    key = ability->name();
++            }
++        } else {
++            key = want.windowName();
++        }
++        return QNapi::create(key);
++    });
++    QJsAbilityStage::instance()->set("onAcceptWant", onAcceptWant);
++}
++
++void QJsAbilityStagePrivate::setNewProcessRequest()
++{
++    auto old = QJsAbilityStage::instance()->get("onNewProcessRequest").As<Napi::Function>();
++    m_onNewProcessRequest = Napi::Persistent(old);
++    Napi::Function onNewProcessRequest = QNapi::create([this](const Napi::CallbackInfo& info){
++        QJsWant want(info[0].As<Napi::Object>());
++        if (!want.hasProcessIdentifier())
++            return m_onNewProcessRequest.Call(info.This(), {info[0]});
++        QString processIdentifier = want.processIdentifier();
++        return QNapi::create(processIdentifier);
++    });
++    QJsAbilityStage::instance()->set("onNewProcessRequest", onNewProcessRequest);
 +}
 +
 +QJsAbilityStage::QJsAbilityStage()
@@ -21478,14 +21467,16 @@ index 00000000000..97e7a0fcbad
 +#endif // QJSSCREEN_H
 diff --git a/src/plugins/platforms/openharmony/jsclass/qjssettings.cpp b/src/plugins/platforms/openharmony/jsclass/qjssettings.cpp
 new file mode 100644
-index 00000000000..2bf8bc65f94
+index 00000000000..8f61f5d5a78
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/jsclass/qjssettings.cpp
-@@ -0,0 +1,95 @@
+@@ -0,0 +1,115 @@
 +#include <qdebug.h>
 +
 +#include "qjssettings.h"
 +#include "qjscontext.h"
++#include "qohauxiliary.h"
++#include "qohnativewindow.h"
 +#include "qohnativewindowmanager.h"
 +#include <private/qopenharmony_p.h>
 +
@@ -21501,10 +21492,28 @@ index 00000000000..2bf8bc65f94
 +    : QJsModule("@ohos.settings")
 +{
 +    m_freeWindowEnable = getValueSync("window_pcmode_switch_status", "false", DomainName::USER_PROPERTY)== "true";
++
++    registerKeyObserver("window_pcmode_switch_status", [this]{
++        if (!QtOh::isPhoneDevice() && !QtOh::isTabletDevice()) {
++            return;
++        }
++
++        bool isFreeWindowEnable = QJsSettings::instance()->isFreeWindowEnable();
++        for (QOhNativeWindow *nativeWindow : QOhNativeWindow::allWindows()) {
++            nativeWindow->handleFreeWindowEnableChanged(isFreeWindowEnable);
++        }
++
++        auto extraHandler = get("pcModeChangedListener");
++        if (extraHandler.IsEmpty() || !extraHandler.IsFunction())
++            return;
++        call("pcModeChangedListener", {Napi::Boolean::New(env(), isFreeWindowEnable)});
++
++    }, true, qNativeWindowManager->context());
 +}
 +
 +QJsSettings::~QJsSettings()
 +{
++    unregisterKeyObserver("window_pcmode_switch_status", true, qNativeWindowManager->context());
 +}
 +
 +
@@ -21616,10 +21625,10 @@ index 00000000000..8f48a692863
 +#endif // QJSSETTINGS_H
 diff --git a/src/plugins/platforms/openharmony/jsclass/qjsuiability.cpp b/src/plugins/platforms/openharmony/jsclass/qjsuiability.cpp
 new file mode 100644
-index 00000000000..22b65fa8d91
+index 00000000000..14e4a41b3d9
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/jsclass/qjsuiability.cpp
-@@ -0,0 +1,49 @@
+@@ -0,0 +1,36 @@
 +#include "qjsuiability.h"
 +#include "qohnativewindowmanager.h"
 +#include "qjsuiabilitycontext.h"
@@ -21650,19 +21659,6 @@ index 00000000000..22b65fa8d91
 +    return m_context;
 +}
 +
-+QList<QByteArray> QJsUIAbility::launchQtParams() const
-+{
-+    return QtOh::runOnJsUIThreadWithResult([this]{
-+        QList<QByteArray> result;
-+        QJsWant *want = launchWant();
-+        if (want) {
-+            result << want->launchParams();
-+        }
-+        result << QByteArray::fromStdString(get("launchParams").ToString()).split(' ');
-+        return result;
-+    });
-+}
-+
 +QJsAbility::AbilityType QJsUIAbility::abilityType() const
 +{
 +    return AbilityType::UIAbility;
@@ -21671,10 +21667,10 @@ index 00000000000..22b65fa8d91
 +QT_END_NAMESPACE
 diff --git a/src/plugins/platforms/openharmony/jsclass/qjsuiability.h b/src/plugins/platforms/openharmony/jsclass/qjsuiability.h
 new file mode 100644
-index 00000000000..bc54e4841bc
+index 00000000000..9be78dadec9
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/jsclass/qjsuiability.h
-@@ -0,0 +1,27 @@
+@@ -0,0 +1,25 @@
 +#ifndef QJSUIABILITY_H
 +#define QJSUIABILITY_H
 +
@@ -21694,8 +21690,6 @@ index 00000000000..bc54e4841bc
 +    ~QJsUIAbility();
 +
 +    QJsContext *context() const override;
-+
-+    QList<QByteArray> launchQtParams() const override;
 +
 +    AbilityType abilityType() const override;
 +};
@@ -21778,10 +21772,10 @@ index 00000000000..8330ce8d1bf
 +#endif // QJSUIABILITYCONTEXT_H
 diff --git a/src/plugins/platforms/openharmony/jsclass/qjsuiextensionability.cpp b/src/plugins/platforms/openharmony/jsclass/qjsuiextensionability.cpp
 new file mode 100644
-index 00000000000..d31a27296dc
+index 00000000000..404ace5cc5c
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/jsclass/qjsuiextensionability.cpp
-@@ -0,0 +1,52 @@
+@@ -0,0 +1,43 @@
 +#include <QtCore/qopenharmonydefines.h>
 +
 +#include "qjsuiextensionability.h"
@@ -21814,15 +21808,6 @@ index 00000000000..d31a27296dc
 +    return m_context;
 +}
 +
-+QList<QByteArray> QJsUIExtensionAbility::launchQtParams() const
-+{
-+    return QtOh::runOnJsUIThreadWithResult([this]{
-+        QList<QByteArray> result;
-+        result << QByteArray::fromStdString(get("launchParams").ToString()).split(' ');
-+        return result;
-+    });
-+}
-+
 +QJsAbility::AbilityType QJsUIExtensionAbility::abilityType() const
 +{
 +    return AbilityType::UIExtensionAbility;
@@ -21836,10 +21821,10 @@ index 00000000000..d31a27296dc
 +QT_END_NAMESPACE
 diff --git a/src/plugins/platforms/openharmony/jsclass/qjsuiextensionability.h b/src/plugins/platforms/openharmony/jsclass/qjsuiextensionability.h
 new file mode 100644
-index 00000000000..34882838bba
+index 00000000000..8bdbeafea6a
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/jsclass/qjsuiextensionability.h
-@@ -0,0 +1,28 @@
+@@ -0,0 +1,26 @@
 +#ifndef QJSUIEXTENSIONABILITY_H
 +#define QJSUIEXTENSIONABILITY_H
 +
@@ -21856,8 +21841,6 @@ index 00000000000..34882838bba
 +    ~QJsUIExtensionAbility();
 +
 +    QJsContext *context() const override;
-+
-+    QList<QByteArray> launchQtParams() const override;
 +
 +    AbilityType abilityType() const override;
 +
@@ -21971,10 +21954,10 @@ index 00000000000..749fd54d8ea
 +#endif // QJSUIEXTENSIONCONTEXTSESSION_H
 diff --git a/src/plugins/platforms/openharmony/jsclass/qjswant.cpp b/src/plugins/platforms/openharmony/jsclass/qjswant.cpp
 new file mode 100644
-index 00000000000..40f8d13139a
+index 00000000000..ff5edce37b6
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/jsclass/qjswant.cpp
-@@ -0,0 +1,132 @@
+@@ -0,0 +1,152 @@
 +#include "qjswant.h"
 +#include <qnapi.h>
 +#include <private/qopenharmony_p.h>
@@ -22106,13 +22089,33 @@ index 00000000000..40f8d13139a
 +    return jsParameters.Has("windowName");
 +}
 +
++bool QJsWant::hasProcessIdentifier() const
++{
++    if (!object().Has("parameters"))
++        return false;
++    Napi::Object jsParameters = get("parameters").As<Napi::Object>();
++    return jsParameters.Has("processIdentifier");
++}
++
++QString QJsWant::processIdentifier() const
++{
++    if (!object().Has("parameters"))
++        return QString();
++    Napi::Object jsParameters = get("parameters").As<Napi::Object>();
++    Napi::Value ret = jsParameters.Get("processIdentifier");
++    if (ret.IsUndefined() || ret.IsEmpty())
++        return QString();
++
++    return QString::fromStdString(ret.ToString());
++}
++
 +QT_END_NAMESPACE
 diff --git a/src/plugins/platforms/openharmony/jsclass/qjswant.h b/src/plugins/platforms/openharmony/jsclass/qjswant.h
 new file mode 100644
-index 00000000000..0cde8641731
+index 00000000000..fa0e8166a98
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/jsclass/qjswant.h
-@@ -0,0 +1,36 @@
+@@ -0,0 +1,40 @@
 +#ifndef QJSWANT_H
 +#define QJSWANT_H
 +
@@ -22138,6 +22141,10 @@ index 00000000000..0cde8641731
 +    QString windowName() const;
 +
 +    bool hasWindowName() const;
++
++    bool hasProcessIdentifier() const;
++
++    QString processIdentifier() const;
 +
 +    QByteArray uri() const;
 +
@@ -24479,7 +24486,7 @@ index 00000000000..78166a0f7a0
 +#endif // QOHDESKTOPWINDOW_H
 diff --git a/src/plugins/platforms/openharmony/qohdisplay.cpp b/src/plugins/platforms/openharmony/qohdisplay.cpp
 new file mode 100644
-index 00000000000..a1e516b61ba
+index 00000000000..a8167812436
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohdisplay.cpp
 @@ -0,0 +1,395 @@
@@ -24560,8 +24567,8 @@ index 00000000000..a1e516b61ba
 +            Napi::Object rect = info[0].As<Napi::Object>();
 +            QRect qtRect = QtOh::jsRect2QRect(rect);
 +
-+            m_availableRect = qtRect;            
-+            emit this->availableGeometryChanged();            
++            m_availableRect = qtRect;
++            emit this->availableGeometryChanged();
 +        });
 +        m_availableAreaChangeListener->on();
 +    });
@@ -26214,10 +26221,10 @@ index 00000000000..86e3d29e96a
 +#endif // QOHEVENT_H
 diff --git a/src/plugins/platforms/openharmony/qoheventdispatcher.cpp b/src/plugins/platforms/openharmony/qoheventdispatcher.cpp
 new file mode 100644
-index 00000000000..8d8cffa4b83
+index 00000000000..42fa6f0f28b
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qoheventdispatcher.cpp
-@@ -0,0 +1,958 @@
+@@ -0,0 +1,951 @@
 +#include <cmath>
 +#include <math.h>
 +#include <errno.h>
@@ -27128,13 +27135,6 @@ index 00000000000..8d8cffa4b83
 +    return d->getLastTouchPoint(id);
 +}
 +
-+void QOhEventDispatcher::dispatchGeometryEvents()
-+{
-+    // 当执行这里时，有可能窗口大小已经改变，也有可能窗口大小还没有改变
-+    // 启动定时器发送窗口大小改变的事件
-+    //launchTimer();
-+}
-+
 +void QOhEventDispatcher::timerEvent(QTimerEvent *event)
 +{
 +    Q_D(QOhEventDispatcher);
@@ -27178,10 +27178,10 @@ index 00000000000..8d8cffa4b83
 +}
 diff --git a/src/plugins/platforms/openharmony/qoheventdispatcher.h b/src/plugins/platforms/openharmony/qoheventdispatcher.h
 new file mode 100644
-index 00000000000..9d537bc5809
+index 00000000000..6c35b00e682
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qoheventdispatcher.h
-@@ -0,0 +1,73 @@
+@@ -0,0 +1,72 @@
 +#ifndef QOHEVENTDISPATCHER_H
 +#define QOHEVENTDISPATCHER_H
 +
@@ -27244,7 +27244,6 @@ index 00000000000..9d537bc5809
 +    void appendOhEvent(QtOh::EventVar var);    
 +    void updateLastTouchPoints(int id, const QPointF &point);
 +    QPointF getLastTouchPoint(int id) const;
-+    void dispatchGeometryEvents();
 +
 +protected:
 +    void timerEvent(QTimerEvent *event) override;
@@ -27933,7 +27932,7 @@ index 00000000000..81e38809793
 +#endif // QOHFILEENGINEHANDLER_H
 diff --git a/src/plugins/platforms/openharmony/qohgesturemanager.cpp b/src/plugins/platforms/openharmony/qohgesturemanager.cpp
 new file mode 100644
-index 00000000000..8a240f5c880
+index 00000000000..9e1bc4afec0
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohgesturemanager.cpp
 @@ -0,0 +1,524 @@
@@ -27998,7 +27997,7 @@ index 00000000000..8a240f5c880
 +                                               this, QOhGestureManager::handleRotationGestureEvent);
 +
 +    /* 创建长按手势 */
-+    auto longPressGesture = gestureApi->createLongPressGesture(1, false, 300);
++    auto longPressGesture = gestureApi->createLongPressGesture(1, false, 500);
 +    gestureApi->setGestureEventTarget(longPressGesture,
 +                                      GESTURE_EVENT_ACTION_ACCEPT | GESTURE_EVENT_ACTION_UPDATE |
 +                                      GESTURE_EVENT_ACTION_END | GESTURE_EVENT_ACTION_CANCEL,
@@ -29492,10 +29491,10 @@ index 00000000000..1dfe3b816ab
 +#endif // QOHKEYS_H
 diff --git a/src/plugins/platforms/openharmony/qohmain.cpp b/src/plugins/platforms/openharmony/qohmain.cpp
 new file mode 100644
-index 00000000000..1341c2e03fb
+index 00000000000..dc20f28d3db
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohmain.cpp
-@@ -0,0 +1,225 @@
+@@ -0,0 +1,226 @@
 +#include <dlfcn.h>
 +#include <QString>
 +#include <QDir>
@@ -29673,6 +29672,7 @@ index 00000000000..1341c2e03fb
 +    QtOh::setDir("DIRECTORY_BUNDLE", applicationContext->bundleCodeDir());
 +    QtOh::setDir("DIRECTORY_FILES", applicationContext->filesDir());
 +    QtOh::setDir("DIRECTORY_RESOURCE", context->resourceDir());
++    QtOh::setDir("DIRECTORY_HAP_FILES", context->filesDir());
 +
 +    pthread_create(&m_qtAppThread, nullptr, startMainMethod, nullptr);
 +
@@ -30124,10 +30124,10 @@ index 00000000000..01a38a00ea8
 +#endif // QOHNATIVENODEAPI_H
 diff --git a/src/plugins/platforms/openharmony/qohnativevsync.cpp b/src/plugins/platforms/openharmony/qohnativevsync.cpp
 new file mode 100644
-index 00000000000..9b012be2a67
+index 00000000000..a47fbceda91
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohnativevsync.cpp
-@@ -0,0 +1,110 @@
+@@ -0,0 +1,130 @@
 +#include "qohnativevsync.h"
 +#include "qohmain.h"
 +#include <native_window/external_window.h>
@@ -30138,6 +30138,7 @@ index 00000000000..9b012be2a67
 +
 +QT_BEGIN_NAMESPACE
 +
++const QPoint INVALID_POINT = QPoint(-1, -1);
 +QOhNativeVSync::QOhNativeVSync(QWindow *window, QPlatformBackingStore *backingStore)
 +    : m_window(window)
 +    , m_backingStore(backingStore)
@@ -30179,8 +30180,12 @@ index 00000000000..9b012be2a67
 +{
 +    if (m_window.data() == wnd) {
 +        m_pendingFlush = true;
-+        m_region = m_region.united(region);;
-+        m_offset = offset;
++        m_region = m_region.united(region);
++
++        if (m_offset == INVALID_POINT)
++            m_offset = offset;
++        else
++            m_offset = QPoint(qMin(m_offset.x(), offset.x()), qMin(m_offset.y(), offset.y()));
 +    }
 +}
 +
@@ -30196,8 +30201,12 @@ index 00000000000..9b012be2a67
 +
 +void QOhNativeVSync::clearFlag()
 +{
-+    m_pendingFlush = false;
 +    m_ready.store(false);
++}
++
++bool QOhNativeVSync::isPendingFlush() const
++{
++    return m_pendingFlush;
 +}
 +
 +void QOhNativeVSync::setDeleted(bool deleted)
@@ -30216,34 +30225,45 @@ index 00000000000..9b012be2a67
 +    }
 +    vsync->m_ready.store(true);
 +    if (vsync->m_pendingFlush) {
-+        vsync->doFlush();
++        vsync->requestFlush();
 +    }
 +    OH_NativeVSync_RequestFrame(vsync->m_vsync->object(), &QOhNativeVSync::nativeVSyncFrameCallback, vsync);
 +}
 +
-+void QOhNativeVSync::doFlush()
++void QOhNativeVSync::requestFlush()
 +{
-+    m_pendingFlush = false;
 +    if (m_window.isNull())
 +        return;
++
 +    // this should invoked in qt thread, ensure QOhNativeVSync is alived in Qt thread.
 +    QMetaObject::invokeMethod(m_window.data(), [this]() {
-+        auto region = m_region;
-+        auto offset = m_offset;
-+        m_region = {};
-+        // m_offset = {};
-+        m_backingStore->flush(m_window.data(), region, offset);
++        if (isReady() && isPendingFlush()) {
++            flush();
++        }
 +    }, Qt::QueuedConnection);
++}
++
++void QOhNativeVSync::flush()
++{
++    if (m_window.isNull())
++        return;
++
++    m_pendingFlush = false;
++    auto region = m_region;
++    auto offset = (m_offset == INVALID_POINT ? QPoint() : m_offset);
++    m_region = {};
++    m_offset = INVALID_POINT;
++    m_backingStore->flush(m_window.data(), region, offset);
 +}
 +
 +QT_END_NAMESPACE
 +
 diff --git a/src/plugins/platforms/openharmony/qohnativevsync.h b/src/plugins/platforms/openharmony/qohnativevsync.h
 new file mode 100644
-index 00000000000..5bbb88eb2e8
+index 00000000000..9575299daa0
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohnativevsync.h
-@@ -0,0 +1,41 @@
+@@ -0,0 +1,44 @@
 +#ifndef QOHNATIVEVSYNC_H
 +#define QOHNATIVEVSYNC_H
 +
@@ -30268,10 +30288,13 @@ index 00000000000..5bbb88eb2e8
 +    bool isValid() const;
 +    bool isReady() const;
 +    void clearFlag();
++    bool isPendingFlush() const;
 +    void setDeleted(bool deleted);
++    void flush();
++
 +private:
 +    static void nativeVSyncFrameCallback(long long timestamp, void *data);
-+    void doFlush();
++    void requestFlush();
 +    QScopedPointer<QOhObjectHolder<OH_NativeVSync>> m_vsync;
 +    QPointer<QWindow> m_window;
 +    QPlatformBackingStore *m_backingStore;
@@ -30287,10 +30310,10 @@ index 00000000000..5bbb88eb2e8
 +#endif // QOHNATIVEVSYNC_H
 diff --git a/src/plugins/platforms/openharmony/qohnativewindow.cpp b/src/plugins/platforms/openharmony/qohnativewindow.cpp
 new file mode 100644
-index 00000000000..63c98fcf13e
+index 00000000000..7a263d288fd
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohnativewindow.cpp
-@@ -0,0 +1,1114 @@
+@@ -0,0 +1,1127 @@
 +#include <QDebug>
 +#include <QMargins>
 +#include <QBitArray>
@@ -30337,6 +30360,8 @@ index 00000000000..63c98fcf13e
 +
 +QT_BEGIN_NAMESPACE
 +
++QList<QOhNativeWindow *> QOhNativeWindow::s_allWindows;
++
 +QOhNativeWindow::AvoidArea QOhNativeWindow::jsAvoidArea2Qt(Napi::Object result)
 +{
 +    QOhNativeWindow::AvoidArea area;
@@ -30362,6 +30387,8 @@ index 00000000000..63c98fcf13e
 +{
 +    m_isWindowDestroyed.storeRelease(false);
 +    m_expectedWindowStatus.storeRelease(QtOh::FLOATING);
++
++    s_allWindows << this;
 +}
 +
 +QOhNativeWindow::~QOhNativeWindow()
@@ -30372,28 +30399,13 @@ index 00000000000..63c98fcf13e
 +        delete m_touchOutsideListener;
 +        m_touchOutsideListener = nullptr;
 +    }
++
++    s_allWindows.removeAll(this);
 +}
 +
 +void QOhNativeWindow::attachAbility(QJsAbility *ability)
 +{
 +    m_ability = ability;
-+    if (ability == nullptr)
-+        return;
-+    if (isTopWindow()) {
-+        QJsSettings::instance()->registerKeyObserver("window_pcmode_switch_status", [this]{
-+                    bool pcMode = QJsSettings::instance()->isFreeWindowEnable();
-+                    if (pcMode) {
-+                        call("setWindowDecorVisible", {Napi::Boolean::New(env(), m_titleVisible)});
-+                    } else {
-+                        if (isVisible())
-+                            showFullScreen();
-+                    }
-+                    auto extraHandler = get("pcModeChangedListener");
-+                    if (extraHandler.IsEmpty() || !extraHandler.IsFunction())
-+                        return;
-+                    call("pcModeChangedListener", {Napi::Boolean::New(env(), pcMode)});
-+                }, true, m_ability->context());
-+    }
 +}
 +
 +QJsAbility *QOhNativeWindow::ability() const
@@ -30433,12 +30445,14 @@ index 00000000000..63c98fcf13e
 +            if (Qt::WindowModal == m) {
 +                option.Set("modalityType", Napi::Number::New(env(), WINDOW_MODALITY));
 +            } else if (Qt::ApplicationModal == m) {
-+                option.Set("modalityType", Napi::Number::New(env(), ((QtOh::isTabletDevice() || QtOh::isPhoneDevice()) && !QtOh::isFreeWindowEnable()) ?
-+                                                                 WINDOW_MODALITY : APPLICATION_MODALITY));
++                auto type = ((QtOh::isTabletDevice() || QtOh::isPhoneDevice()) && !QtOh::isFreeWindowEnable()) ?
++                        WINDOW_MODALITY : APPLICATION_MODALITY;
++                option.Set("modalityType", Napi::Number::New(env(), type));
 +            }
 +        }
 +
-+        Napi::Value result = call("createSubWindowWithOptions", { Napi::String::New(env(), window->windowName().toStdString()), option });
++        Napi::Value result = call("createSubWindowWithOptions",
++                                  { Napi::String::New(env(), window->windowName().toStdString()), option });
 +        if (!result.IsPromise()) {
 +            p->set_value(false);
 +            return;
@@ -30456,7 +30470,8 @@ index 00000000000..63c98fcf13e
 +            Napi::Object error = info[0].As<Napi::Object>();
 +            int code = (int)error.Get("code").ToNumber();
 +            if (code != 0) {
-+                LOGW("create window failed, code is %{public}d, message is %{public}s", code, error.Get("message").ToString().Utf8Value().c_str());
++                LOGW("create window failed, code is %{public}d, message is %{public}s",
++                     code, error.Get("message").ToString().Utf8Value().c_str());
 +            }
 +            p->set_value(false);
 +        });
@@ -30546,7 +30561,8 @@ index 00000000000..63c98fcf13e
 +        return;
 +
 +    if (!QtOh::isSupportFreeWindow()) {
-+        qCWarning(openharmonyQPA, "setWindowTitleButtonVisible This interface is only available in Free Multi-Window Mode on 2-in-1 devices or tablet devices.");
++        qCWarning(openharmonyQPA, "setWindowTitleButtonVisible This interface is only "
++                                  "available in Free Multi-Window Mode on 2-in-1 devices or tablet devices.");
 +        return;
 +    }
 +
@@ -30568,7 +30584,8 @@ index 00000000000..63c98fcf13e
 +void QOhNativeWindow::setWindowTopmost(bool isWindowTopmost)
 +{
 +    if (!QtOh::isSupportFreeWindow()) {
-+        qCWarning(openharmonyQPA, "setWindowTopmost This interface is only available in Free Multi-Window Mode on 2-in-1 devices or tablet devices.");
++        qCWarning(openharmonyQPA, "setWindowTopmost This interface is only "
++                                  "available in Free Multi-Window Mode on 2-in-1 devices or tablet devices.");
 +        return;
 +    }
 +
@@ -30599,8 +30616,8 @@ index 00000000000..63c98fcf13e
 +    }
 +
 +    QtOh::runOnJsUIThreadNoWait([=]{
-+        call("setWindowContainterColor", {Napi::String::New(env(), colorToHexRgbaString(activeColor).toStdString()),
-+                                           Napi::String::New(env(), colorToHexRgbaString(inactiveColor).toStdString())});
++        call("setWindowContainterColor", colorToHexRgbaString(activeColor),
++                                         colorToHexRgbaString(inactiveColor));
 +    });
 +}
 +
@@ -30638,7 +30655,8 @@ index 00000000000..63c98fcf13e
 +                Napi::Object error = info[0].As<Napi::Object>();
 +                int code = (int)error.Get("code").ToNumber();
 +                if (code != 0)
-+                    LOGW("showWindow failed, code is %{public}d, message is %{public}s", code, error.Get("message").ToString().Utf8Value().c_str());
++                    LOGW("showWindow failed, code is %{public}d, message is %{public}s",
++                         code, error.Get("message").ToString().Utf8Value().c_str());
 +            });
 +            call("showWindow", {showCallback});
 +        });
@@ -30809,7 +30827,8 @@ index 00000000000..63c98fcf13e
 +        return;
 +
 +    if (!QtOh::isSupportFreeWindow()) {
-+        qCWarning(openharmonyQPA, "setWindowModal This interface is only available in Free Multi-Window Mode on 2-in-1 devices or tablet devices.");
++        qCWarning(openharmonyQPA, "setWindowModal This interface is only"
++                                  " available in Free Multi-Window Mode on 2-in-1 devices or tablet devices.");
 +        return;
 +    }
 +
@@ -30831,11 +30850,6 @@ index 00000000000..63c98fcf13e
 +
 +void QOhNativeWindow::stopListener()
 +{
-+    if (QtOh::isTabletDevice() && isTopWindow()) {
-+        QJsAbility *theAbility = ability();
-+        if (theAbility != nullptr)
-+            QJsSettings::instance()->unregisterKeyObserver("window_pcmode_switch_status", true, theAbility->context());
-+    }
 +    for (int i = 0; i < m_listeners.count(); ++i) {
 +        if (m_isWindowDestroyed.loadAcquire())
 +            return;
@@ -30949,11 +30963,33 @@ index 00000000000..63c98fcf13e
 +            }).onCatch([p](const Napi::CallbackInfo &info) {
 +                Napi::Object error = info[0].As<Napi::Object>();
 +                int code = (int)error.Get("code").ToNumber();
-+                LOGW("Failed to destroy the window. Cause code: %{public}d, message: %{public}s", code, error.Get("message").ToString().Utf8Value().c_str());
++                LOGW("Failed to destroy the window. Cause code: %{public}d, message: %{public}s",
++                     code, error.Get("message").ToString().Utf8Value().c_str());
 +                p->set_value();
 +            });
 +        });
 +    }
++}
++
++void QOhNativeWindow::handleFreeWindowEnableChanged(bool isFreeWindowEnable)
++{
++    if (!isTopWindow() || m_isWindowDestroyed.loadAcquire())
++        return;
++
++    if (isFreeWindowEnable) {
++        call("setWindowDecorVisible", {Napi::Boolean::New(env(), m_titleVisible)});
++        if (m_window && m_window->window()) {
++            Qt::WindowFlags flags = m_window->window()->flags();
++            m_window->setWindowFlags(flags);
++        }
++    } else {
++        if (isVisible())
++            showFullScreen();
++    }
++    auto extraHandler = get("pcModeChangedListener");
++    if (extraHandler.IsEmpty() || !extraHandler.IsFunction())
++        return;
++    call("pcModeChangedListener", {Napi::Boolean::New(env(), isFreeWindowEnable)});
 +}
 +
 +void QOhNativeWindow::checkForScreenChanged(uint32_t displayId)
@@ -31046,6 +31082,11 @@ index 00000000000..63c98fcf13e
 +    return m_displayId;
 +}
 +
++QList<QOhNativeWindow *> QOhNativeWindow::allWindows()
++{
++    return s_allWindows;
++}
++
 +QOhNativeWindow::AvoidArea QOhNativeWindow::windowAvoidArea(QOhNativeWindow::AvoidAreaType type) const
 +{
 +    return QtOh::runOnJsUIThreadWithResult([this, type]{
@@ -31121,11 +31162,13 @@ index 00000000000..63c98fcf13e
 +    QWindow *nextActiveWindow = nullptr;
 +    if (focusIn) {
 +        QWindow *topWindow = platformWindow->window();
-+        QWindow *modalWindow = nullptr;
-+        if (QGuiApplicationPrivate::instance()->isWindowBlocked(topWindow, &modalWindow) && topWindow != modalWindow) {
-+            modalWindow->requestActivate();
-+            return;
-+        }
++        // QFileDialog选择文件和取消之后，主窗口的激活事件会被先发送导致下面的检查isWindowBlocked
++        // 返回true,从而焦点切换失败 modalWindow是QFileDialogClassWindow，系统又没有重新发送激活事件
++//        QWindow *modalWindow = nullptr;
++//        if (QGuiApplicationPrivate::instance()->isWindowBlocked(topWindow, &modalWindow) && topWindow != modalWindow) {
++//            modalWindow->requestActivate();
++//            return;
++//        }
 +        nextActiveWindow = topWindow;
 +    } else {
 +        QOhNativeWindow *focusNativeWindow = qNativeWindowManager->focusWindow();
@@ -31232,7 +31275,8 @@ index 00000000000..63c98fcf13e
 +                   }).onCatch([](const Napi::CallbackInfo &info){
 +                        Napi::Object error = info[0].As<Napi::Object>();
 +                        int code = (int)error.Get("code").ToNumber();
-+                        LOGW("Failed to start moving window. Cause code: %{public}d, message: %{public}s", code, error.Get("message").ToString().Utf8Value().c_str());
++                        LOGW("Failed to start moving window. Cause code: %{public}d, message: %{public}s",
++                             code, error.Get("message").ToString().Utf8Value().c_str());
 +                    });
 +        }
 +    });
@@ -31242,7 +31286,8 @@ index 00000000000..63c98fcf13e
 +void QOhNativeWindow::setWindowTitleMoveEnabled(bool isEnabled)
 +{
 +    if (!QtOh::isSupportFreeWindow()) {
-+        qCWarning(openharmonyQPA, "setWindowTitleMoveEnabled This interface is only available in Free Multi-Window Mode on 2-in-1 devices or tablet devices.");
++        qCWarning(openharmonyQPA, "setWindowTitleMoveEnabled This interface is only"
++                                  " available in Free Multi-Window Mode on 2-in-1 devices or tablet devices.");
 +        return;
 +    }
 +
@@ -31260,7 +31305,8 @@ index 00000000000..63c98fcf13e
 +        return;
 +
 +    if (!QtOh::isSupportFreeWindow()) {
-+        qCWarning(openharmonyQPA, "setWindowTitle This interface is only available in Free Multi-Window Mode on 2-in-1 devices or tablet devices.");
++        qCWarning(openharmonyQPA, "setWindowTitle This interface is only"
++                                  " available in Free Multi-Window Mode on 2-in-1 devices or tablet devices.");
 +        return;
 +    }
 +
@@ -31307,16 +31353,6 @@ index 00000000000..63c98fcf13e
 +void QOhNativeWindow::setSplashWindow()
 +{
 +    m_isSplashWindow = true;
-+    if (m_parentNativeWindow == nullptr)
-+        return;
-+    auto splashRect = m_parentNativeWindow->geometry();
-+    auto displayId = m_parentNativeWindow->displayId();
-+    auto platformScreen = QOhDisplayManager::instance()->platformScreenOrNull(displayId);
-+    if (platformScreen) {
-+        splashRect.translate(platformScreen->geometry().topLeft());
-+    }
-+    setGeometry(splashRect);
-+    reportWindowGeometry(splashRect);
 +}
 +
 +void QOhNativeWindow::attachNativeWindow(Napi::Object window)
@@ -31407,10 +31443,10 @@ index 00000000000..63c98fcf13e
 +QT_END_NAMESPACE
 diff --git a/src/plugins/platforms/openharmony/qohnativewindow.h b/src/plugins/platforms/openharmony/qohnativewindow.h
 new file mode 100644
-index 00000000000..ada5db1f7f4
+index 00000000000..a2f010ba717
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohnativewindow.h
-@@ -0,0 +1,210 @@
+@@ -0,0 +1,213 @@
 +#ifndef QOHNATIVEWINDOW_H
 +#define QOHNATIVEWINDOW_H
 +
@@ -31578,6 +31614,7 @@ index 00000000000..ada5db1f7f4
 +    virtual bool loadContent(const QString &name);
 +    void destroy();
 +    AvoidArea windowAvoidArea(AvoidAreaType type) const;
++    void handleFreeWindowEnableChanged(bool isFreeWindowEnable);
 +
 +    void attachRootComponent(void *component);
 +    virtual QtOh::WindowStatusType windowStatus() const { return QtOh::FLOATING; }
@@ -31588,6 +31625,7 @@ index 00000000000..ada5db1f7f4
 +    virtual void reportWindowGeometry(const QRect &rectIn = QRect());
 +    void raiseNativeWindow();
 +    static QRect adjustRect(QWindow *window, const QRect &rectIn, const QMargins &effectiveMargins);
++    static QList<QOhNativeWindow *> allWindows();
 +    uint32_t displayId() const;
 +
 +protected:
@@ -31601,6 +31639,7 @@ index 00000000000..ada5db1f7f4
 +
 +protected:
 +    static AvoidArea jsAvoidArea2Qt(Napi::Object result);
++    static QList<QOhNativeWindow *> s_allWindows;
 +    QJsAbility *m_ability = nullptr;
 +    QOhNativeWindow *m_parentNativeWindow;
 +    QOhPlatformWindow *m_window = nullptr;
@@ -31623,7 +31662,7 @@ index 00000000000..ada5db1f7f4
 +#endif // QOHNATIVEWINDOW_H
 diff --git a/src/plugins/platforms/openharmony/qohnativewindowmanager.cpp b/src/plugins/platforms/openharmony/qohnativewindowmanager.cpp
 new file mode 100644
-index 00000000000..1642a972dbb
+index 00000000000..a5136791797
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohnativewindowmanager.cpp
 @@ -0,0 +1,427 @@
@@ -31850,7 +31889,7 @@ index 00000000000..1642a972dbb
 +        }
 +        nativeWindow = parentNativeWindow->createFloatSubWindow(platformWindow);
 +    } else {
-+        qCInfo(openharmonyQPA) << "QOhJsWindowManager::createSubWindow, parent:"
++        qCInfo(openharmonyQPA) << "QOhJsWindowManager::createSubWindow "
 +                               << "parent:" << qWindow->parent()
 +                               << "transientParent:" << qWindow->transientParent();
 +        nativeWindow = parentNativeWindow->createSubWindow(platformWindow);
@@ -31954,7 +31993,7 @@ index 00000000000..1642a972dbb
 +    } else {
 +        m_firstTopWindow = window;
 +    }
-+    if (ability->abilityType() == QJsAbility::UIExtensionAbility)
++    if (qApp && (ability->abilityType() == QJsAbility::UIExtensionAbility))
 +        qApp->newNativeWindowCreated(ability->name());
 +}
 +
@@ -32135,10 +32174,10 @@ index 00000000000..e96e77d3ccf
 +#endif // QOHNATIVEWINDOWMANAGER_H
 diff --git a/src/plugins/platforms/openharmony/qohnormalwindow.cpp b/src/plugins/platforms/openharmony/qohnormalwindow.cpp
 new file mode 100644
-index 00000000000..043081246d2
+index 00000000000..e17258fbbe3
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohnormalwindow.cpp
-@@ -0,0 +1,862 @@
+@@ -0,0 +1,882 @@
 +#include <QTimer>
 +#include <QCloseEvent>
 +#include <QGuiApplication>
@@ -32174,7 +32213,6 @@ index 00000000000..043081246d2
 +#include <QtGui/private/qwindow_p.h>
 +#include <QtGui/private/qguiapplication_p.h>
 +#include <qpa/qplatformcursor.h>
-+QList<QOhNormalWindow *> QOhNormalWindow::m_allWindows;
 +
 +QOhNormalWindow::QOhNormalWindow(QOhNativeWindow *parent)
 +    : QOhNativeWindow(parent)
@@ -32274,7 +32312,7 @@ index 00000000000..043081246d2
 +            /* NOTE PAD设备需要使用同步接口 */
 +            Napi::Function closeAbilityListener = Napi::Function::New(env(), [this](const Napi::CallbackInfo& info) {
 +                Q_UNUSED(info);
-+                m_isWindowDestroyed.storeRelease(true);
++                //m_isWindowDestroyed.storeRelease(true);
 +                QtOh::runOnQtMainThread(&QOhNormalWindow::handleWindowEvent, this, int(WINDOW_DESTROYED));
 +                return Napi::Boolean::New(env(), true);
 +            });
@@ -32351,6 +32389,29 @@ index 00000000000..043081246d2
 +    if (m_isWindowDestroyed.loadAcquire())
 +        return false;
 +
++    QRect actualRect(rectIn);
++    if (m_isSplashWindow && m_parentNativeWindow) {
++        /* 限制启动窗口大小 */
++        QSize miniSize = m_parentNativeWindow->geometry().size();
++        QSize maxSize = QSize(0xFFF, 0xFFF);
++        auto displayId = m_parentNativeWindow->displayId();
++        auto platformScreen = QOhDisplayManager::instance()->platformScreenOrNull(displayId);
++        if (platformScreen) {
++            actualRect.translate(platformScreen->geometry().topLeft());
++            maxSize = platformScreen->availableGeometry().size();
++        }
++        actualRect.setSize(QSize(qBound(miniSize.width(), rectIn.width(), maxSize.width()), \
++                                 qBound(miniSize.height(), rectIn.height(), maxSize.height())));
++        actualRect.moveCenter(m_parentNativeWindow->geometry().center());
++        if (actualRect != rectIn) {
++            /* 实际窗口大小与上层不同，在此处更新 */
++            QOhPlatformOpenGLWindow *platformWindow = dynamic_cast<QOhPlatformOpenGLWindow *>(m_window);
++            if (platformWindow)
++                platformWindow->setNativeGeometry(actualRect);
++            QWindowSystemInterface::handleGeometryChange<QWindowSystemInterface::SynchronousDelivery>(m_window->window(), actualRect);
++        }
++    }
++
 +    /* 如果是第一次设置，查询窗口是否保存了坐标尺寸 */
 +    if (m_firstSetGeometry) {
 +        m_firstSetGeometry = false;
@@ -32358,7 +32419,7 @@ index 00000000000..043081246d2
 +            return true;
 +    }
 +
-+    QRect rect = adjustRect(m_window->window(), rectIn, frameMargins());
++    QRect rect = adjustRect(m_window->window(), actualRect, frameMargins());
 +
 +    return QtOh::runOnJsUIThreadWithPromise<bool>([this, rect](auto p){
 +        QRect jsRect = rect;
@@ -32562,81 +32623,79 @@ index 00000000000..043081246d2
 +{
 +    m_displayId = getWindowProperties(object()).displayId();
 +    QtOh::runOnJsUIThreadNoWait([&] {
-+        if (!QtOh::isPhoneDevice()) {
-+            m_listeners << new QOhJsOnListener(this, "windowRectChange", [this](const Napi::CallbackInfo& info) {
++        m_listeners << new QOhJsOnListener(this, "windowRectChange", [this](const Napi::CallbackInfo& info) {
++            if (m_isWindowDestroyed.loadAcquire())
++                return;
++            Napi::Object opt = QNapi::getFirst<Napi::Object>(info);
++            QRect qtRect(QtOh::jsRect2QRect(QNapi::get<Napi::Object>(opt, "rect")));
++            auto changeReason = QNapi::get<WindowChangeReason>(opt, "reason");
++            QMargins m = frameMargins();
++            if (changeReason != WindowChangeReason::MAXIMIZE)
++                m_normalGeometry = qtRect - m;
++            bool sizeChanged = qtRect.size() != m_lastReportedGeometry.size();
++            bool positionChanged = qtRect.topLeft() != m_lastReportedGeometry.topLeft();
++            // 如果只是坐标变化，发送geometryChanged event，如果尺寸也变化，xcompoent的尺寸也会发生
++            // 变化，在xcompoent的surfaceChanged中处理geometryChanged
++            bool send = (positionChanged && !sizeChanged) || m_lastReportedGeometry.isEmpty();
++            m_lastReportedGeometry = qtRect;
++            LOGI("window rect changed windowRectChange-(%{public}p): Rect(%{public}d, %{public}d %{public}dX%{public}d)",
++                 m_window ? m_window->window() : nullptr, qtRect.x(), qtRect.y(), qtRect.width(), qtRect.height());
++            if (m_window && send) {
++                handleGeometryChanged(qtRect, m);
++            }
++        });
++
++        m_listeners << new QOhJsOnListener(this, "windowStatusChange", [this](const Napi::CallbackInfo& info) {
++            if (m_isWindowDestroyed.loadAcquire() || m_isSplashWindow)
++                return ;
++            auto event = QNapi::getFirst<QtOh::WindowStatusType>(info);
++            if (event == QtOh::WindowStatusType::MAXIMIZE || event == QtOh::WindowStatusType::FULL_SCREEN) {
++                bool immersiveModeEnabledState = QNapi::get<bool>(call("getImmersiveModeEnabledState"));
++                if (immersiveModeEnabledState)
++                    event = QtOh::WindowStatusType::FULL_SCREEN;
++                else
++                    event = QtOh::WindowStatusType::MAXIMIZE;
++            }
++            m_expectedWindowStatus.storeRelease(event);
++            QtOh::runOnQtMainThread(&QOhNormalWindow::handleWindowStatusEvent, this, event);
++        });
++
++        if (QtOh::apiVersion() > 13) {
++            m_listeners << new QOhJsOnListener(this, "displayIdChange", [this](const Napi::CallbackInfo& info) {
 +                if (m_isWindowDestroyed.loadAcquire())
 +                    return;
-+                Napi::Object opt = QNapi::getFirst<Napi::Object>(info);
-+                QRect qtRect(QtOh::jsRect2QRect(QNapi::get<Napi::Object>(opt, "rect")));
-+                auto changeReason = QNapi::get<WindowChangeReason>(opt, "reason");
-+                QMargins m = frameMargins();
-+                if (changeReason != WindowChangeReason::MAXIMIZE)
-+                    m_normalGeometry = qtRect - m;
-+                bool sizeChanged = qtRect.size() != m_lastReportedGeometry.size();
-+                bool positionChanged = qtRect.topLeft() != m_lastReportedGeometry.topLeft();
-+                // 如果只是坐标变化，发送geometryChanged event，如果尺寸也变化，xcompoent的尺寸也会发生
-+                // 变化，在xcompoent的surfaceChanged中处理geometryChanged
-+                bool send = (positionChanged && !sizeChanged) || m_lastReportedGeometry.isEmpty();
-+                m_lastReportedGeometry = qtRect;
-+                LOGI("window rect changed windowRectChange-(%{public}p): Rect(%{public}d, %{public}d %{public}dX%{public}d)",
-+                     m_window ? m_window->window() : nullptr, qtRect.x(), qtRect.y(), qtRect.width(), qtRect.height());
-+                if (m_window && send) {
-+                    handleGeometryChanged(qtRect, m);
-+                }
++
++                // 8指键盘弹出关闭会时触发的窗口位置变换在坐标一样的时候不会发windowrectchange，
++                // 只会发一个displayidchange, 在此更新窗口尺寸
++                handleGeometryChanged();
++
++                uint32_t displayId = QNapi::getFirst<uint32_t>(info);
++                QtOh::runOnQtMainThread(&QOhNormalWindow::checkForScreenChanged, this, displayId);
 +            });
-+
-+            m_listeners << new QOhJsOnListener(this, "windowStatusChange", [this](const Napi::CallbackInfo& info) {
-+                if (m_isWindowDestroyed.loadAcquire() || m_isSplashWindow)
-+                    return ;
-+                auto event = QNapi::getFirst<QtOh::WindowStatusType>(info);
-+                if (event == QtOh::WindowStatusType::MAXIMIZE || event == QtOh::WindowStatusType::FULL_SCREEN) {
-+                    bool immersiveModeEnabledState = QNapi::get<bool>(call("getImmersiveModeEnabledState"));
-+                    if (immersiveModeEnabledState)
-+                        event = QtOh::WindowStatusType::FULL_SCREEN;
-+                    else
-+                        event = QtOh::WindowStatusType::MAXIMIZE;
-+                }
-+                m_expectedWindowStatus.storeRelease(event);
-+                QtOh::runOnQtMainThread(&QOhNormalWindow::handleWindowStatusEvent, this, event);
-+            });
-+
-+            if (QtOh::apiVersion() > 13) {
-+                m_listeners << new QOhJsOnListener(this, "displayIdChange", [this](const Napi::CallbackInfo& info) {
-+                    if (m_isWindowDestroyed.loadAcquire())
-+                        return;
-+
-+                    // 8指键盘弹出关闭会时触发的窗口位置变换在坐标一样的时候不会发windowrectchange，
-+                    // 只会发一个displayidchange, 在此更新窗口尺寸
-+                    handleGeometryChanged();
-+
-+                    uint32_t displayId = QNapi::getFirst<uint32_t>(info);
-+                    QtOh::runOnQtMainThread(&QOhNormalWindow::checkForScreenChanged, this, displayId);
-+                });
-+            }
-+#if OHOS_SDK_VERSION >= 15
-+            m_listeners << new QOhJsOnListener(this, "windowWillClose", [this](const Napi::CallbackInfo &info) {
-+                QString name = this->name();
-+                const QString &tag = QString("wc_begin_%1").arg(name);
-+                QtOhosWatchdog::QOhHiAppEvent::instance()->writeDataTag(tag.toStdString());
-+
-+                Napi::Promise::Deferred deferred = Napi::Promise::Deferred::New(info.Env());
-+                QWindowSystemInterface::handleCloseEvent(m_window->window(), QCloseEvent::WindowClose, [name, deferred](bool accept){
-+                    QtOh::runOnJsUIThreadNoWait([name, deferred, accept]{
-+                        const QString &tag = QString("wc_end_%1").arg(name);
-+                        QtOhosWatchdog::QOhHiAppEvent::instance()->writeDataTag(tag.toStdString());
-+
-+                        /* NOTE 鸿蒙窗口关闭和Qt-Accept相反 */
-+                        deferred.Resolve(Napi::Boolean::New(deferred.Env(), !accept));
-+                    });
-+                });
-+                return deferred.Promise();
-+            });
-+
-+            m_listeners << new QOhJsOnListener(this, "windowTitleButtonRectChange", [this](const Napi::CallbackInfo& info){
-+                m_titleButtonRect = QtOh::jsRect2QRect(info[0].As<Napi::Object>());
-+            });
-+#endif
 +        }
++#if OHOS_SDK_VERSION >= 15
++        m_listeners << new QOhJsOnListener(this, "windowWillClose", [this](const Napi::CallbackInfo &info) {
++            QString name = this->name();
++            const QString &tag = QString("wc_begin_%1").arg(name);
++            QtOhosWatchdog::QOhHiAppEvent::instance()->writeDataTag(tag.toStdString());
++
++            Napi::Promise::Deferred deferred = Napi::Promise::Deferred::New(info.Env());
++            QWindowSystemInterface::handleCloseEvent(m_window->window(), QCloseEvent::WindowClose, [name, deferred](bool accept){
++                QtOh::runOnJsUIThreadNoWait([name, deferred, accept]{
++                    const QString &tag = QString("wc_end_%1").arg(name);
++                    QtOhosWatchdog::QOhHiAppEvent::instance()->writeDataTag(tag.toStdString());
++
++                    /* NOTE 鸿蒙窗口关闭和Qt-Accept相反 */
++                    deferred.Resolve(Napi::Boolean::New(deferred.Env(), !accept));
++                });
++            });
++            return deferred.Promise();
++        });
++
++        m_listeners << new QOhJsOnListener(this, "windowTitleButtonRectChange", [this](const Napi::CallbackInfo& info){
++            m_titleButtonRect = QtOh::jsRect2QRect(info[0].As<Napi::Object>());
++        });
++#endif
 +
 +        m_listeners << new QOhJsOnListener(this, "windowEvent", [this](const Napi::CallbackInfo& info) {
 +            if (m_isWindowDestroyed.loadAcquire())
@@ -33003,10 +33062,10 @@ index 00000000000..043081246d2
 + */
 diff --git a/src/plugins/platforms/openharmony/qohnormalwindow.h b/src/plugins/platforms/openharmony/qohnormalwindow.h
 new file mode 100644
-index 00000000000..004b46ba05f
+index 00000000000..4433d5d53bc
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohnormalwindow.h
-@@ -0,0 +1,86 @@
+@@ -0,0 +1,85 @@
 +#ifndef QOHNORMALWINDOW_H
 +#define QOHNORMALWINDOW_H
 +
@@ -33082,7 +33141,6 @@ index 00000000000..004b46ba05f
 +    static bool windowMouseEventFilter(Input_MouseEvent *mouseEvent);
 +    static bool windowTouchEventFilter(Input_TouchEvent *touchEvent);
 +#endif
-+    static QList<QOhNormalWindow *> m_allWindows;
 +    QRect m_lastReportedGeometry;
 +    QRect m_titleButtonRect;
 +    QRect m_normalGeometry;
@@ -33348,10 +33406,10 @@ index 00000000000..12ce11242a7
 +#endif // QOHPLATFORMABILITYCTRL_H
 diff --git a/src/plugins/platforms/openharmony/qohplatformbackingstore.cpp b/src/plugins/platforms/openharmony/qohplatformbackingstore.cpp
 new file mode 100644
-index 00000000000..959d57cc4fc
+index 00000000000..0972a3a07c1
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatformbackingstore.cpp
-@@ -0,0 +1,416 @@
+@@ -0,0 +1,430 @@
 +#include <QPainter>
 +#include <qpa/qplatformscreen.h>
 +#include <qopenharmonydefines.h>
@@ -33449,20 +33507,11 @@ index 00000000000..959d57cc4fc
 +    , m_alphaNeedsFill(false)
 +    , m_regionHandler(nullptr)
 +{
-+
 +}
 +
 +QOhPlatformBackingStore::~QOhPlatformBackingStore()
 +{
-+#if OHOS_SDK_VERSION > 14
-+    if (m_vsyncs.contains(window())) {
-+        auto vsync = m_vsyncs.take(window());
-+        if (vsync) {
-+            // 只做标记，在最后的callback中去做删除
-+            vsync->setDeleted(true);
-+        }
-+    }
-+#endif
++
 +}
 +
 +QPaintDevice *QOhPlatformBackingStore::paintDevice()
@@ -33527,6 +33576,26 @@ index 00000000000..959d57cc4fc
 +    return m_image;
 +}
 +
++void QOhPlatformBackingStore::releaseVsync(QWindow *w)
++{
++#if OHOS_SDK_VERSION > 14
++    auto internalRelease = [](QWindow *w) {
++        if (m_vsyncs.contains(w)) {
++            auto vsync = m_vsyncs.take(w);
++            if (vsync) {
++                // 只做标记，在最后的callback中去做删除
++                vsync->setDeleted(true);
++            }
++        }
++    };
++    internalRelease(w);
++    auto children = w->findChildren<QWindow *>();
++    for (auto child : children) {
++        internalRelease(child);
++    }
++#endif
++}
++
 +QImage::Format mapNativeBufferFormatToQImageFormatOrFail(std::int32_t format)
 +{
 +    QImage::Format result;
@@ -33559,7 +33628,6 @@ index 00000000000..959d57cc4fc
 +
 +void copyImage(const QImage &srcImage, QImage &dstImage)
 +{
-+    
 +    const int copyHeight = qMin(srcImage.height(), dstImage.height());
 +
 +    // 逐行拷贝重叠区域
@@ -33678,6 +33746,10 @@ index 00000000000..959d57cc4fc
 +            // qCWarning(lcQpaBackingStore) << "OHOS buffer not ready, wait for its ready.";
 +            vsync->saveFrame(window, region, offset);
 +            return;
++        } else if (vsync->isPendingFlush()){
++            vsync->flush();
++            vsync->saveFrame(window, region, offset);
++            return;
 +        } else {
 +            vsync->clearFlag();
 +        }
@@ -33770,10 +33842,10 @@ index 00000000000..959d57cc4fc
 +QT_END_NAMESPACE
 diff --git a/src/plugins/platforms/openharmony/qohplatformbackingstore.h b/src/plugins/platforms/openharmony/qohplatformbackingstore.h
 new file mode 100644
-index 00000000000..66b3016d060
+index 00000000000..3c7cd778918
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatformbackingstore.h
-@@ -0,0 +1,40 @@
+@@ -0,0 +1,42 @@
 +#ifndef QOHPLATFORMBACKINGSTORE_H
 +#define QOHPLATFORMBACKINGSTORE_H
 +
@@ -33801,6 +33873,8 @@ index 00000000000..66b3016d060
 +    void beginPaint(const QRegion &) override;
 +    QImage toImage() const override;
 +
++    static void releaseVsync(QWindow *w);
++private:
 +private:
 +    QImage m_image;
 +    bool m_alphaNeedsFill;
@@ -34529,10 +34603,10 @@ index 00000000000..6ade55b8543
 +#endif // QOHPLATFORMCURSOR_H
 diff --git a/src/plugins/platforms/openharmony/qohplatformdialoghelpers.cpp b/src/plugins/platforms/openharmony/qohplatformdialoghelpers.cpp
 new file mode 100644
-index 00000000000..43299f79706
+index 00000000000..b785831833a
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatformdialoghelpers.cpp
-@@ -0,0 +1,686 @@
+@@ -0,0 +1,736 @@
 +#include <QDebug>
 +#include <QTimer>
 +#include <QRegExp>
@@ -34840,6 +34914,55 @@ index 00000000000..43299f79706
 +    QEventLoop m_eventLoop;
 +};
 +
++static QString qt_make_filter_for_openharmony(const QString &filter)
++{
++    QString _filter = filter;
++    QString description = "|";
++    QStringList parts;
++    if (_filter.contains("(") && _filter.contains(")")) {
++        parts = _filter.split("(");
++        _filter = parts.takeLast();
++        _filter.chop(1);
++        description.prepend(parts.join("(") + "("+ _filter + ")");
++    } else {
++        description.prepend(_filter);
++    }
++    parts = _filter.split(" ");
++    for (QString &part : parts) {
++        if (part.startsWith("*.")) {
++            /*
++             * 移除开头的 '*'
++             * 说明: 鸿蒙系统的文件选择器，只接受 '.png' 这种格式的后缀
++             */
++            part.remove(0, 1);
++        }
++        else if(!part.contains(".") ) {
++            part.prepend(".");
++        }
++    }
++    /*
++     * 连接描述和过滤器部分
++     *
++     * 说明: 鸿蒙系统的文件选择器
++     * 每项过滤后缀可以存在多个后缀名
++     * 则每一个后缀名之间用英文逗号进行分隔
++     */
++    return description + parts.join(",");
++}
++
++static QStringList qt_make_filter_list_for_openharmony(const QStringList &filters)
++{
++    QStringList allExtensions;
++    if (filters.count() == 1 && filters.first() == QFileDialogOptions::defaultNameFilterString()){
++        allExtensions << ".*";
++    } else {
++        for (auto _filter : filters) {
++            allExtensions << qt_make_filter_for_openharmony(_filter);
++        }
++    }
++    return allExtensions;
++}
++
 +QOhNativeFileDialog::OHSelectMode QOhNativeFileDialog::qtMode2OhMode(QFileDialogOptions::FileMode mode)
 +{
 +    switch (mode) {
@@ -34889,7 +35012,8 @@ index 00000000000..43299f79706
 +
 +void QOhNativeFileDialog::selectNameFilter(const QString &filter)
 +{
-+    Q_UNUSED(filter)
++    QString ohFilter = qt_make_filter_for_openharmony(filter);
++    Q_UNUSED(ohFilter)
 +    Q_UNIMPLEMENTED();
 +}
 +
@@ -34946,7 +35070,7 @@ index 00000000000..43299f79706
 +Napi::Value QOhNativeFileDialog::documentSelectOptions() const
 +{
 +    static QJsModule picker("@ohos.file.picker");
-+    QStringList _filters = m_nameFilters;
++    QStringList _filters = qt_make_filter_list_for_openharmony(m_nameFilters);
 +    if (_filters.length() >= 100 || _filters.isEmpty()) {
 +        _filters = QStringList() << ".*";
 +    }
@@ -34974,7 +35098,7 @@ index 00000000000..43299f79706
 +    Napi::Value documentSaveOptionsConstructor = picker.get("DocumentSaveOptions");
 +    QJsObject documentSaveOptions(documentSaveOptionsConstructor);
 +    documentSaveOptions.set("newFileNames", QNapi::create(QStringList() << m_saveFile));
-+    documentSaveOptions.set("fileSuffixChoices", QNapi::create(m_nameFilters));
++    documentSaveOptions.set("fileSuffixChoices", QNapi::create(qt_make_filter_list_for_openharmony(m_nameFilters)));
 +    const QString path = m_data.directory().toLocalFile();
 +    QString defaultPath = QString("%1/%2").arg(path, m_saveFile);
 +    if (!QFile::exists(defaultPath)) {
@@ -35333,10 +35457,10 @@ index 00000000000..c14f493b5d0
 +#endif // QOHPLATFORMFOREIGNWINDOW_H
 diff --git a/src/plugins/platforms/openharmony/qohplatforminputcontext.cpp b/src/plugins/platforms/openharmony/qohplatforminputcontext.cpp
 new file mode 100644
-index 00000000000..76eb89055b7
+index 00000000000..5cfd27a2fb7
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatforminputcontext.cpp
-@@ -0,0 +1,575 @@
+@@ -0,0 +1,579 @@
 +#include "qohmain.h"
 +#include "qohevent.h"
 +#include "qohplatformscreen.h"
@@ -35510,8 +35634,9 @@ index 00000000000..76eb89055b7
 +bool QOhPlatformInputContext::hasCapability(Capability capability) const
 +{
 +    switch (capability) {
++    /* Note 鸿蒙支持隐藏文本(密码)输入 */
 +    case HiddenTextCapability:
-+        return false;
++        return true;
 +    default:break;
 +    }
 +    return true;
@@ -35677,7 +35802,7 @@ index 00000000000..76eb89055b7
 +    Q_UNUSED(object)
 +    if (m_isInPreviewText)
 +        reset();
-+    updateInputEnabled();
++    QTimer::singleShot(0, this, [this]{ updateInputEnabled(); });
 +}
 +
 +QOhPlatformInputContext *QOhPlatformInputContext::ohInputContext()
@@ -35823,7 +35948,10 @@ index 00000000000..76eb89055b7
 +        break;
 +    default:break;
 +    }
-+    QGuiApplication::sendEvent(m_focusObject, &event);
++
++    auto input = checkFocusObject();
++    if (input)
++        QGuiApplication::sendEvent(input, &event);
 +}
 +
 +void QOhPlatformInputContext::finishTextPreview()
@@ -36672,10 +36800,10 @@ index 00000000000..56ccb8234f5
 +#endif // QOHPLATFORMMENU_H
 diff --git a/src/plugins/platforms/openharmony/qohplatformnativeinterface.cpp b/src/plugins/platforms/openharmony/qohplatformnativeinterface.cpp
 new file mode 100644
-index 00000000000..07079bb6892
+index 00000000000..1a9cb369a69
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatformnativeinterface.cpp
-@@ -0,0 +1,115 @@
+@@ -0,0 +1,127 @@
 +#include <QtCore/qhash.h>
 +
 +#include "qohmain.h"
@@ -36696,7 +36824,8 @@ index 00000000000..07079bb6892
 +    UIAbilityContext,
 +    NativeXComponentType,
 +    NativeJsWindowType,
-+    NativeWindowStageType
++    NativeWindowStageType,
++    NativeSettings
 +};
 +
 +static ResourceType resourceType(const QByteArray &key)
@@ -36707,6 +36836,7 @@ index 00000000000..07079bb6892
 +                                                         {"UIAbility", UIAbility},
 +                                                         {"UIAbilityContext", UIAbilityContext},
 +                                                         {"nativeWindowStage", NativeWindowStageType},
++                                                         {"nativeSettings", NativeSettings},
 +                                                         };
 +    if (resources.contains(key))
 +        return resources.value(key);
@@ -36727,9 +36857,19 @@ index 00000000000..07079bb6892
 +        auto ability = QOhNativeWindowManager::instance()->defaultAbility();
 +        return ability ? std::bit_cast<void*>(ability->context()) : nullptr;
 +    }
++    case NativeSettings:
++    {
++        return std::bit_cast<void*>(QJsSettings::instance());
++    }
 +    default:
 +        break;
 +    }
++    return nullptr;
++}
++
++QFunctionPointer QOhPlatformNativeInterface::platformFunction(const QByteArray &function) const
++{
++    Q_UNUSED(function);
 +    return nullptr;
 +}
 +
@@ -36793,10 +36933,10 @@ index 00000000000..07079bb6892
 +
 diff --git a/src/plugins/platforms/openharmony/qohplatformnativeinterface.h b/src/plugins/platforms/openharmony/qohplatformnativeinterface.h
 new file mode 100644
-index 00000000000..f7e9cb8c2b9
+index 00000000000..cec458b2cca
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatformnativeinterface.h
-@@ -0,0 +1,19 @@
+@@ -0,0 +1,20 @@
 +#ifndef QOHPLATFORMNATIVEINTERFACE_H
 +#define QOHPLATFORMNATIVEINTERFACE_H
 +
@@ -36809,6 +36949,7 @@ index 00000000000..f7e9cb8c2b9
 +    Q_OBJECT
 +public:
 +    void *nativeResourceForIntegration(const QByteArray &resource) override;
++    QFunctionPointer platformFunction(const QByteArray &function) const override;
 +    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) override;
 +    NativeResourceForIntegrationFunction nativeResourceFunctionForIntegration(const QByteArray &resource) override;
 +};
@@ -36957,15 +37098,16 @@ index 00000000000..a30d5eb836d
 +#endif // QOPENHARMONYPLATFORMOPENGLCONTEXT_H
 diff --git a/src/plugins/platforms/openharmony/qohplatformopenglwindow.cpp b/src/plugins/platforms/openharmony/qohplatformopenglwindow.cpp
 new file mode 100644
-index 00000000000..3047a13f9ab
+index 00000000000..22c3a23d1b8
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatformopenglwindow.cpp
-@@ -0,0 +1,890 @@
+@@ -0,0 +1,904 @@
 +#include "qohplatformopenglwindow.h"
 +#include "qohxcomponent.h"
++#include "qohnativewindow.h"
 +#include "qohplatformscreen.h"
 +#include "qohnativewindowmanager.h"
-+#include "qohnativewindow.h"
++#include "qohplatformbackingstore.h"
 +
 +#include "qohmain.h"
 +#include "qohutility.h"
@@ -37344,6 +37486,19 @@ index 00000000000..3047a13f9ab
 +    }
 +    setWindowState_sys(newState);
 +    m_windowState = newState;
++    QRect rect = m_rect;
++    auto *screen = platformScreen();
++    if (!screen)
++        screen = dynamic_cast<QOhPlatformScreen *>(QGuiApplication::primaryScreen()->handle());
++    if (m_windowState.testFlag(Qt::WindowMaximized)) {
++        m_rect = screen->availableGeometry();
++    }
++    if (m_windowState.testFlag(Qt::WindowFullScreen)) {
++        m_rect = screen->geometry();
++    }
++    if (rect != m_rect) {
++        QWindowSystemInterface::handleGeometryChange<QWindowSystemInterface::SynchronousDelivery>(window(), m_rect);
++    }
 +}
 +
 +void QOhPlatformOpenGLWindow::createNativeWindow()
@@ -37403,7 +37558,7 @@ index 00000000000..3047a13f9ab
 +        });
 +
 +        auto kind = windowKind();
-+        if (kind != QOhPlatformOpenGLWindow::Kind::SplashWindow) {
++        if (m_windowState == Qt::WindowNoState) {
 +            m_nativeWindow->setGeometry(m_normalRect);
 +        }
 +    }
@@ -37431,6 +37586,7 @@ index 00000000000..3047a13f9ab
 +        if (QOhWindowContext::mouseGrabberWindow() == window())
 +            QOhWindowContext::setMouseGrabberWindow(nullptr);
 +        fireExpose(QRegion());
++        QOhPlatformBackingStore::releaseVsync(window());
 +    }
 +    m_windowIsHidden = !visible;
 +}
@@ -37539,7 +37695,7 @@ index 00000000000..3047a13f9ab
 +        m_cursor = cursor;
 +        QWindow *w = window();
 +        const bool apply = canApplyNewCursor(w);
-+        qInfo(openharmonyQPA) << apply  <<(m_cursor ? m_cursor->shape : -1) << w;
++        //qInfo(openharmonyQPA) << apply  <<(m_cursor ? m_cursor->shape : -1) << w;
 +        if (apply)
 +            applyCursor();
 +    }
@@ -37734,15 +37890,14 @@ index 00000000000..3047a13f9ab
 +{
 +    QOhPlatformWindow::createNativeWindowNode(nativeHandle);
 +    QWindow *qWindow = window();
++    auto node = nativeWindowNode();
++    node->createNode(QRectF(m_rect), !showWithoutActive());
++    updateXComponentBackground();
 +    qCInfo(openharmonyQPA) << Q_FUNC_INFO << this
 +                           << "rect: " << m_rect
 +                           << "parentWindow:" << parent()
 +                           << "qWindow transientParent:" << qWindow->transientParent()
 +                           << "windowFlags: " << qWindow->flags();
-+    auto node = nativeWindowNode();
-+    node->createNode(QRectF(m_rect), !showWithoutActive());
-+    updateXComponentBackground();
-+
 +}
 +
 +void QOhPlatformOpenGLWindow::updateXComponentBackground()
@@ -38664,7 +38819,7 @@ index 00000000000..a363f3c4538
 +#endif
 diff --git a/src/plugins/platforms/openharmony/qohplatformtheme.cpp b/src/plugins/platforms/openharmony/qohplatformtheme.cpp
 new file mode 100644
-index 00000000000..da79b125895
+index 00000000000..52e60396e9b
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatformtheme.cpp
 @@ -0,0 +1,1483 @@
@@ -40104,7 +40259,7 @@ index 00000000000..da79b125895
 +             * 设置后可能导致渲染异常
 +             */
 +            if (QSurface::OpenGLSurface != window->surfaceType()) {
-+                if (auto handle = std::bit_cast<QOhPlatformOpenGLWindow*>(window->handle())) {
++                if (auto handle = dynamic_cast<QOhPlatformOpenGLWindow*>(window->handle())) {
 +                    QVariant var = window->property("_q_background");
 +                    QBrush brush = var.value<QBrush>();
 +
@@ -41465,10 +41620,10 @@ index 00000000000..af274207ce2
 +#endif // QOHSYSTEMTRAYICON_H
 diff --git a/src/plugins/platforms/openharmony/qohwindowcontext.cpp b/src/plugins/platforms/openharmony/qohwindowcontext.cpp
 new file mode 100644
-index 00000000000..247848518f7
+index 00000000000..9a63732bf31
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohwindowcontext.cpp
-@@ -0,0 +1,286 @@
+@@ -0,0 +1,290 @@
 +#include "qohwindowcontext.h"
 +#include "qohplatformscreen.h"
 +#include "qohplatformwindow.h"
@@ -41482,7 +41637,9 @@ index 00000000000..247848518f7
 +#include <QJsModule>
 +#include <QAccessibleInterface>
 +#include <QGuiApplication>
++#include <QRegularExpression>
 +#include <qpa/qwindowsysteminterface.h>
++
 +QT_BEGIN_NAMESPACE
 +
 +QWindow *QOhWindowContext::m_focusWindow = nullptr;
@@ -41584,7 +41741,9 @@ index 00000000000..247848518f7
 +{
 +    auto qWindow = window->window();
 +    QString name = qWindow->objectName();
-+    if (name.isEmpty()) {
++
++    QRegularExpression re("^[a-zA-Z0-9_]+$");
++    if (name.isEmpty() || !re.match(name).hasMatch()) {
 +        auto mo = qWindow->metaObject();
 +        name = QString::fromLatin1(mo->className()) + "Window";
 +    }
@@ -41818,10 +41977,10 @@ index 00000000000..81ecf9ce7ad
 +#endif // QOHWIDOWCONTEXT_H
 diff --git a/src/plugins/platforms/openharmony/qohwindownode.cpp b/src/plugins/platforms/openharmony/qohwindownode.cpp
 new file mode 100644
-index 00000000000..086d9555cbf
+index 00000000000..a4ddd4b9eae
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohwindownode.cpp
-@@ -0,0 +1,955 @@
+@@ -0,0 +1,956 @@
 +#include <QUrl>
 +#include <QTimer>
 +#include <QDebug>
@@ -42023,8 +42182,9 @@ index 00000000000..086d9555cbf
 +void QOhWindowNode::setNativeWindow(void *nativeWindow)
 +{
 +    m_nativeWindow = nativeWindow;
-+    if (m_nativeWindow != nullptr)
++    if (m_nativeWindow != nullptr) {
 +        m_nativeWindowPromise.set_value();
++    }
 +    if (m_id) {
 +        WindowNode *wNode = reinterpret_cast<WindowNode *>(m_id);
 +        wNode->window = nativeWindow;
@@ -42897,10 +43057,10 @@ index 00000000000..ce6d3a7dc8a
 +#endif // QOHWINDOWNODE_H
 diff --git a/src/plugins/platforms/openharmony/qohwindownodeeventhandler.cpp b/src/plugins/platforms/openharmony/qohwindownodeeventhandler.cpp
 new file mode 100644
-index 00000000000..16c92114e22
+index 00000000000..b51040f071e
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohwindownodeeventhandler.cpp
-@@ -0,0 +1,949 @@
+@@ -0,0 +1,903 @@
 +#include "qohwindownodeeventhandler.h"
 +#include "qohplatformwindow.h"
 +#include "qoheventdispatcher.h"
@@ -42918,7 +43078,6 @@ index 00000000000..16c92114e22
 +
 +#include <QTimer>
 +#include <QGuiApplication>
-+#include <QElapsedTimer>
 +#include <private/qguiapplication_p.h>
 +#include <qpa/qplatformcursor.h>
 +#include <qpa/qplatformscreen.h>
@@ -42933,21 +43092,7 @@ index 00000000000..16c92114e22
 +
 +QT_BEGIN_NAMESPACE
 +
-+/* FIXME 性能监控打印宏 */
-+#define TOUCH_PERF_DEBUG 0
-+#if TOUCH_PERF_DEBUG
-+#define PERF_START() QElapsedTimer perfTimer; perfTimer.start()
-+#define PERF_LOG(phase) \
-+    do { \
-+        qint64 elapsed = perfTimer.nsecsElapsed(); \
-+        if (elapsed > 1000000) { /* 超过1ms才打印 */ \
-+            LOGW("Touch[%{public}s]: %{public}d us", phase, elapsed / 1000); \
-+        } \
-+    } while(0)
-+#else
-+#define PERF_START()
-+#define PERF_LOG(phase)
-+#endif
++#define RUN_QT_THREAD 0
 +
 +QWindow *QOhWindowNodeEventHandler::m_lastActiveWindow = nullptr;
 +
@@ -43273,16 +43418,18 @@ index 00000000000..16c92114e22
 +};
 +
 +void QOhWindowNodeEventHandler::translateMouseEvent(ArkUI_UIInputEvent *inputEvent)
-+{
-+    PERF_START();
-+    
++{   
 +    auto pw = m_node->platformWindow();
 +    if (Q_UNLIKELY(!pw)) {
 +        return;
 +    }
 +
-+    /* 快速过滤鼠标事件 */
-+    const int32_t sourceType = OH_ArkUI_UIInputEvent_GetSourceType(inputEvent);
++    /* 快速过滤鼠标事件
++     * UI_INPUT_EVENT_SOURCE_TYPE_UNKNOWN = 0
++     * UI_INPUT_EVENT_SOURCE_TYPE_MOUSE = 1
++     * UI_INPUT_EVENT_SOURCE_TYPE_TOUCH_SCREEN = 2
++     */
++    int32_t sourceType = OH_ArkUI_UIInputEvent_GetSourceType(inputEvent);
 +    if (sourceType == UI_INPUT_EVENT_SOURCE_TYPE_MOUSE) {
 +        return;
 +    }
@@ -43292,7 +43439,9 @@ index 00000000000..16c92114e22
 +    /* 特殊事件处理：取消事件 - 立即处理并清除状态 */
 +    if (Q_UNLIKELY(action == UI_TOUCH_EVENT_ACTION_CANCEL)) {
 +        QWindow *window = pw->window();
++#if RUN_QT_THREAD
 +        QtOh::runOnQtMainThread([this, window]{
++#endif
 +            if (QOhWindowNode::nodeDestroyed(m_node))
 +                return;
 +            if (auto *dispatcher = QOhEventDispatcher::instance()) {
@@ -43303,7 +43452,11 @@ index 00000000000..16c92114e22
 +            }
 +            m_lastTouchPoints.clear();
 +            m_pointerIdToTouchId.clear();
++
++#if RUN_QT_THREAD
 +        });
++#endif
++
 +        return;
 +    }
 +
@@ -43311,11 +43464,6 @@ index 00000000000..16c92114e22
 +    if (Q_UNLIKELY(pointCount == 0)) {
 +        return;
 +    }
-+
-+#if TOUCH_PERF_DEBUG
-+    QElapsedTimer apiTimer;
-+    apiTimer.start();
-+#endif
 +
 +    /* 在JS线程中只提取必要的原始数据 - 批量提取减少API调用 */
 +    const int64_t time = OH_ArkUI_UIInputEvent_GetEventTime(inputEvent);
@@ -43331,19 +43479,9 @@ index 00000000000..16c92114e22
 +#if OHOS_SDK_VERSION >= 17
 +    const Qt::KeyboardModifiers keys = keyboardModifiersFromEvent(inputEvent);
 +#endif
-+
-+#if TOUCH_PERF_DEBUG
-+    qint64 apiElapsed = apiTimer.nsecsElapsed();
-+#endif
-+
 +    /* 直接使用QVector，通过reserve预分配内存，Lambda捕获时会进行值拷贝 */
 +    QVector<TouchPointData> rawPoints;
 +    rawPoints.reserve(pointCount);
-+    
-+#if TOUCH_PERF_DEBUG
-+    QElapsedTimer loopTimer;
-+    loopTimer.start();
-+#endif
 +    
 +    for (uint32_t i = 0; i < pointCount; i++) {
 +        rawPoints.append(TouchPointData(
@@ -43353,18 +43491,7 @@ index 00000000000..16c92114e22
 +            OH_ArkUI_PointerEvent_GetPressure(inputEvent, i)
 +        ));
 +    }
-+
-+#if TOUCH_PERF_DEBUG
-+    qint64 loopElapsed = loopTimer.nsecsElapsed();
-+    qint64 totalElapsed = perfTimer.nsecsElapsed();
-+    if (totalElapsed > 1000000) { /* 超过1ms才打印 */
-+        LOGW("Touch[JS_Extract]: Total=%{public}lld us, API=%{public}lld us, Loop=%{public}lld us, Points=%{public}u",
-+             totalElapsed / 1000, apiElapsed / 1000, loopElapsed / 1000, pointCount);
-+    }
-+#else
-+    PERF_LOG("JS_Thread_Extract");
-+#endif
-+
++#if RUN_QT_THREAD
 +    /* 将处理逻辑投递到Qt主线程
 +     * rawPoints会被Lambda值捕获，确保数据在Qt线程中有效 */
 +    QtOh::runOnQtMainThread([this, action, pointCount, changedPointerId, displayId, time, sourceType, toolType,
@@ -43373,14 +43500,9 @@ index 00000000000..16c92114e22
 +                            , keys
 +#endif
 +                            ]() mutable {
-+        PERF_START();
++#endif
 +        if (Q_UNLIKELY(QOhWindowNode::nodeDestroyed(m_node) || !QOhEventDispatcher::instance()))
 +            return;
-+
-+        auto pw = m_node->platformWindow();
-+        if (Q_UNLIKELY(!pw)) {
-+            return;
-+        }
 +
 +        auto platformScreen = QOhDisplayManager::instance()->platformScreenOrNull(displayId);
 +        if (Q_UNLIKELY(!platformScreen)) {
@@ -43489,8 +43611,6 @@ index 00000000000..16c92114e22
 +            touchPoints.append(touchPoint);
 +        }
 +
-+        PERF_LOG("Qt_Thread_Process_Points");
-+
 +        /* 优化：补充缺失触摸点 - 只在必要时才遍历 */
 +        if (m_lastTouchPoints.size() > currentTouchIds.size()) {
 +            for (auto it = m_lastTouchPoints.constBegin(); it != m_lastTouchPoints.constEnd(); ++it) {
@@ -43554,15 +43674,14 @@ index 00000000000..16c92114e22
 +                                                                     : QTouchDevice::TouchScreen);
 +
 +            dispatcher->appendOhEvent(e);
-+            PERF_LOG("Qt_Thread_Total");
 +        }
++#if RUN_QT_THREAD
 +    });
++#endif
 +}
 +
 +void QOhWindowNodeEventHandler::translatePenEvent(ArkUI_UIInputEvent *inputEvent)
 +{
-+    PERF_START();
-+    
 +    auto pw = m_node->platformWindow();
 +    if (Q_UNLIKELY(!pw)) {
 +        return;
@@ -43585,17 +43704,9 @@ index 00000000000..16c92114e22
 +    OH_ArkUI_PointerEvent_GetRollAngle(inputEvent, &rotation);
 +#endif
 +
-+#if TOUCH_PERF_DEBUG
-+    qint64 extractElapsed = perfTimer.nsecsElapsed();
-+    if (extractElapsed > 1000000) {
-+        LOGW("Pen[JS_Extract]: %{public}lld us", extractElapsed / 1000);
-+    }
-+#else
-+    PERF_LOG("Pen_JS_Extract");
-+#endif
-+
 +    QWindow *window = pw->window();
-+    
++
++#if RUN_QT_THREAD
 +    /* 将处理逻辑投递到Qt主线程 */
 +    QtOh::runOnQtMainThread([this, window, displayId, action, deviceId, time, 
 +                            displayX, displayY, pressure, tiltX, tiltY
@@ -43603,8 +43714,7 @@ index 00000000000..16c92114e22
 +                            , rotation
 +#endif
 +                            ]{
-+        PERF_START();
-+        
++#endif
 +        if (Q_UNLIKELY(QOhWindowNode::nodeDestroyed(m_node) || !QOhEventDispatcher::instance()))
 +            return;
 +
@@ -43635,9 +43745,9 @@ index 00000000000..16c92114e22
 +#endif
 +
 +        QOhEventDispatcher::instance()->appendOhEvent(e);
-+        
-+        PERF_LOG("Pen_Qt_Thread");
++#if RUN_QT_THREAD
 +    });
++#endif
 +}
 +#endif
 +
@@ -43653,7 +43763,9 @@ index 00000000000..16c92114e22
 +    auto text = QString::fromUtf8(OH_ArkUI_KeyEvent_GetKeyText(keyEvent));
 +    auto keys = keyboardModifiersFromEvent(keyEvent);
 +
++#if RUN_QT_THREAD
 +    QtOh::runOnQtMainThread([this, type, keyCode, text, deviceId, keys] {
++#endif
 +        if (QOhWindowNode::nodeDestroyed(m_node) || !QOhEventDispatcher::instance())
 +            return;
 +        auto pw = m_node->platformWindow();
@@ -43668,7 +43780,9 @@ index 00000000000..16c92114e22
 +        e->keyboardModifiers = keys;
 +
 +        QOhEventDispatcher::instance()->appendOhEvent(e);
++#if RUN_QT_THREAD
 +    });
++#endif
 +}
 +
 +void QOhWindowNodeEventHandler::wheelEvent(ArkUI_UIInputEvent *event)
@@ -44759,7 +44873,7 @@ index 00000000000..f9a1786cf7d
 +}
 diff --git a/src/plugins/printsupport/openharmony/qopenharmonyprintdevice.cpp b/src/plugins/printsupport/openharmony/qopenharmonyprintdevice.cpp
 new file mode 100644
-index 00000000000..f6957dac9db
+index 00000000000..01e318936ff
 --- /dev/null
 +++ b/src/plugins/printsupport/openharmony/qopenharmonyprintdevice.cpp
 @@ -0,0 +1,535 @@
@@ -44820,7 +44934,7 @@ index 00000000000..f6957dac9db
 +      m_ppd(0)
 +{
 +    if (!id.isEmpty()) {
-+        m_PrinterId = id.toLocal8Bit();
++        m_PrinterId = id.toUtf8();
 +        // Get the print instance and PPD file
 +        //鸿蒙native接口中没有ppd相关接口。
 +        int ret = OH_Print_QueryPrinterInfo(m_PrinterId.constData(), &m_printerInfo);
@@ -46061,10 +46175,10 @@ index 00000000000..7fb7894975f
 +#endif // QOPENHARMONYPRINTENGINE_P_H
 diff --git a/src/plugins/printsupport/openharmony/qopenharmonyprintersupport.cpp b/src/plugins/printsupport/openharmony/qopenharmonyprintersupport.cpp
 new file mode 100644
-index 00000000000..f3642644452
+index 00000000000..b87e1e165c9
 --- /dev/null
 +++ b/src/plugins/printsupport/openharmony/qopenharmonyprintersupport.cpp
-@@ -0,0 +1,279 @@
+@@ -0,0 +1,299 @@
 +/****************************************************************************
 +**
 +** Copyright (C) 2016 The Qt Company Ltd.
@@ -46202,14 +46316,14 @@ index 00000000000..f3642644452
 +        qWarning() << "QOpenHarmonyPrinterSupport:init Env failed，errCode:" << ret;
 +        return;
 +    }
-+    qWarning() << "QOpenHarmonyPrinterSupport:init Env ok";
++    qInfo() << "QOpenHarmonyPrinterSupport:init Env ok";
 +
 +    ret = OH_Print_RegisterPrinterChangeListener(Print_PrinterChange);
 +    if(PRINT_ERROR_NONE != ret){
 +        qWarning() << "QOpenHarmonyPrinterSupport:register printer change failed，errCode:" << ret;
 +        return;
 +    }
-+    qWarning() << "QOpenHarmonyPrinterSupport:register printer change ok";
++    qInfo() << "QOpenHarmonyPrinterSupport:register printer change ok";
 +
 +    ret = OH_Print_StartPrinterDiscovery(Print_PrinterDiscovery);
 +    if (PRINT_ERROR_NONE != ret)
@@ -46219,7 +46333,7 @@ index 00000000000..f3642644452
 +        OH_Print_Release();
 +        return;
 +    }
-+    qWarning() << "QOpenHarmonyPrinterSupport:StartPrinterDiscovery ok";
++    qInfo() << "QOpenHarmonyPrinterSupport:StartPrinterDiscovery ok";
 +
 +    detectOHPrinter();
 +}
@@ -46256,14 +46370,19 @@ index 00000000000..f3642644452
 +void QOpenHarmonyPrinterSupport::Print_PrinterDiscovery(Print_DiscoveryEvent event, const Print_PrinterInfo *printerInfo)
 +{
 +    qInfo() << "PrinterDiscovery id:" << printerInfo->printerId << " name: " <<  printerInfo->printerName;
-+    QString id = QString::fromLocal8Bit(printerInfo->printerId);
-+    if (!ps || !ps->contains(id))
-+        return;
-+    OHPrinter p;
-+    p.id = id;
-+    p.name = QString::fromLocal8Bit(printerInfo->printerName);;
-+    p.isDefault = printerInfo->isDefaultPrinter;
-+    ps->add(p);
++    QString id = QString::fromUtf8(printerInfo->printerId);
++    if (event == PRINTER_DISCOVERED) {
++        if (!ps || ps->contains(id))
++            return;
++        OHPrinter p;
++        p.id = id;
++        p.name = QString::fromUtf8(printerInfo->printerName);;
++        p.isDefault = printerInfo->isDefaultPrinter;
++        ps->add(p);
++    } else if (event == PRINTER_LOST) {
++        if (ps != nullptr)
++            ps->remove(id);
++    }
 +}
 +
 +void QOpenHarmonyPrinterSupport::detectOHPrinter()
@@ -46283,9 +46402,14 @@ index 00000000000..f3642644452
 +            qWarning() << "QOpenHarmonyPrinterSupport:detectOHPrinter OH_Print_QueryPrinterInfo failed，errCode:" << ret;
 +            continue;
 +        }
++        QString idString = QString::fromUtf8(id);
++        if (contains(idString)) {
++            OH_Print_ReleasePrinterInfo(info);
++            continue;
++        }
 +        OHPrinter p;
-+        p.id = QString::fromLocal8Bit(id);
-+        p.name = QString::fromLocal8Bit(info->printerName);
++        p.id = idString;
++        p.name = QString::fromUtf8(info->printerName);
 +        p.isDefault = info->isDefaultPrinter;
 +        OH_Print_ReleasePrinterInfo(info);
 +        m_printers << p;
@@ -46325,6 +46449,16 @@ index 00000000000..f3642644452
 +    m_printers << p;
 +}
 +
++void QOpenHarmonyPrinterSupport::remove(const QString &id)
++{
++    for (int i = 0; i < m_printers.count(); ++i) {
++        if (m_printers.at(i).id == id) {
++            m_printers.removeAt(i);
++            break;
++        }
++    }
++}
++
 +QString QOpenHarmonyPrinterSupport::defaultPrinterId() const
 +{
 +    for (int i = 0; i < m_printers.count(); ++i) {
@@ -46346,10 +46480,10 @@ index 00000000000..f3642644452
 +QT_END_NAMESPACE
 diff --git a/src/plugins/printsupport/openharmony/qopenharmonyprintersupport_p.h b/src/plugins/printsupport/openharmony/qopenharmonyprintersupport_p.h
 new file mode 100644
-index 00000000000..38eef6c3da6
+index 00000000000..c77b0872100
 --- /dev/null
 +++ b/src/plugins/printsupport/openharmony/qopenharmonyprintersupport_p.h
-@@ -0,0 +1,97 @@
+@@ -0,0 +1,98 @@
 +/****************************************************************************
 +**
 +** Copyright (C) 2016 The Qt Company Ltd.
@@ -46431,6 +46565,7 @@ index 00000000000..38eef6c3da6
 +    QStringList availablePrintDeviceIds() const override;
 +    QString defaultPrintDeviceId() const override;
 +    void add(const OHPrinter &p);
++    void remove(const QString &id);
 +private:
 +    QString defaultPrinterId() const;
 +    QString idFromName(const QString &name);
@@ -49067,7 +49202,7 @@ index 4247731275c..512b3b74639 100644
    Closes the dialog and sets its result code to \a result. If this dialog
    is shown with exec(), done() causes the local event loop to finish,
 diff --git a/src/widgets/dialogs/qfiledialog.cpp b/src/widgets/dialogs/qfiledialog.cpp
-index 711effefe28..acdca3f09aa 100644
+index 711effefe28..c6188b5cce1 100644
 --- a/src/widgets/dialogs/qfiledialog.cpp
 +++ b/src/widgets/dialogs/qfiledialog.cpp
 @@ -1249,6 +1249,16 @@ QList<QUrl> QFileDialogPrivate::userSelectedFiles() const
@@ -49087,17 +49222,7 @@ index 711effefe28..acdca3f09aa 100644
  QStringList QFileDialogPrivate::addDefaultSuffixToFiles(const QStringList &filesToFix) const
  {
      QStringList files;
-@@ -1311,6 +1321,9 @@ QStringList QFileDialog::selectedFiles() const
-     QStringList files;
-     const QList<QUrl> userSelectedFiles = d->userSelectedFiles();
-     files.reserve(userSelectedFiles.size());
-+
-+
-+    QString fileName;
-     for (const QUrl &file : userSelectedFiles) {
-         if (file.isLocalFile() || file.isEmpty())
-             files.append(file.toLocalFile());
-@@ -1348,10 +1361,23 @@ QList<QUrl> QFileDialog::selectedUrls() const
+@@ -1348,10 +1358,23 @@ QList<QUrl> QFileDialog::selectedUrls() const
      }
  }
  
@@ -49121,100 +49246,7 @@ index 711effefe28..acdca3f09aa 100644
  QStringList qt_make_filter_list(const QString &filter)
  {
      QString f(filter);
-@@ -1371,6 +1397,63 @@ QStringList qt_make_filter_list(const QString &filter)
-     return f.split(sep);
- }
- 
-+#ifdef Q_OS_OPENHARMONY
-+QStringList qt_make_filter_list_for_openharmony(const QString &filter, bool dontUseNativeDialog)
-+{
-+    if (dontUseNativeDialog)
-+        return qt_make_filter_list(filter);
-+    QStringList allExtensions;
-+    if (filter == QFileDialogOptions::defaultNameFilterString()){
-+        allExtensions << ".*";
-+    } else {
-+        QStringList filters = filter.split(";;");
-+        for (QString &_filter : filters) {
-+            QString description = "|";
-+            QStringList parts;
-+            /*
-+            * 如果 _filter 包含括号，说明有描述部分
-+            */
-+            if (_filter.contains("(") && _filter.contains(")")) {
-+                /*
-+                * 用 '(' 拆分,最后一项是过滤器部分，且移除最后一项末尾的 ')'
-+                * 剩余前面的几项是描述部分
-+                */
-+                parts = _filter.split("(");
-+                _filter = parts.takeLast();
-+                _filter.chop(1);
-+                description.prepend(parts.join("(") + "("+ _filter + ")");
-+            }
-+            else
-+            {
-+                description.prepend(_filter);
-+            }
-+            parts = _filter.split(" ");
-+            for (QString &part : parts) {
-+                if (part.startsWith("*.")) {
-+                    /*
-+                    * 移除开头的 '*'
-+                    * 说明: 鸿蒙系统的文件选择器，只接受 '.png' 这种格式的后缀
-+                    */
-+                    part.remove(0, 1);
-+                }
-+                else if(!part.contains(".") ) {
-+                    part.prepend(".");
-+                }
-+            }
-+            /*
-+            * 连接描述和过滤器部分
-+            *
-+            * 说明: 鸿蒙系统的文件选择器
-+            * 每项过滤后缀可以存在多个后缀名
-+            * 则每一个后缀名之间用英文逗号进行分隔
-+            */
-+            allExtensions << description + parts.join(",");
-+        }
-+    }
-+    return allExtensions;
-+}
-+#endif
-+
- /*!
-     \since 4.4
- 
-@@ -1390,7 +1473,14 @@ QStringList qt_make_filter_list(const QString &filter)
- */
- void QFileDialog::setNameFilter(const QString &filter)
- {
-+#ifdef Q_OS_OPENHARMONY
-+    Q_D(QFileDialog);
-+    bool aaDontUseNativeDialogs = QCoreApplication::testAttribute(Qt::AA_DontUseNativeDialogs);
-+    setNameFilters(qt_make_filter_list_for_openharmony(
-+        filter, (d->options->options() & QFileDialog::DontUseNativeDialog) || aaDontUseNativeDialogs));
-+#else
-     setNameFilters(qt_make_filter_list(filter));
-+#endif
- }
- 
- 
-@@ -1513,7 +1603,13 @@ void QFileDialog::selectNameFilter(const QString &filter)
-     }
-     int i = -1;
-     if (testOption(HideNameFilterDetails)) {
-+#ifdef Q_OS_OPENHARMONY
-+        bool aaDontUseNativeDialogs = QCoreApplication::testAttribute(Qt::AA_DontUseNativeDialogs);
-+        const QStringList filters = qt_strip_filters(qt_make_filter_list_for_openharmony(
-+            filter, (d->options->options() & QFileDialog::DontUseNativeDialog) || aaDontUseNativeDialogs));
-+#else
-         const QStringList filters = qt_strip_filters(qt_make_filter_list(filter));
-+#endif
-         if (!filters.isEmpty())
-             i = d->qFileDialogUi->fileTypeCombo->findText(filters.first());
-     } else {
-@@ -1586,7 +1682,7 @@ static QString nameFilterForMime(const QString &mimeType)
+@@ -1586,7 +1609,7 @@ static QString nameFilterForMime(const QString &mimeType)
      QMimeType mime(db.mimeTypeForName(mimeType));
      if (mime.isValid()) {
          if (mime.isDefault()) {
@@ -49223,34 +49255,7 @@ index 711effefe28..acdca3f09aa 100644
          } else {
              const QString patterns = mime.globPatterns().join(QLatin1Char(' '));
              return mime.comment() + QLatin1String(" (") + patterns + QLatin1Char(')');
-@@ -1621,7 +1717,14 @@ void QFileDialog::setMimeTypeFilters(const QStringList &filters)
-         if (!text.isEmpty())
-             nameFilters.append(text);
-     }
-+#ifdef Q_OS_OPENHARMONY
-+    QString filter = nameFilters.join(";;");
-+    bool aaDontUseNativeDialogs = QCoreApplication::testAttribute(Qt::AA_DontUseNativeDialogs);
-+    setNameFilters(qt_make_filter_list_for_openharmony(
-+        filter, (d->options->options() & QFileDialog::DontUseNativeDialog) || aaDontUseNativeDialogs));
-+#else
-     setNameFilters(nameFilters);
-+#endif
-     d->options->setMimeTypeFilters(filters);
- }
- 
-@@ -2219,7 +2322,11 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
-     const QUrl selectedUrl = getOpenFileUrl(parent, caption, QUrl::fromLocalFile(dir), filter,
-                                             selectedFilter, options, schemes);
-     if (selectedUrl.isLocalFile() || selectedUrl.isEmpty())
-+#ifdef Q_OS_OPENHARMONY
-+        return selectedUrl.path();
-+#else
-         return selectedUrl.toLocalFile();
-+#endif
-     else
-         return selectedUrl.toString();
- }
-@@ -2278,6 +2385,35 @@ QUrl QFileDialog::getOpenFileUrl(QWidget *parent,
+@@ -2278,6 +2301,35 @@ QUrl QFileDialog::getOpenFileUrl(QWidget *parent,
      return QUrl();
  }
  
@@ -49286,23 +49291,6 @@ index 711effefe28..acdca3f09aa 100644
  /*!
      This is a convenience static function that will return one or more existing
      files selected by the user.
-@@ -3052,8 +3188,15 @@ void QFileDialogPrivate::init(const QFileDialogArgs &args)
-     if (!nativeDialogInUse)
-         createWidgets();
-     q->setFileMode(QFileDialog::AnyFile);
--    if (!args.filter.isEmpty())
-+    if (!args.filter.isEmpty()){
-+#ifdef Q_OS_OPENHARMONY
-+        bool aaDontUseNativeDialogs = QCoreApplication::testAttribute(Qt::AA_DontUseNativeDialogs);
-+        q->setNameFilters(qt_make_filter_list_for_openharmony(
-+            args.filter, (args.options & QFileDialog::DontUseNativeDialog) || aaDontUseNativeDialogs));
-+#else
-         q->setNameFilter(args.filter);
-+#endif
-+    }
-     // QTBUG-70798, prevent the default blocking the restore logic.
-     const bool dontStoreDir = !args.directory.isValid() && !lastVisitedDir()->isValid();
-     q->setDirectoryUrl(args.directory);
 diff --git a/src/widgets/dialogs/qfiledialog.h b/src/widgets/dialogs/qfiledialog.h
 index 790f52f2e7c..454b4925b6c 100644
 --- a/src/widgets/dialogs/qfiledialog.h

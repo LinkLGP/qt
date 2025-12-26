@@ -1,5 +1,5 @@
 diff --git a/src/multimedia/camera/qcameraviewfindersettings.cpp b/src/multimedia/camera/qcameraviewfindersettings.cpp
-index 90b61bcf7..fd9c86c7e 100644
+index 90b61bcf..fd9c86c7 100644
 --- a/src/multimedia/camera/qcameraviewfindersettings.cpp
 +++ b/src/multimedia/camera/qcameraviewfindersettings.cpp
 @@ -54,6 +54,9 @@ class QCameraViewfinderSettingsPrivate  : public QSharedData
@@ -62,7 +62,7 @@ index 90b61bcf7..fd9c86c7e 100644
      Returns the viewfinder maximum frame rate in frames per second.
  
 diff --git a/src/multimedia/camera/qcameraviewfindersettings.h b/src/multimedia/camera/qcameraviewfindersettings.h
-index 432bdcf1f..415de54e1 100644
+index 432bdcf1..415de54e 100644
 --- a/src/multimedia/camera/qcameraviewfindersettings.h
 +++ b/src/multimedia/camera/qcameraviewfindersettings.h
 @@ -77,6 +77,11 @@ public:
@@ -78,7 +78,7 @@ index 432bdcf1f..415de54e1 100644
      void setMaximumFrameRate(qreal rate);
  
 diff --git a/src/multimedia/playback/qmediaplayer.cpp b/src/multimedia/playback/qmediaplayer.cpp
-index 382d8b30b..51ecdcdec 100644
+index 382d8b30..51ecdcde 100644
 --- a/src/multimedia/playback/qmediaplayer.cpp
 +++ b/src/multimedia/playback/qmediaplayer.cpp
 @@ -354,10 +354,16 @@ void QMediaPlayerPrivate::setMedia(const QMediaContent &media, QIODevice *stream
@@ -101,7 +101,7 @@ index 382d8b30b..51ecdcdec 100644
              QMetaObject::invokeMethod(q, "_q_error", Qt::QueuedConnection,
                                        Q_ARG(int, QMediaPlayer::ResourceError),
 diff --git a/src/multimediawidgets/qpaintervideosurface.cpp b/src/multimediawidgets/qpaintervideosurface.cpp
-index 5fe76d869..36a881504 100644
+index 5fe76d86..36a88150 100644
 --- a/src/multimediawidgets/qpaintervideosurface.cpp
 +++ b/src/multimediawidgets/qpaintervideosurface.cpp
 @@ -142,6 +142,7 @@ bool QVideoSurfaceGenericPainter::isFormatSupported(const QVideoSurfaceFormat &f
@@ -154,7 +154,7 @@ index 5fe76d869..36a881504 100644
          painter->fillRect(target, Qt::black);
      }
 diff --git a/src/multimediawidgets/qvideowidget.cpp b/src/multimediawidgets/qvideowidget.cpp
-index 5158b2f35..865fbdba7 100644
+index 5158b2f3..865fbdba 100644
 --- a/src/multimediawidgets/qvideowidget.cpp
 +++ b/src/multimediawidgets/qvideowidget.cpp
 @@ -630,9 +630,11 @@ QVideoWidget::QVideoWidget(QVideoWidgetPrivate &dd, QWidget *parent)
@@ -171,7 +171,7 @@ index 5158b2f35..865fbdba7 100644
  /*!
 diff --git a/src/openharmony/native/QtMultiMedia/JsAudioManager.ts b/src/openharmony/native/QtMultiMedia/JsAudioManager.ts
 new file mode 100644
-index 000000000..a80c8a8c6
+index 00000000..a80c8a8c
 --- /dev/null
 +++ b/src/openharmony/native/QtMultiMedia/JsAudioManager.ts
 @@ -0,0 +1,101 @@
@@ -278,7 +278,7 @@ index 000000000..a80c8a8c6
 +}
 diff --git a/src/openharmony/native/QtMultiMedia/JsCameraManager.ts b/src/openharmony/native/QtMultiMedia/JsCameraManager.ts
 new file mode 100644
-index 000000000..19f28fc0d
+index 00000000..19f28fc0
 --- /dev/null
 +++ b/src/openharmony/native/QtMultiMedia/JsCameraManager.ts
 @@ -0,0 +1,56 @@
@@ -340,7 +340,7 @@ index 000000000..19f28fc0d
 +}
 diff --git a/src/openharmony/native/QtMultiMedia/JsMediaRecorder.ts b/src/openharmony/native/QtMultiMedia/JsMediaRecorder.ts
 new file mode 100644
-index 000000000..7a3fc0e63
+index 00000000..7a3fc0e6
 --- /dev/null
 +++ b/src/openharmony/native/QtMultiMedia/JsMediaRecorder.ts
 @@ -0,0 +1,90 @@
@@ -436,7 +436,7 @@ index 000000000..7a3fc0e63
 +
 diff --git a/src/openharmony/native/QtMultiMedia/JsMultiMediaModule.ets b/src/openharmony/native/QtMultiMedia/JsMultiMediaModule.ets
 new file mode 100644
-index 000000000..25936f513
+index 00000000..25936f51
 --- /dev/null
 +++ b/src/openharmony/native/QtMultiMedia/JsMultiMediaModule.ets
 @@ -0,0 +1,34 @@
@@ -477,7 +477,7 @@ index 000000000..25936f513
 \ No newline at end of file
 diff --git a/src/openharmony/native/QtMultiMedia/JsMultimediaUtils.ts b/src/openharmony/native/QtMultiMedia/JsMultimediaUtils.ts
 new file mode 100644
-index 000000000..9988d04c6
+index 00000000..9988d04c
 --- /dev/null
 +++ b/src/openharmony/native/QtMultiMedia/JsMultimediaUtils.ts
 @@ -0,0 +1,21 @@
@@ -504,7 +504,7 @@ index 000000000..9988d04c6
 +}
 diff --git a/src/openharmony/openharmony.pro b/src/openharmony/openharmony.pro
 new file mode 100644
-index 000000000..597a116d0
+index 00000000..597a116d
 --- /dev/null
 +++ b/src/openharmony/openharmony.pro
 @@ -0,0 +1,10 @@
@@ -520,7 +520,7 @@ index 000000000..597a116d0
 +INSTALLS += templates
 diff --git a/src/plugins/ohaudiodevice/ohaudiodevice.json b/src/plugins/ohaudiodevice/ohaudiodevice.json
 new file mode 100644
-index 000000000..a31d52107
+index 00000000..a31d5210
 --- /dev/null
 +++ b/src/plugins/ohaudiodevice/ohaudiodevice.json
 @@ -0,0 +1,3 @@
@@ -529,7 +529,7 @@ index 000000000..a31d52107
 +}
 diff --git a/src/plugins/ohaudiodevice/ohaudiodevice.pro b/src/plugins/ohaudiodevice/ohaudiodevice.pro
 new file mode 100644
-index 000000000..44c297725
+index 00000000..44c29772
 --- /dev/null
 +++ b/src/plugins/ohaudiodevice/ohaudiodevice.pro
 @@ -0,0 +1,27 @@
@@ -562,7 +562,7 @@ index 000000000..44c297725
 +load(qt_plugin)
 diff --git a/src/plugins/ohaudiodevice/qohaudiodeviceplugin.cpp b/src/plugins/ohaudiodevice/qohaudiodeviceplugin.cpp
 new file mode 100644
-index 000000000..10a2535c7
+index 00000000..10a2535c
 --- /dev/null
 +++ b/src/plugins/ohaudiodevice/qohaudiodeviceplugin.cpp
 @@ -0,0 +1,82 @@
@@ -650,7 +650,7 @@ index 000000000..10a2535c7
 +
 diff --git a/src/plugins/ohaudiodevice/qohaudiodeviceplugin.h b/src/plugins/ohaudiodevice/qohaudiodeviceplugin.h
 new file mode 100644
-index 000000000..0007af767
+index 00000000..0007af76
 --- /dev/null
 +++ b/src/plugins/ohaudiodevice/qohaudiodeviceplugin.h
 @@ -0,0 +1,73 @@
@@ -729,7 +729,7 @@ index 000000000..0007af767
 +#endif // QOPENSLESPLUGIN_H
 diff --git a/src/plugins/ohaudiodevice/qopenharmonyaudioinput.cpp b/src/plugins/ohaudiodevice/qopenharmonyaudioinput.cpp
 new file mode 100644
-index 000000000..106649d5b
+index 00000000..106649d5
 --- /dev/null
 +++ b/src/plugins/ohaudiodevice/qopenharmonyaudioinput.cpp
 @@ -0,0 +1,384 @@
@@ -1119,7 +1119,7 @@ index 000000000..106649d5b
 +QT_END_NAMESPACE
 diff --git a/src/plugins/ohaudiodevice/qopenharmonyaudioinput.h b/src/plugins/ohaudiodevice/qopenharmonyaudioinput.h
 new file mode 100644
-index 000000000..a48f9aba3
+index 00000000..a48f9aba
 --- /dev/null
 +++ b/src/plugins/ohaudiodevice/qopenharmonyaudioinput.h
 @@ -0,0 +1,74 @@
@@ -1199,7 +1199,7 @@ index 000000000..a48f9aba3
 +#endif // QOPENHARMONYAUDIOINPUT_H
 diff --git a/src/plugins/ohaudiodevice/qopenharmonyaudiomanager.cpp b/src/plugins/ohaudiodevice/qopenharmonyaudiomanager.cpp
 new file mode 100644
-index 000000000..b141e156f
+index 00000000..b141e156
 --- /dev/null
 +++ b/src/plugins/ohaudiodevice/qopenharmonyaudiomanager.cpp
 @@ -0,0 +1,142 @@
@@ -1347,7 +1347,7 @@ index 000000000..b141e156f
 +}
 diff --git a/src/plugins/ohaudiodevice/qopenharmonyaudiomanager.h b/src/plugins/ohaudiodevice/qopenharmonyaudiomanager.h
 new file mode 100644
-index 000000000..7f6bbc598
+index 00000000..7f6bbc59
 --- /dev/null
 +++ b/src/plugins/ohaudiodevice/qopenharmonyaudiomanager.h
 @@ -0,0 +1,18 @@
@@ -1371,7 +1371,7 @@ index 000000000..7f6bbc598
 +#endif // QOPENHARMONYAUDIOMANAGER_H
 diff --git a/src/plugins/ohaudiodevice/qopenharmonyaudiooutput.cpp b/src/plugins/ohaudiodevice/qopenharmonyaudiooutput.cpp
 new file mode 100644
-index 000000000..dfd134f81
+index 00000000..dfd134f8
 --- /dev/null
 +++ b/src/plugins/ohaudiodevice/qopenharmonyaudiooutput.cpp
 @@ -0,0 +1,420 @@
@@ -1797,7 +1797,7 @@ index 000000000..dfd134f81
 +}
 diff --git a/src/plugins/ohaudiodevice/qopenharmonyaudiooutput.h b/src/plugins/ohaudiodevice/qopenharmonyaudiooutput.h
 new file mode 100644
-index 000000000..78bf1e470
+index 00000000..78bf1e47
 --- /dev/null
 +++ b/src/plugins/ohaudiodevice/qopenharmonyaudiooutput.h
 @@ -0,0 +1,97 @@
@@ -1900,7 +1900,7 @@ index 000000000..78bf1e470
 +#endif // QOPENHARMONYAUDIOOUTPUT_H
 diff --git a/src/plugins/ohaudiodevice/qopenharmonydeviceinfo.cpp b/src/plugins/ohaudiodevice/qopenharmonydeviceinfo.cpp
 new file mode 100644
-index 000000000..d9dbbe16a
+index 00000000..d9dbbe16
 --- /dev/null
 +++ b/src/plugins/ohaudiodevice/qopenharmonydeviceinfo.cpp
 @@ -0,0 +1,82 @@
@@ -1988,7 +1988,7 @@ index 000000000..d9dbbe16a
 +QT_END_NAMESPACE
 diff --git a/src/plugins/ohaudiodevice/qopenharmonydeviceinfo.h b/src/plugins/ohaudiodevice/qopenharmonydeviceinfo.h
 new file mode 100644
-index 000000000..80252779f
+index 00000000..80252779
 --- /dev/null
 +++ b/src/plugins/ohaudiodevice/qopenharmonydeviceinfo.h
 @@ -0,0 +1,35 @@
@@ -2029,7 +2029,7 @@ index 000000000..80252779f
 +#endif // QOPENHARMONYDEVICEINFO_H
 diff --git a/src/plugins/ohaudiodevice/qopenharmonyengine.cpp b/src/plugins/ohaudiodevice/qopenharmonyengine.cpp
 new file mode 100644
-index 000000000..a9bf607de
+index 00000000..a9bf607d
 --- /dev/null
 +++ b/src/plugins/ohaudiodevice/qopenharmonyengine.cpp
 @@ -0,0 +1,42 @@
@@ -2077,7 +2077,7 @@ index 000000000..a9bf607de
 +QT_END_NAMESPACE
 diff --git a/src/plugins/ohaudiodevice/qopenharmonyengine.h b/src/plugins/ohaudiodevice/qopenharmonyengine.h
 new file mode 100644
-index 000000000..4b284bca7
+index 00000000..4b284bca
 --- /dev/null
 +++ b/src/plugins/ohaudiodevice/qopenharmonyengine.h
 @@ -0,0 +1,26 @@
@@ -2109,7 +2109,7 @@ index 000000000..4b284bca7
 +#endif // QOPENHARMONYENGINE_H
 diff --git a/src/plugins/openharmony/openharmony.pro b/src/plugins/openharmony/openharmony.pro
 new file mode 100644
-index 000000000..a3841d703
+index 00000000..a3841d70
 --- /dev/null
 +++ b/src/plugins/openharmony/openharmony.pro
 @@ -0,0 +1,7 @@
@@ -2122,215 +2122,50 @@ index 000000000..a3841d703
 +}
 diff --git a/src/plugins/openharmony/src/mediacapture/mediacapture.pri b/src/plugins/openharmony/src/mediacapture/mediacapture.pri
 new file mode 100644
-index 000000000..594b81b09
+index 00000000..df5060e8
 --- /dev/null
 +++ b/src/plugins/openharmony/src/mediacapture/mediacapture.pri
 @@ -0,0 +1,32 @@
 +INCLUDEPATH += $$PWD
 +
 +HEADERS += \
++    $$PWD/qohaudioencodercontrol.h \
++    $$PWD/qohcameracontrol.h \
 +    $$PWD/qohcameraimagecapturecontrol.h \
++    $$PWD/qohcamerainfocontrol.h \
 +    $$PWD/qohcamerarendercontrol.h \
-+    $$PWD/qopenharmonyaudioencodercontrol.h \
-+    $$PWD/qopenharmonycameracontrol.h \
-+    $$PWD/qopenharmonycamerainfocontrol.h \
-+    $$PWD/qopenharmonycamerasession.h \
-+    $$PWD/qopenharmonycaptureservice.h \
-+    $$PWD/qopenharmonycapturesession.h \
-+    $$PWD/qopenharmonycontainercontrol.h \
-+    $$PWD/qopenharmonydevicecontrol.h \
-+    $$PWD/qopenharmonyrecordercontrol.h \
-+    $$PWD/qopenharmonyvideoencodercontrol.h \
-+    $$PWD/qopenharmonyviewfindersettingscontrol2.h
++    $$PWD/qohcamerasession.h \
++    $$PWD/qohcaptureservice.h \
++    $$PWD/qohcapturesession.h \
++    $$PWD/qohcontainercontrol.h \
++    $$PWD/qohdevicecontrol.h \
++    $$PWD/qohrecordercontrol.h \
++    $$PWD/qohvideoencodercontrol.h \
++    $$PWD/qohviewfindersettingscontrol2.h
 +
 +SOURCES += \
++    $$PWD/qohaudioencodercontrol.cpp \
++    $$PWD/qohcameracontrol.cpp \
 +    $$PWD/qohcameraimagecapturecontrol.cpp \
++    $$PWD/qohcamerainfocontrol.cpp \
 +    $$PWD/qohcamerarendercontrol.cpp \
-+    $$PWD/qopenharmonyaudioencodercontrol.cpp \
-+    $$PWD/qopenharmonycameracontrol.cpp \
-+    $$PWD/qopenharmonycamerainfocontrol.cpp \
-+    $$PWD/qopenharmonycamerasession.cpp \
-+    $$PWD/qopenharmonycaptureservice.cpp \
-+    $$PWD/qopenharmonycapturesession.cpp \
-+    $$PWD/qopenharmonydevicecontrol.cpp \
-+    $$PWD/qopenharmonycontainercontrol.cpp \
-+    $$PWD/qopenharmonyrecordercontrol.cpp \
-+    $$PWD/qopenharmonyvideoencodercontrol.cpp \
-+    $$PWD/qopenharmonyviewfindersettingscontrol2.cpp
++    $$PWD/qohcamerasession.cpp \
++    $$PWD/qohcaptureservice.cpp \
++    $$PWD/qohcapturesession.cpp \
++    $$PWD/qohcontainercontrol.cpp \
++    $$PWD/qohdevicecontrol.cpp \
++    $$PWD/qohrecordercontrol.cpp \
++    $$PWD/qohvideoencodercontrol.cpp \
++    $$PWD/qohviewfindersettingscontrol2.cpp
 +
-diff --git a/src/plugins/openharmony/src/mediacapture/qohcameraimagecapturecontrol.cpp b/src/plugins/openharmony/src/mediacapture/qohcameraimagecapturecontrol.cpp
+diff --git a/src/plugins/openharmony/src/mediacapture/qohaudioencodercontrol.cpp b/src/plugins/openharmony/src/mediacapture/qohaudioencodercontrol.cpp
 new file mode 100644
-index 000000000..1cb3206b0
+index 00000000..040f2a61
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qohcameraimagecapturecontrol.cpp
-@@ -0,0 +1,40 @@
-+#include "qohcameraimagecapturecontrol.h"
-+#include "qopenharmonycamerasession.h"
-+
-+QOHCameraImageCaptureControl::QOHCameraImageCaptureControl(QOPenHarmonyCameraSession *session)
-+    :QCameraImageCaptureControl()
-+      , m_session(session)
-+{
-+    connect(m_session, SIGNAL(readyForCaptureChanged(bool)), this, SIGNAL(readyForCaptureChanged(bool)));
-+    connect(m_session, SIGNAL(imageExposed(int)), this, SIGNAL(imageExposed(int)));
-+    connect(m_session, SIGNAL(imageCaptured(int,QImage)), this, SIGNAL(imageCaptured(int,QImage)));
-+    connect(m_session, SIGNAL(imageMetadataAvailable(int,QString,QVariant)), this, SIGNAL(imageMetadataAvailable(int,QString,QVariant)));
-+    connect(m_session, SIGNAL(imageAvailable(int,QVideoFrame)), this, SIGNAL(imageAvailable(int,QVideoFrame)));
-+    connect(m_session, SIGNAL(imageSaved(int,QString)), this, SIGNAL(imageSaved(int,QString)));
-+    connect(m_session, SIGNAL(imageCaptureError(int,int,QString)), this, SIGNAL(error(int,int,QString)));
-+}
-+
-+bool QOHCameraImageCaptureControl::isReadyForCapture() const
-+{
-+    return true;
-+}
-+
-+QCameraImageCapture::DriveMode QOHCameraImageCaptureControl::driveMode() const
-+{
-+    return m_session->driveMode();
-+}
-+
-+void QOHCameraImageCaptureControl::setDriveMode(QCameraImageCapture::DriveMode mode)
-+{
-+    m_session->setDriveMode(mode);
-+}
-+
-+int QOHCameraImageCaptureControl::capture(const QString &fileName)
-+{
-+    return m_session->capture(fileName);
-+}
-+
-+void QOHCameraImageCaptureControl::cancelCapture()
-+{
-+    m_session->cancelCapture();
-+}
-diff --git a/src/plugins/openharmony/src/mediacapture/qohcameraimagecapturecontrol.h b/src/plugins/openharmony/src/mediacapture/qohcameraimagecapturecontrol.h
-new file mode 100644
-index 000000000..446f085fe
---- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qohcameraimagecapturecontrol.h
-@@ -0,0 +1,29 @@
-+#ifndef QOHCAMERAIMAGECAPTURECONTROL_H
-+#define QOHCAMERAIMAGECAPTURECONTROL_H
-+
-+#include <QCameraImageCaptureControl>
-+
-+QT_BEGIN_NAMESPACE
-+
-+class QOPenHarmonyCameraSession;
-+
-+class QOHCameraImageCaptureControl : public QCameraImageCaptureControl
-+{
-+    Q_OBJECT
-+public:
-+    explicit QOHCameraImageCaptureControl(QOPenHarmonyCameraSession *session);
-+
-+    bool isReadyForCapture() const override;
-+
-+    QCameraImageCapture::DriveMode driveMode() const override;
-+    void setDriveMode(QCameraImageCapture::DriveMode mode) override;
-+
-+    int capture(const QString &fileName) override;
-+    void cancelCapture() override;
-+
-+private:
-+    QOPenHarmonyCameraSession *m_session;
-+};
-+
-+QT_END_NAMESPACE
-+#endif // QOHCAMERAIMAGECAPTURECONTROL_H
-diff --git a/src/plugins/openharmony/src/mediacapture/qohcamerarendercontrol.cpp b/src/plugins/openharmony/src/mediacapture/qohcamerarendercontrol.cpp
-new file mode 100644
-index 000000000..5d9ec0f73
---- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qohcamerarendercontrol.cpp
-@@ -0,0 +1,44 @@
-+#include <arkui/native_node.h>
-+#include <arkui/native_type.h>
-+#include <arkui/native_interface.h>
-+
-+#include "qohcamerarendercontrol.h"
-+#include "qopenharmonycamerasession.h"
-+
-+QT_BEGIN_NAMESPACE
-+
-+QOHCameraRenderControl::QOHCameraRenderControl(QOPenHarmonyCameraSession* session, QObject *parent)
-+    : QVideoRendererControl(parent)
-+    , m_surface(nullptr)
-+    , m_session(session)
-+{
-+}
-+
-+QOHCameraRenderControl::~QOHCameraRenderControl()
-+{
-+
-+};
-+
-+QAbstractVideoSurface *QOHCameraRenderControl::surface() const
-+{
-+    return m_surface;
-+}
-+
-+void QOHCameraRenderControl::setSurface(QAbstractVideoSurface *surface)
-+{
-+    m_surface = surface;
-+    if(m_session)
-+    {
-+        m_session->setSurface(surface);
-+    }
-+}
-+
-+void QOHCameraRenderControl::setSession(QOPenHarmonyCameraSession *session)
-+{
-+    m_session = session;
-+    if(session && m_surface)
-+    {
-+        m_session->setSurface(m_surface);
-+    }
-+}
-+QT_BEGIN_NAMESPACE
-diff --git a/src/plugins/openharmony/src/mediacapture/qohcamerarendercontrol.h b/src/plugins/openharmony/src/mediacapture/qohcamerarendercontrol.h
-new file mode 100644
-index 000000000..7ba9c06cd
---- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qohcamerarendercontrol.h
-@@ -0,0 +1,28 @@
-+#ifndef QOHCAMERARENDERCONTROL_H
-+#define QOHCAMERARENDERCONTROL_H
-+
-+#include <qvideorenderercontrol.h>
-+
-+QT_BEGIN_NAMESPACE
-+
-+class QOPenHarmonyCameraSession;
-+
-+class QOHCameraRenderControl : public QVideoRendererControl
-+{
-+    Q_OBJECT
-+public:
-+    QOHCameraRenderControl(QOPenHarmonyCameraSession* session, QObject *parent = nullptr);
-+    ~QOHCameraRenderControl() override;
-+
-+    QAbstractVideoSurface *surface() const override;
-+    void setSurface(QAbstractVideoSurface *surface) override;
-+
-+    void setSession(QOPenHarmonyCameraSession* session);
-+
-+private:
-+    QAbstractVideoSurface *m_surface;
-+    QOPenHarmonyCameraSession *m_session;
-+};
-+
-+QT_END_NAMESPACE
-+#endif // QOHCAMERARENDERCONTROL_H
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonyaudioencodercontrol.cpp b/src/plugins/openharmony/src/mediacapture/qopenharmonyaudioencodercontrol.cpp
-new file mode 100644
-index 000000000..ae0b26af0
---- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonyaudioencodercontrol.cpp
++++ b/src/plugins/openharmony/src/mediacapture/qohaudioencodercontrol.cpp
 @@ -0,0 +1,119 @@
-+#include "qopenharmonyaudioencodercontrol.h"
-+#include "qopenharmonycapturesession.h"
++#include "qohaudioencodercontrol.h"
++#include "qohcapturesession.h"
 +#include <qaudiodeviceinfo.h>
 +
 +static int getnearsetValue(const QList<int> &supported, int value){
@@ -2347,19 +2182,19 @@ index 000000000..ae0b26af0
 +    return ret;
 +}
 +
-+QOpenharmonyAudioEncoderControl::QOpenharmonyAudioEncoderControl(QObject *parent)
++QOhAudioEncoderControl::QOhAudioEncoderControl(QObject *parent)
 +    :QAudioEncoderSettingsControl(parent)
 +{
-+    m_session = qobject_cast<QOPenHarmonyCaptureSession*>(parent);
++    m_session = qobject_cast<QOhCaptureSession*>(parent);
 +    update();
 +}
 +
-+QStringList QOpenharmonyAudioEncoderControl::supportedAudioCodecs() const
++QStringList QOhAudioEncoderControl::supportedAudioCodecs() const
 +{
 +    return QStringList() << QLatin1String("audio/mp4a-latm") << QLatin1String("audio/g711mu");
 +}
 +
-+QString QOpenharmonyAudioEncoderControl::codecDescription(const QString &codecName) const
++QString QOhAudioEncoderControl::codecDescription(const QString &codecName) const
 +{
 +    if (QString::compare(codecName, QLatin1String("audio/mp4a-latm")) == 0)
 +        return tr("AAC Low Complexity (AAC-LC) audio codec");
@@ -2370,7 +2205,7 @@ index 000000000..ae0b26af0
 +    return QString();
 +}
 +
-+QList<int> QOpenharmonyAudioEncoderControl::supportedSampleRates(const QAudioEncoderSettings &settings, bool *continuous) const
++QList<int> QOhAudioEncoderControl::supportedSampleRates(const QAudioEncoderSettings &settings, bool *continuous) const
 +{
 +    Q_UNUSED(settings)
 +    if (continuous)
@@ -2379,12 +2214,12 @@ index 000000000..ae0b26af0
 +    return m_sampleRates;
 +}
 +
-+QAudioEncoderSettings QOpenharmonyAudioEncoderControl::audioSettings() const
++QAudioEncoderSettings QOhAudioEncoderControl::audioSettings() const
 +{
 +    return m_session->audioSettings();
 +}
 +
-+void QOpenharmonyAudioEncoderControl::setAudioSettings(const QAudioEncoderSettings &settings)
++void QOhAudioEncoderControl::setAudioSettings(const QAudioEncoderSettings &settings)
 +{
 +    QAudioEncoderSettings tsettings(settings);
 +    if(tsettings.channelCount() == 0)
@@ -2434,7 +2269,7 @@ index 000000000..ae0b26af0
 +    m_session->setAudioSettings(tsettings);
 +}
 +
-+void QOpenharmonyAudioEncoderControl::update()
++void QOhAudioEncoderControl::update()
 +{
 +    m_sampleRates.clear();
 +    QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
@@ -2448,28 +2283,28 @@ index 000000000..ae0b26af0
 +    }
 +    std::sort(m_sampleRates.begin(), m_sampleRates.end());
 +}
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonyaudioencodercontrol.h b/src/plugins/openharmony/src/mediacapture/qopenharmonyaudioencodercontrol.h
+diff --git a/src/plugins/openharmony/src/mediacapture/qohaudioencodercontrol.h b/src/plugins/openharmony/src/mediacapture/qohaudioencodercontrol.h
 new file mode 100644
-index 000000000..551542257
+index 00000000..d26d4525
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonyaudioencodercontrol.h
++++ b/src/plugins/openharmony/src/mediacapture/qohaudioencodercontrol.h
 @@ -0,0 +1,34 @@
-+#ifndef QOPENHARMONYAUDIOENCODERCONTROL_H
-+#define QOPENHARMONYAUDIOENCODERCONTROL_H
++#ifndef QOHAUDIOENCODERCONTROL_H
++#define QOHAUDIOENCODERCONTROL_H
 +
 +#include "qaudioencodersettingscontrol.h"
 +#include <qaudioformat.h>
 +
 +QT_BEGIN_NAMESPACE
 +
-+class QOPenHarmonyCaptureSession;
++class QOhCaptureSession;
 +
-+class QOpenharmonyAudioEncoderControl : public QAudioEncoderSettingsControl
++class QOhAudioEncoderControl : public QAudioEncoderSettingsControl
 +{
 +    Q_OBJECT
 +public:
-+    QOpenharmonyAudioEncoderControl(QObject *parent);
-+    // virtual ~QOpenharmonyAudioEncoderControl();
++    QOhAudioEncoderControl(QObject *parent);
++    // virtual ~QOhAudioEncoderControl();
 +
 +    QStringList supportedAudioCodecs() const;
 +    QString codecDescription(const QString &codecName) const;
@@ -2481,25 +2316,25 @@ index 000000000..551542257
 +private:
 +    void update();
 +
-+    QOPenHarmonyCaptureSession* m_session;
++    QOhCaptureSession* m_session;
 +    QList<int> m_sampleRates;
 +};
 +
 +QT_END_NAMESPACE
 +
-+#endif // QOPENHARMONYAUDIOENCODERCONTROL_H
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonycameracontrol.cpp b/src/plugins/openharmony/src/mediacapture/qopenharmonycameracontrol.cpp
++#endif // QOHAUDIOENCODERCONTROL_H
+diff --git a/src/plugins/openharmony/src/mediacapture/qohcameracontrol.cpp b/src/plugins/openharmony/src/mediacapture/qohcameracontrol.cpp
 new file mode 100644
-index 000000000..6bb8d7954
+index 00000000..25d71718
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonycameracontrol.cpp
++++ b/src/plugins/openharmony/src/mediacapture/qohcameracontrol.cpp
 @@ -0,0 +1,72 @@
-+#include "qopenharmonycamerasession.h"
-+#include "qopenharmonycameracontrol.h"
++#include "qohcamerasession.h"
++#include "qohcameracontrol.h"
 +
 +QT_BEGIN_NAMESPACE
 +
-+QOPenHarmonyCameraControl::QOPenHarmonyCameraControl(QOPenHarmonyCameraSession *session)
++QOhCameraControl::QOhCameraControl(QOhCameraSession *session)
 +    : QCameraControl(Q_NULLPTR)
 +      , m_cameraSession(session)
 +{
@@ -2515,42 +2350,42 @@ index 000000000..6bb8d7954
 +            this, SIGNAL(captureModeChanged(QCamera::CaptureModes)));
 +}
 +
-+QOPenHarmonyCameraControl::~QOPenHarmonyCameraControl()
++QOhCameraControl::~QOhCameraControl()
 +{
 +
 +}
 +
-+QCamera::CaptureModes QOPenHarmonyCameraControl::captureMode() const
++QCamera::CaptureModes QOhCameraControl::captureMode() const
 +{
 +    return m_cameraSession->captureMode();
 +}
 +
-+void QOPenHarmonyCameraControl::setCaptureMode(QCamera::CaptureModes mode)
++void QOhCameraControl::setCaptureMode(QCamera::CaptureModes mode)
 +{
 +    m_cameraSession->setCaptureMode(mode);
 +}
 +
-+bool QOPenHarmonyCameraControl::isCaptureModeSupported(QCamera::CaptureModes mode) const
++bool QOhCameraControl::isCaptureModeSupported(QCamera::CaptureModes mode) const
 +{
 +    return m_cameraSession->isCaptureModeSupported(mode);
 +}
 +
-+void QOPenHarmonyCameraControl::setState(QCamera::State state)
++void QOhCameraControl::setState(QCamera::State state)
 +{
 +    m_cameraSession->setState(state);
 +}
 +
-+QCamera::State QOPenHarmonyCameraControl::state() const
++QCamera::State QOhCameraControl::state() const
 +{
 +    return m_cameraSession->state();
 +}
 +
-+QCamera::Status QOPenHarmonyCameraControl::status() const
++QCamera::Status QOhCameraControl::status() const
 +{
 +    return m_cameraSession->status();
 +}
 +
-+bool QOPenHarmonyCameraControl::canChangeProperty(PropertyChangeType changeType, QCamera::Status status) const
++bool QOhCameraControl::canChangeProperty(PropertyChangeType changeType, QCamera::Status status) const
 +{
 +    Q_UNUSED(status);
 +
@@ -2566,28 +2401,28 @@ index 000000000..6bb8d7954
 +}
 +
 +QT_END_NAMESPACE
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonycameracontrol.h b/src/plugins/openharmony/src/mediacapture/qopenharmonycameracontrol.h
+diff --git a/src/plugins/openharmony/src/mediacapture/qohcameracontrol.h b/src/plugins/openharmony/src/mediacapture/qohcameracontrol.h
 new file mode 100644
-index 000000000..1ad328351
+index 00000000..7fe92cce
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonycameracontrol.h
++++ b/src/plugins/openharmony/src/mediacapture/qohcameracontrol.h
 @@ -0,0 +1,35 @@
-+#ifndef QOPENHARMONYCAMERACONTROL_H
-+#define QOPENHARMONYCAMERACONTROL_H
++#ifndef QOHCAMERACONTROL_H
++#define QOHCAMERACONTROL_H
 +
 +#include <qcameracontrol.h>
 +
 +QT_BEGIN_NAMESPACE
 +
-+class QOPenHarmonyCameraSession;
++class QOhCameraSession;
 +
-+class QOPenHarmonyCameraControl : public QCameraControl
++class QOhCameraControl : public QCameraControl
 +{
 +    Q_OBJECT
 +
 +public:
-+    explicit QOPenHarmonyCameraControl(QOPenHarmonyCameraSession *session);
-+    virtual ~QOPenHarmonyCameraControl();
++    explicit QOhCameraControl(QOhCameraSession *session);
++    virtual ~QOhCameraControl();
 +
 +    QCamera::State state() const;
 +    void setState(QCamera::State state);
@@ -2601,38 +2436,119 @@ index 000000000..1ad328351
 +    bool canChangeProperty(PropertyChangeType changeType, QCamera::Status status) const;
 +
 +private:
-+    QOPenHarmonyCameraSession *m_cameraSession;
++    QOhCameraSession *m_cameraSession;
 +};
 +
 +QT_END_NAMESPACE
 +
-+#endif // QOPENHARMONYCAMERACONTROL_H
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonycamerainfocontrol.cpp b/src/plugins/openharmony/src/mediacapture/qopenharmonycamerainfocontrol.cpp
++#endif // QOHCAMERACONTROL_H
+diff --git a/src/plugins/openharmony/src/mediacapture/qohcameraimagecapturecontrol.cpp b/src/plugins/openharmony/src/mediacapture/qohcameraimagecapturecontrol.cpp
 new file mode 100644
-index 000000000..68ee24365
+index 00000000..54f08b7b
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonycamerainfocontrol.cpp
++++ b/src/plugins/openharmony/src/mediacapture/qohcameraimagecapturecontrol.cpp
 @@ -0,0 +1,40 @@
-+#include "qopenharmonycamerasession.h"
-+#include "qopenharmonycamerainfocontrol.h"
++#include "qohcamerasession.h"
++#include "qohcameraimagecapturecontrol.h"
++
++QOhCameraImageCaptureControl::QOhCameraImageCaptureControl(QOhCameraSession *session)
++    :QCameraImageCaptureControl()
++      , m_session(session)
++{
++    connect(m_session, SIGNAL(readyForCaptureChanged(bool)), this, SIGNAL(readyForCaptureChanged(bool)));
++    connect(m_session, SIGNAL(imageExposed(int)), this, SIGNAL(imageExposed(int)));
++    connect(m_session, SIGNAL(imageCaptured(int,QImage)), this, SIGNAL(imageCaptured(int,QImage)));
++    connect(m_session, SIGNAL(imageMetadataAvailable(int,QString,QVariant)), this, SIGNAL(imageMetadataAvailable(int,QString,QVariant)));
++    connect(m_session, SIGNAL(imageAvailable(int,QVideoFrame)), this, SIGNAL(imageAvailable(int,QVideoFrame)));
++    connect(m_session, SIGNAL(imageSaved(int,QString)), this, SIGNAL(imageSaved(int,QString)));
++    connect(m_session, SIGNAL(imageCaptureError(int,int,QString)), this, SIGNAL(error(int,int,QString)));
++}
++
++bool QOhCameraImageCaptureControl::isReadyForCapture() const
++{
++    return true;
++}
++
++QCameraImageCapture::DriveMode QOhCameraImageCaptureControl::driveMode() const
++{
++    return m_session->driveMode();
++}
++
++void QOhCameraImageCaptureControl::setDriveMode(QCameraImageCapture::DriveMode mode)
++{
++    m_session->setDriveMode(mode);
++}
++
++int QOhCameraImageCaptureControl::capture(const QString &fileName)
++{
++    return m_session->capture(fileName);
++}
++
++void QOhCameraImageCaptureControl::cancelCapture()
++{
++    m_session->cancelCapture();
++}
+diff --git a/src/plugins/openharmony/src/mediacapture/qohcameraimagecapturecontrol.h b/src/plugins/openharmony/src/mediacapture/qohcameraimagecapturecontrol.h
+new file mode 100644
+index 00000000..32efa881
+--- /dev/null
++++ b/src/plugins/openharmony/src/mediacapture/qohcameraimagecapturecontrol.h
+@@ -0,0 +1,29 @@
++#ifndef QOHCAMERAIMAGECAPTURECONTROL_H
++#define QOHCAMERAIMAGECAPTURECONTROL_H
++
++#include <QCameraImageCaptureControl>
 +
 +QT_BEGIN_NAMESPACE
 +
-+QCamera::Position QOPenHarmonyCameraInfoControl::cameraPosition(const QString &deviceName) const
++class QOhCameraSession;
++
++class QOhCameraImageCaptureControl : public QCameraImageCaptureControl
++{
++    Q_OBJECT
++public:
++    explicit QOhCameraImageCaptureControl(QOhCameraSession *session);
++
++    bool isReadyForCapture() const override;
++
++    QCameraImageCapture::DriveMode driveMode() const override;
++    void setDriveMode(QCameraImageCapture::DriveMode mode) override;
++
++    int capture(const QString &fileName) override;
++    void cancelCapture() override;
++
++private:
++    QOhCameraSession *m_session;
++};
++
++QT_END_NAMESPACE
++#endif // QOHCAMERAIMAGECAPTURECONTROL_H
+diff --git a/src/plugins/openharmony/src/mediacapture/qohcamerainfocontrol.cpp b/src/plugins/openharmony/src/mediacapture/qohcamerainfocontrol.cpp
+new file mode 100644
+index 00000000..784b3966
+--- /dev/null
++++ b/src/plugins/openharmony/src/mediacapture/qohcamerainfocontrol.cpp
+@@ -0,0 +1,40 @@
++#include "qohcamerasession.h"
++#include "qohcamerainfocontrol.h"
++
++QT_BEGIN_NAMESPACE
++
++QCamera::Position QOhCameraInfoControl::cameraPosition(const QString &deviceName) const
 +{
 +    return position(deviceName);
 +}
 +
-+int QOPenHarmonyCameraInfoControl::cameraOrientation(const QString &deviceName) const
++int QOhCameraInfoControl::cameraOrientation(const QString &deviceName) const
 +{
 +    return orientation(deviceName);
 +}
 +
-+QCamera::Position QOPenHarmonyCameraInfoControl::position(const QString &deviceName)
++QCamera::Position QOhCameraInfoControl::position(const QString &deviceName)
 +{
-+    const QList<OPenHarmonyCameraInfo> &cameras = QOPenHarmonyCameraSession::availableCameras();
++    const QList<OhCameraInfo> &cameras = QOhCameraSession::availableCameras();
 +    for (int i = 0; i < cameras.count(); ++i) {
-+        const OPenHarmonyCameraInfo &info = cameras.at(i);
++        const OhCameraInfo &info = cameras.at(i);
 +        if (QString::fromLatin1(info.name) == deviceName)
 +            return info.position;
 +    }
@@ -2640,11 +2556,11 @@ index 000000000..68ee24365
 +    return QCamera::UnspecifiedPosition;
 +}
 +
-+int QOPenHarmonyCameraInfoControl::orientation(const QString &deviceName)
++int QOhCameraInfoControl::orientation(const QString &deviceName)
 +{
-+    const QList<OPenHarmonyCameraInfo> &cameras = QOPenHarmonyCameraSession::availableCameras();
++    const QList<OhCameraInfo> &cameras = QOhCameraSession::availableCameras();
 +    for (int i = 0; i < cameras.count(); ++i) {
-+        const OPenHarmonyCameraInfo &info = cameras.at(i);
++        const OhCameraInfo &info = cameras.at(i);
 +        if (QString::fromLatin1(info.name) == deviceName)
 +            return info.orientation;
 +    }
@@ -2653,20 +2569,20 @@ index 000000000..68ee24365
 +}
 +
 +QT_END_NAMESPACE
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonycamerainfocontrol.h b/src/plugins/openharmony/src/mediacapture/qopenharmonycamerainfocontrol.h
+diff --git a/src/plugins/openharmony/src/mediacapture/qohcamerainfocontrol.h b/src/plugins/openharmony/src/mediacapture/qohcamerainfocontrol.h
 new file mode 100644
-index 000000000..f58accd1c
+index 00000000..76a793db
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonycamerainfocontrol.h
++++ b/src/plugins/openharmony/src/mediacapture/qohcamerainfocontrol.h
 @@ -0,0 +1,22 @@
-+#ifndef QOPENHARMONYCAMERAINFOCONTROL_H
-+#define QOPENHARMONYCAMERAINFOCONTROL_H
++#ifndef QOHCAMERAINFOCONTROL_H
++#define QOHCAMERAINFOCONTROL_H
 +
 +#include <qcamerainfocontrol.h>
 +
 +QT_BEGIN_NAMESPACE
 +
-+class QOPenHarmonyCameraInfoControl : public QCameraInfoControl
++class QOhCameraInfoControl : public QCameraInfoControl
 +{
 +    Q_OBJECT
 +
@@ -2680,15 +2596,99 @@ index 000000000..f58accd1c
 +
 +QT_END_NAMESPACE
 +
-+#endif // QOPENHARMONYCAMERAINFOCONTROL_H
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonycamerasession.cpp b/src/plugins/openharmony/src/mediacapture/qopenharmonycamerasession.cpp
++#endif // QOHCAMERAINFOCONTROL_H
+diff --git a/src/plugins/openharmony/src/mediacapture/qohcamerarendercontrol.cpp b/src/plugins/openharmony/src/mediacapture/qohcamerarendercontrol.cpp
 new file mode 100644
-index 000000000..d0a4c078a
+index 00000000..3068fb3f
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonycamerasession.cpp
++++ b/src/plugins/openharmony/src/mediacapture/qohcamerarendercontrol.cpp
+@@ -0,0 +1,44 @@
++#include <arkui/native_node.h>
++#include <arkui/native_type.h>
++#include <arkui/native_interface.h>
++
++#include "qohcamerasession.h"
++#include "qohcamerarendercontrol.h"
++
++QT_BEGIN_NAMESPACE
++
++QOhCameraRenderControl::QOhCameraRenderControl(QOhCameraSession* session, QObject *parent)
++    : QVideoRendererControl(parent)
++    , m_surface(nullptr)
++    , m_session(session)
++{
++}
++
++QOhCameraRenderControl::~QOhCameraRenderControl()
++{
++
++};
++
++QAbstractVideoSurface *QOhCameraRenderControl::surface() const
++{
++    return m_surface;
++}
++
++void QOhCameraRenderControl::setSurface(QAbstractVideoSurface *surface)
++{
++    m_surface = surface;
++    if(m_session)
++    {
++        m_session->setSurface(surface);
++    }
++}
++
++void QOhCameraRenderControl::setSession(QOhCameraSession *session)
++{
++    m_session = session;
++    if(session && m_surface)
++    {
++        m_session->setSurface(m_surface);
++    }
++}
++QT_BEGIN_NAMESPACE
+diff --git a/src/plugins/openharmony/src/mediacapture/qohcamerarendercontrol.h b/src/plugins/openharmony/src/mediacapture/qohcamerarendercontrol.h
+new file mode 100644
+index 00000000..1b4b1470
+--- /dev/null
++++ b/src/plugins/openharmony/src/mediacapture/qohcamerarendercontrol.h
+@@ -0,0 +1,28 @@
++#ifndef QOHCAMERARENDERCONTROL_H
++#define QOHCAMERARENDERCONTROL_H
++
++#include <qvideorenderercontrol.h>
++
++QT_BEGIN_NAMESPACE
++
++class QOhCameraSession;
++
++class QOhCameraRenderControl : public QVideoRendererControl
++{
++    Q_OBJECT
++public:
++    QOhCameraRenderControl(QOhCameraSession* session, QObject *parent = nullptr);
++    ~QOhCameraRenderControl() override;
++
++    QAbstractVideoSurface *surface() const override;
++    void setSurface(QAbstractVideoSurface *surface) override;
++
++    void setSession(QOhCameraSession* session);
++
++private:
++    QAbstractVideoSurface *m_surface;
++    QOhCameraSession *m_session;
++};
++
++QT_END_NAMESPACE
++#endif // QOHCAMERARENDERCONTROL_H
+diff --git a/src/plugins/openharmony/src/mediacapture/qohcamerasession.cpp b/src/plugins/openharmony/src/mediacapture/qohcamerasession.cpp
+new file mode 100644
+index 00000000..d2ae63e7
+--- /dev/null
++++ b/src/plugins/openharmony/src/mediacapture/qohcamerasession.cpp
 @@ -0,0 +1,1041 @@
-+#include "qopenharmonycamerasession.h"
-+#include "openharmonymultimediautils.h"
++#include "qohcamerasession.h"
++#include "ohmultimediautils.h"
 +#include <qelapsedtimer.h>
 +#include <qfile.h>
 +
@@ -2710,13 +2710,13 @@ index 000000000..d0a4c078a
 +
 +QT_BEGIN_NAMESPACE
 +
-+Q_GLOBAL_STATIC(QList<OPenHarmonyCameraInfo>, deviceList)
++Q_GLOBAL_STATIC(QList<OhCameraInfo>, deviceList)
 +
-+Camera_Manager *QOPenHarmonyCameraSession::g_cameraManager = nullptr;
-+Camera_Device *QOPenHarmonyCameraSession::g_cameras = nullptr;
-+uint32_t QOPenHarmonyCameraSession::g_camerasCount = 0;
++Camera_Manager *QOhCameraSession::g_cameraManager = nullptr;
++Camera_Device *QOhCameraSession::g_cameras = nullptr;
++uint32_t QOhCameraSession::g_camerasCount = 0;
 +
-+QOPenHarmonyCameraSession *p_cameraSession = nullptr;
++QOhCameraSession *p_cameraSession = nullptr;
 +void OnCallback(OH_ImageReceiverNative *receiver){
 +    if(p_cameraSession)
 +        p_cameraSession->onReceiverCallback(receiver);
@@ -2796,7 +2796,7 @@ index 000000000..d0a4c078a
 +    return result;
 +}
 +
-+QOPenHarmonyCameraSession::QOPenHarmonyCameraSession(QObject *parent) : QObject{ parent }
++QOhCameraSession::QOhCameraSession(QObject *parent) : QObject{ parent }
 +    , m_state(QCamera::UnloadedState)
 +    , m_savedState(-1)
 +    , m_captureMode(QCamera::CaptureStillImage)
@@ -2811,7 +2811,7 @@ index 000000000..d0a4c078a
 +
 +    m_mediaStorageLocation.addStorageLocation(
 +            QMediaStorageLocation::Pictures,
-+            OPenHarmonyMultimediaUtils::getDefaultMediaDirectory(OPenHarmonyMultimediaUtils::Image));
++            OhMultimediaUtils::getDefaultMediaDirectory(OhMultimediaUtils::Image));
 +
 +    if (qApp) {
 +        connect(qApp, SIGNAL(applicationStateChanged(Qt::ApplicationState)),
@@ -2821,7 +2821,7 @@ index 000000000..d0a4c078a
 +    m_surfaceID[0] = '\0';
 +}
 +
-+QOPenHarmonyCameraSession::~QOPenHarmonyCameraSession()
++QOhCameraSession::~QOhCameraSession()
 +{
 +    if(m_state != QCamera::UnloadedState)
 +    {
@@ -2857,7 +2857,7 @@ index 000000000..d0a4c078a
 +    p_cameraSession = nullptr;
 +}
 +
-+const QList<OPenHarmonyCameraInfo> &QOPenHarmonyCameraSession::availableCameras()
++const QList<OhCameraInfo> &QOhCameraSession::availableCameras()
 +{    
 +    if (deviceList->isEmpty())
 +        updateAvailableCameras();
@@ -2865,7 +2865,7 @@ index 000000000..d0a4c078a
 +    return *deviceList;
 +}
 +
-+void QOPenHarmonyCameraSession::setState(QCamera::State state)
++void QOhCameraSession::setState(QCamera::State state)
 +{
 +    if (m_state == state)
 +        return;
@@ -2881,7 +2881,7 @@ index 000000000..d0a4c078a
 +    setStateHelper(state);
 +}
 +
-+void QOPenHarmonyCameraSession::setDevice(const QString &device)
++void QOhCameraSession::setDevice(const QString &device)
 +{
 +    m_sourceDeviceName = device;
 +    if(!g_cameraManager) return;
@@ -2926,7 +2926,7 @@ index 000000000..d0a4c078a
 +    Q_EMIT loaded();
 +}
 +
-+void QOPenHarmonyCameraSession::setStateHelper(QCamera::State state)
++void QOhCameraSession::setStateHelper(QCamera::State state)
 +{
 +    bool succeeded = false;
 +    switch (state) {
@@ -2951,7 +2951,7 @@ index 000000000..d0a4c078a
 +    }
 +}
 +
-+void QOPenHarmonyCameraSession::initCameraSession()
++void QOhCameraSession::initCameraSession()
 +{
 +    Camera_ErrorCode ret;
 +
@@ -2972,7 +2972,7 @@ index 000000000..d0a4c078a
 +    }
 +}
 +
-+bool QOPenHarmonyCameraSession::initReceiver(uint32_t width, uint32_t height)
++bool QOhCameraSession::initReceiver(uint32_t width, uint32_t height)
 +{
 +    // 创建 OH_ImageReceiverOptions 实例
 +    m_recOptions = nullptr;
@@ -3033,7 +3033,7 @@ index 000000000..d0a4c078a
 +    return true;
 +}
 +
-+void QOPenHarmonyCameraSession::stopReceiver()
++void QOhCameraSession::stopReceiver()
 +{
 +    if(m_recOptions)
 +    {
@@ -3049,7 +3049,7 @@ index 000000000..d0a4c078a
 +    m_surfaceID[0] = '\0';
 +}
 +
-+void QOPenHarmonyCameraSession::processCapturedImage(int id, const QVideoFrame &data,\
++void QOhCameraSession::processCapturedImage(int id, const QVideoFrame &data,\
 +                                                QCameraImageCapture::CaptureDestinations dest, const QString &fileName)
 +{
 +    if (dest & QCameraImageCapture::CaptureToFile) {
@@ -3079,7 +3079,7 @@ index 000000000..d0a4c078a
 +    }
 +}
 +
-+QCameraViewfinderSettings QOPenHarmonyCameraSession::profileToSetting(Camera_Profile *profile)
++QCameraViewfinderSettings QOhCameraSession::profileToSetting(Camera_Profile *profile)
 +{
 +    QCameraViewfinderSettings s(m_viewfinderSettings);
 +
@@ -3106,22 +3106,22 @@ index 000000000..d0a4c078a
 +}
 +
 +
-+void QOPenHarmonyCameraSession::setCaptureMode(QCamera::CaptureModes mode)
++void QOhCameraSession::setCaptureMode(QCamera::CaptureModes mode)
 +{
 +    m_captureMode = mode;
 +}
 +
-+bool QOPenHarmonyCameraSession::isCaptureModeSupported(QCamera::CaptureModes mode) const
++bool QOhCameraSession::isCaptureModeSupported(QCamera::CaptureModes mode) const
 +{
 +    return true;
 +}
 +
-+bool QOPenHarmonyCameraSession::isReadyForCapture()
++bool QOhCameraSession::isReadyForCapture()
 +{
 +    return m_status == QCamera::ActiveStatus;
 +}
 +
-+int QOPenHarmonyCameraSession::capture(const QString &fileName)
++int QOhCameraSession::capture(const QString &fileName)
 +{
 +    ++m_lastImageCaptureId;
 +
@@ -3143,22 +3143,22 @@ index 000000000..d0a4c078a
 +    return m_lastImageCaptureId;
 +}
 +
-+void QOPenHarmonyCameraSession::cancelCapture()
++void QOhCameraSession::cancelCapture()
 +{
 +    m_captureCanceled = true;
 +}
 +
-+QCameraImageCapture::DriveMode QOPenHarmonyCameraSession::driveMode() const
++QCameraImageCapture::DriveMode QOhCameraSession::driveMode() const
 +{
 +    return m_captureImageDriveMode;
 +}
 +
-+void QOPenHarmonyCameraSession::setDriveMode(QCameraImageCapture::DriveMode mode)
++void QOhCameraSession::setDriveMode(QCameraImageCapture::DriveMode mode)
 +{
 +    m_captureImageDriveMode = mode;
 +}
 +
-+void QOPenHarmonyCameraSession::setReadyForCapture(bool ready)
++void QOhCameraSession::setReadyForCapture(bool ready)
 +{
 +    if (m_readyForCapture == ready)
 +        return;
@@ -3167,12 +3167,12 @@ index 000000000..d0a4c078a
 +    emit readyForCaptureChanged(ready);
 +}
 +
-+QCameraImageCapture::CaptureDestinations QOPenHarmonyCameraSession::captureDestination() const
++QCameraImageCapture::CaptureDestinations QOhCameraSession::captureDestination() const
 +{
 +    return m_captureDestination;
 +}
 +
-+void QOPenHarmonyCameraSession::setCaptureDestination(QCameraImageCapture::CaptureDestinations destination)
++void QOhCameraSession::setCaptureDestination(QCameraImageCapture::CaptureDestinations destination)
 +{
 +    if (m_captureDestination != destination) {
 +        m_captureDestination = destination;
@@ -3180,12 +3180,12 @@ index 000000000..d0a4c078a
 +    }
 +}
 +
-+QCameraViewfinderSettings QOPenHarmonyCameraSession::viewfinderSettings() const
++QCameraViewfinderSettings QOhCameraSession::viewfinderSettings() const
 +{
 +    return m_status == QCamera::ActiveStatus ? m_actualViewfinderSettings : m_viewfinderSettings;
 +}
 +
-+void QOPenHarmonyCameraSession::setViewfinderSettings(const QCameraViewfinderSettings &settings)
++void QOhCameraSession::setViewfinderSettings(const QCameraViewfinderSettings &settings)
 +{
 +    if (m_viewfinderSettings == settings)
 +        return;
@@ -3193,7 +3193,7 @@ index 000000000..d0a4c078a
 +    m_viewfinderSettings = m_actualViewfinderSettings = settings;
 +}
 +
-+void QOPenHarmonyCameraSession::setSurface(QAbstractVideoSurface *surface)
++void QOhCameraSession::setSurface(QAbstractVideoSurface *surface)
 +{
 +    if(m_surface == surface)
 +        return;
@@ -3201,7 +3201,7 @@ index 000000000..d0a4c078a
 +    m_surface = surface;
 +}
 +
-+void QOPenHarmonyCameraSession::onReceiverCallback(OH_ImageReceiverNative *receiver)
++void QOhCameraSession::onReceiverCallback(OH_ImageReceiverNative *receiver)
 +{
 +    if(!m_surface) return;
 +
@@ -3227,7 +3227,7 @@ index 000000000..d0a4c078a
 +    errCode = OH_ImageNative_Release(image);
 +}
 +
-+void QOPenHarmonyCameraSession::onPhotoCallback(Camera_PhotoOutput *photoOutput, OH_PhotoNative *photo)
++void QOhCameraSession::onPhotoCallback(Camera_PhotoOutput *photoOutput, OH_PhotoNative *photo)
 +{
 +    Q_UNUSED(photoOutput)
 +    if (!m_captureCanceled) {
@@ -3239,7 +3239,7 @@ index 000000000..d0a4c078a
 +        }
 +        QVideoFrame frame = imageNativeToVideoFrame(imageNative, photoProfile_->format);
 +
-+        QtConcurrent::run(this, &QOPenHarmonyCameraSession::processCapturedImage,
++        QtConcurrent::run(this, &QOhCameraSession::processCapturedImage,
 +                          m_currentImageCaptureId,
 +                          frame,
 +                          m_captureDestination,
@@ -3249,7 +3249,7 @@ index 000000000..d0a4c078a
 +    m_captureCanceled = false;
 +}
 +
-+bool QOPenHarmonyCameraSession::addVideoOutput(const QString &surfaceID, const QSize &reslotion)
++bool QOhCameraSession::addVideoOutput(const QString &surfaceID, const QSize &reslotion)
 +{
 +    Camera_VideoOutput *videoOutput = nullptr;
 +    if(!g_cameraManager) return false;
@@ -3339,7 +3339,7 @@ index 000000000..d0a4c078a
 +    return true;
 +}
 +
-+bool QOPenHarmonyCameraSession::removeVideoOutput()
++bool QOhCameraSession::removeVideoOutput()
 +{
 +    OH_CaptureSession_Stop(captureSession_);
 +
@@ -3364,7 +3364,7 @@ index 000000000..d0a4c078a
 +    return true;
 +}
 +
-+bool QOPenHarmonyCameraSession::createPreviewOutput()
++bool QOhCameraSession::createPreviewOutput()
 +{
 +    int offset = INT_MAX;
 +    int usrPix = m_viewfinderSettings.resolution().width() * m_viewfinderSettings.resolution().height();
@@ -3433,7 +3433,7 @@ index 000000000..d0a4c078a
 +    return true;
 +}
 +
-+bool QOPenHarmonyCameraSession::createPhotoOutput()
++bool QOhCameraSession::createPhotoOutput()
 +{
 +    int maxPix = 0;
 +
@@ -3468,12 +3468,12 @@ index 000000000..d0a4c078a
 +    return true;
 +}
 +
-+Camera_OutputCapability *QOPenHarmonyCameraSession::cameraAbility()
++Camera_OutputCapability *QOhCameraSession::cameraAbility()
 +{
 +    return cameraOutputCapability_;
 +}
 +
-+void QOPenHarmonyCameraSession::presentFrame()
++void QOhCameraSession::presentFrame()
 +{
 +    m_presentMutex.lock();
 +
@@ -3485,7 +3485,7 @@ index 000000000..d0a4c078a
 +    m_presentMutex.unlock();
 +}
 +
-+void QOPenHarmonyCameraSession::onApplicationStateChanged(Qt::ApplicationState state)
++void QOhCameraSession::onApplicationStateChanged(Qt::ApplicationState state)
 +{
 +#if 0
 +    switch (state) {
@@ -3509,7 +3509,7 @@ index 000000000..d0a4c078a
 +#endif
 +}
 +
-+void QOPenHarmonyCameraSession::updateAvailableCameras()
++void QOhCameraSession::updateAvailableCameras()
 +{
 +    static QElapsedTimer timer;
 +    if (timer.isValid() && timer.elapsed() < 500) // ms
@@ -3539,7 +3539,7 @@ index 000000000..d0a4c078a
 +
 +    for(uint32_t i = 0; i < g_camerasCount; ++i)
 +    {
-+        OPenHarmonyCameraInfo info;
++        OhCameraInfo info;
 +        info.name = g_cameras[i].cameraId;
 +
 +        switch(g_cameras[i].connectionType)
@@ -3577,7 +3577,7 @@ index 000000000..d0a4c078a
 +    timer.restart();
 +}
 +
-+bool QOPenHarmonyCameraSession::load()
++bool QOhCameraSession::load()
 +{
 +    if (!createPreviewOutput())
 +        return false;
@@ -3642,7 +3642,7 @@ index 000000000..d0a4c078a
 +    return true;
 +}
 +
-+bool QOPenHarmonyCameraSession::unload()
++bool QOhCameraSession::unload()
 +{
 +    if(captureSession_ && (previewOutput_ || cameraInput_)){
 +        OH_CaptureSession_BeginConfig(captureSession_);
@@ -3680,7 +3680,7 @@ index 000000000..d0a4c078a
 +    return true;
 +}
 +
-+bool QOPenHarmonyCameraSession::startPreview()
++bool QOhCameraSession::startPreview()
 +{
 +    if(!captureSession_)
 +    {
@@ -3714,7 +3714,7 @@ index 000000000..d0a4c078a
 +    return true;
 +}
 +
-+bool QOPenHarmonyCameraSession::stopPreview()
++bool QOhCameraSession::stopPreview()
 +{
 +    if(captureSession_)
 +    {
@@ -3728,21 +3728,21 @@ index 000000000..d0a4c078a
 +}
 +
 +QT_END_NAMESPACE
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonycamerasession.h b/src/plugins/openharmony/src/mediacapture/qopenharmonycamerasession.h
+diff --git a/src/plugins/openharmony/src/mediacapture/qohcamerasession.h b/src/plugins/openharmony/src/mediacapture/qohcamerasession.h
 new file mode 100644
-index 000000000..21cb88793
+index 00000000..24026398
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonycamerasession.h
++++ b/src/plugins/openharmony/src/mediacapture/qohcamerasession.h
 @@ -0,0 +1,154 @@
-+#ifndef QOPENHARMONYCAMERASESSION_H
-+#define QOPENHARMONYCAMERASESSION_H
++#ifndef QOHCAMERASESSION_H
++#define QOHCAMERASESSION_H
 +
 +#include <QObject>
 +#include <QMutex>
 +#include <QTimer>
 +#include <qcamera.h>
 +
-+#include "openharmonycamera.h"
++#include "ohcamera.h"
 +#include <QCameraImageCapture>
 +#include <private/qmediastoragelocation_p.h>
 +
@@ -3763,13 +3763,13 @@ index 000000000..21cb88793
 +struct Camera_PhotoOutput;
 +struct OH_PhotoNative;
 +
-+class QOPenHarmonyCameraSession : public QObject
++class QOhCameraSession : public QObject
 +{
 +    Q_OBJECT
 +public:
-+    explicit QOPenHarmonyCameraSession(QObject *parent = nullptr);
-+    ~QOPenHarmonyCameraSession();
-+    static const QList<OPenHarmonyCameraInfo> &availableCameras();
++    explicit QOhCameraSession(QObject *parent = nullptr);
++    ~QOhCameraSession();
++    static const QList<OhCameraInfo> &availableCameras();
 +
 +    QCamera::State state() const { return m_state; }
 +    void setState(QCamera::State state);
@@ -3887,46 +3887,46 @@ index 000000000..21cb88793
 +};
 +
 +QT_END_NAMESPACE
-+#endif // QOPENHARMONYCAMERASESSION_H
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonycaptureservice.cpp b/src/plugins/openharmony/src/mediacapture/qopenharmonycaptureservice.cpp
++#endif // QOHCAMERASESSION_H
+diff --git a/src/plugins/openharmony/src/mediacapture/qohcaptureservice.cpp b/src/plugins/openharmony/src/mediacapture/qohcaptureservice.cpp
 new file mode 100644
-index 000000000..ede43337a
+index 00000000..53d020f1
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonycaptureservice.cpp
++++ b/src/plugins/openharmony/src/mediacapture/qohcaptureservice.cpp
 @@ -0,0 +1,97 @@
-+#include "qopenharmonycamerasession.h"
-+#include "qopenharmonycapturesession.h"
-+#include "qopenharmonycameracontrol.h"
-+#include "qopenharmonycaptureservice.h"
++#include "qohcamerasession.h"
++#include "qohcapturesession.h"
++#include "qohcameracontrol.h"
++#include "qohcaptureservice.h"
 +#include "qmediaserviceproviderplugin.h"
-+#include "qopenharmonycamerainfocontrol.h"
++#include "qohcamerainfocontrol.h"
 +#include "qohcamerarendercontrol.h"
 +#include "qohcameraimagecapturecontrol.h"
-+#include "qopenharmonydevicecontrol.h"
-+#include "qopenharmonyrecordercontrol.h"
-+#include "qopenharmonyaudioencodercontrol.h"
-+#include "qopenharmonycontainercontrol.h"
-+#include "qopenharmonyvideoencodercontrol.h"
-+#include "qopenharmonyviewfindersettingscontrol2.h"
++#include "qohdevicecontrol.h"
++#include "qohrecordercontrol.h"
++#include "qohaudioencodercontrol.h"
++#include "qohcontainercontrol.h"
++#include "qohvideoencodercontrol.h"
++#include "qohviewfindersettingscontrol2.h"
 +
-+QOPenHarmonyCaptureService::QOPenHarmonyCaptureService(QObject *parent)
++QOhCaptureService::QOhCaptureService(QObject *parent)
 +    : QMediaService{ parent }
 +{
-+    m_cameraSession = new QOPenHarmonyCameraSession();
-+    m_cameraControl = new QOPenHarmonyCameraControl(m_cameraSession);
-+    m_cameraInfoControl = new QOPenHarmonyCameraInfoControl();
-+    m_videoDevice = new QOpenharmonyDeviceControl(m_cameraSession);
-+    m_viewfinderSettings = new QOpenharmonyViewfinderSettingsControl2(m_cameraSession);
++    m_cameraSession = new QOhCameraSession();
++    m_cameraControl = new QOhCameraControl(m_cameraSession);
++    m_cameraInfoControl = new QOhCameraInfoControl();
++    m_videoDevice = new QOhDeviceControl(m_cameraSession);
++    m_viewfinderSettings = new QOhViewfinderSettingsControl2(m_cameraSession);
 +
-+    m_captureSession = new QOPenHarmonyCaptureSession(m_cameraSession);
-+    m_recorderControl = new QOpenharmonyRecorderControl(m_captureSession);
-+    m_audioEncoderSettingsControl = new QOpenharmonyAudioEncoderControl(m_captureSession);
-+    m_mediaContainerControl = new QOpenharmonyContainerControl(m_captureSession);
-+    m_imageCaptureControl = new QOHCameraImageCaptureControl(m_cameraSession);
-+    m_videoEncoderSettingsControl = new QOpenharmonyVideoEncoderControl(m_captureSession);
++    m_captureSession = new QOhCaptureSession(m_cameraSession);
++    m_recorderControl = new QOhRecorderControl(m_captureSession);
++    m_audioEncoderSettingsControl = new QOhAudioEncoderControl(m_captureSession);
++    m_mediaContainerControl = new QOhContainerControl(m_captureSession);
++    m_imageCaptureControl = new QOhCameraImageCaptureControl(m_cameraSession);
++    m_videoEncoderSettingsControl = new QOhVideoEncoderControl(m_captureSession);
 +}
 +
-+QOPenHarmonyCaptureService::~QOPenHarmonyCaptureService()
++QOhCaptureService::~QOhCaptureService()
 +{
 +    delete m_videoEncoderSettingsControl;
 +    delete m_imageCaptureControl;
@@ -3942,7 +3942,7 @@ index 000000000..ede43337a
 +    delete m_cameraSession;
 +}
 +
-+QMediaControl *QOPenHarmonyCaptureService::requestControl(const char *name)
++QMediaControl *QOhCaptureService::requestControl(const char *name)
 +{
 +    if (qstrcmp(name, QMediaRecorderControl_iid) == 0)
 +        return m_recorderControl;
@@ -3967,7 +3967,7 @@ index 000000000..ede43337a
 +
 +    if (qstrcmp(name,QVideoRendererControl_iid) == 0) {
 +        if (!m_videoRenderer) {
-+            m_videoRenderer = new QOHCameraRenderControl(m_cameraSession, this);
++            m_videoRenderer = new QOhCameraRenderControl(m_cameraSession, this);
 +            return m_videoRenderer;
 +        }
 +    }
@@ -3980,7 +3980,7 @@ index 000000000..ede43337a
 +    return nullptr;
 +}
 +
-+void QOPenHarmonyCaptureService::releaseControl(QMediaControl *control)
++void QOhCaptureService::releaseControl(QMediaControl *control)
 +{
 +    if(control){
 +        if(control == m_videoRenderer)
@@ -3991,40 +3991,40 @@ index 000000000..ede43337a
 +        }
 +    }
 +}
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonycaptureservice.h b/src/plugins/openharmony/src/mediacapture/qopenharmonycaptureservice.h
+diff --git a/src/plugins/openharmony/src/mediacapture/qohcaptureservice.h b/src/plugins/openharmony/src/mediacapture/qohcaptureservice.h
 new file mode 100644
-index 000000000..967c9d18e
+index 00000000..2745b087
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonycaptureservice.h
++++ b/src/plugins/openharmony/src/mediacapture/qohcaptureservice.h
 @@ -0,0 +1,52 @@
-+#ifndef QOPENHARMONYCAPTURESERVICE_H
-+#define QOPENHARMONYCAPTURESERVICE_H
++#ifndef QOHCAPTURESERVICE_H
++#define QOHCAPTURESERVICE_H
 +
 +#include <qmediaservice.h>
 +#include <qmediacontrol.h>
 +
 +QT_BEGIN_NAMESPACE
 +
-+class QOPenHarmonyCameraControl;
-+class QOPenHarmonyCameraSession;
-+class QOPenHarmonyCameraInfoControl;
-+class QOHCameraRenderControl;
-+class QOHCameraImageCaptureControl;
-+class QOpenharmonyDeviceControl;
-+class QOPenHarmonyCaptureSession;
-+class QOpenharmonyRecorderControl;
-+class QOpenharmonyAudioEncoderControl;
-+class QOpenharmonyContainerControl;
-+class QOpenharmonyVideoEncoderControl;
-+class QOpenharmonyViewfinderSettingsControl2;
++class QOhCameraControl;
++class QOhCameraSession;
++class QOhCameraInfoControl;
++class QOhCameraRenderControl;
++class QOhCameraImageCaptureControl;
++class QOhDeviceControl;
++class QOhCaptureSession;
++class QOhRecorderControl;
++class QOhAudioEncoderControl;
++class QOhContainerControl;
++class QOhVideoEncoderControl;
++class QOhViewfinderSettingsControl2;
 +
-+class QOPenHarmonyCaptureService : public QMediaService
++class QOhCaptureService : public QMediaService
 +{
 +    Q_OBJECT
 +
 +public:
-+    explicit QOPenHarmonyCaptureService(QObject *parent = nullptr);
-+    virtual ~QOPenHarmonyCaptureService();
++    explicit QOhCaptureService(QObject *parent = nullptr);
++    virtual ~QOhCaptureService();
 +
 +    QMediaControl *requestControl(const char *name);
 +    void releaseControl(QMediaControl *);
@@ -4032,37 +4032,37 @@ index 000000000..967c9d18e
 +private:
 +    QString m_service;
 +
-+    QOPenHarmonyCameraSession *m_cameraSession = nullptr;
-+    QOPenHarmonyCameraControl *m_cameraControl = nullptr;
-+    QOPenHarmonyCameraInfoControl *m_cameraInfoControl = nullptr;
-+    QOHCameraRenderControl *m_videoRenderer = nullptr;
-+    QOHCameraImageCaptureControl *m_imageCaptureControl = nullptr;
-+    QOpenharmonyDeviceControl *m_videoDevice = nullptr;
-+    QOPenHarmonyCaptureSession *m_captureSession = nullptr;
-+    QOpenharmonyRecorderControl *m_recorderControl = nullptr;
-+    QOpenharmonyAudioEncoderControl *m_audioEncoderSettingsControl = nullptr;
-+    QOpenharmonyContainerControl *m_mediaContainerControl = nullptr;
-+    QOpenharmonyVideoEncoderControl *m_videoEncoderSettingsControl = nullptr;
-+    QOpenharmonyViewfinderSettingsControl2 *m_viewfinderSettings = nullptr;
++    QOhCameraSession *m_cameraSession = nullptr;
++    QOhCameraControl *m_cameraControl = nullptr;
++    QOhCameraInfoControl *m_cameraInfoControl = nullptr;
++    QOhCameraRenderControl *m_videoRenderer = nullptr;
++    QOhCameraImageCaptureControl *m_imageCaptureControl = nullptr;
++    QOhDeviceControl *m_videoDevice = nullptr;
++    QOhCaptureSession *m_captureSession = nullptr;
++    QOhRecorderControl *m_recorderControl = nullptr;
++    QOhAudioEncoderControl *m_audioEncoderSettingsControl = nullptr;
++    QOhContainerControl *m_mediaContainerControl = nullptr;
++    QOhVideoEncoderControl *m_videoEncoderSettingsControl = nullptr;
++    QOhViewfinderSettingsControl2 *m_viewfinderSettings = nullptr;
 +};
 +
 +QT_END_NAMESPACE
 +
-+#endif // QOPENHARMONYCAPTURESERVICE_H
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonycapturesession.cpp b/src/plugins/openharmony/src/mediacapture/qopenharmonycapturesession.cpp
++#endif // QOHCAPTURESERVICE_H
+diff --git a/src/plugins/openharmony/src/mediacapture/qohcapturesession.cpp b/src/plugins/openharmony/src/mediacapture/qohcapturesession.cpp
 new file mode 100644
-index 000000000..1be434023
+index 00000000..7c3ca2b8
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonycapturesession.cpp
++++ b/src/plugins/openharmony/src/mediacapture/qohcapturesession.cpp
 @@ -0,0 +1,449 @@
-+#include "qopenharmonycapturesession.h"
-+#include "qopenharmonycamerasession.h"
-+#include "openharmonymultimediautils.h"
++#include "qohcapturesession.h"
++#include "qohcamerasession.h"
++#include "ohmultimediautils.h"
 +
 +#include "ohcamera/camera.h"
 +QT_BEGIN_NAMESPACE
 +
-+QOPenHarmonyCaptureSession::QOPenHarmonyCaptureSession(QOPenHarmonyCameraSession *cameraSession)
++QOhCaptureSession::QOhCaptureSession(QOhCameraSession *cameraSession)
 +    : QObject()
 +      , m_mediaRecorder(0)
 +      , m_cameraSession(cameraSession)
@@ -4076,12 +4076,12 @@ index 000000000..1be434023
 +{
 +    m_mediaStorageLocation.addStorageLocation(
 +            QMediaStorageLocation::Movies,
-+            OPenHarmonyMultimediaUtils::getDefaultMediaDirectory(OPenHarmonyMultimediaUtils::Video));
++            OhMultimediaUtils::getDefaultMediaDirectory(OhMultimediaUtils::Video));
 +
 +    if(cameraSession) {
 +        // onCameraLoaded();
 +        connect(cameraSession, SIGNAL(loaded()), this, SLOT(onCameraLoaded()));
-+        connect(cameraSession, &QOPenHarmonyCameraSession::statusChanged, this,
++        connect(cameraSession, &QOhCameraSession::statusChanged, this,
 +                [this](QCamera::Status status) {
 +                    if (status == QCamera::UnavailableStatus) {
 +                        setState(QMediaRecorder::StoppedState);
@@ -4099,7 +4099,7 @@ index 000000000..1be434023
 +                    if (status == QCamera::LoadingStatus)
 +                        setStatus(QMediaRecorder::LoadingStatus);
 +                });
-+        connect(cameraSession, &QOPenHarmonyCameraSession::captureModeChanged, this,
++        connect(cameraSession, &QOhCameraSession::captureModeChanged, this,
 +                [this](QCamera::CaptureModes mode) {
 +                    if (!mode.testFlag(QCamera::CaptureVideo)) {
 +                        setState(QMediaRecorder::StoppedState);
@@ -4107,7 +4107,7 @@ index 000000000..1be434023
 +                    }
 +                });
 +        setStatus(QMediaRecorder::LoadedStatus);
-+        // connect(cameraSession, &QOPenHarmonyCameraSession::readyForCaptureChanged, this,
++        // connect(cameraSession, &QOhCameraSession::readyForCaptureChanged, this,
 +        //         [this](bool ready) {
 +        //             if (ready)
 +        //                 setStatus(QMediaRecorder::LoadedStatus);
@@ -4122,7 +4122,7 @@ index 000000000..1be434023
 +    connect(&m_notifyTimer, SIGNAL(timeout()), this, SLOT(updateDuration()));
 +}
 +
-+QOPenHarmonyCaptureSession::~QOPenHarmonyCaptureSession()
++QOhCaptureSession::~QOhCaptureSession()
 +{
 +    stop();
 +    if(m_mediaRecorder)
@@ -4131,7 +4131,7 @@ index 000000000..1be434023
 +    }
 +}
 +
-+QUrl QOPenHarmonyCaptureSession::outputLocation() const
++QUrl QOhCaptureSession::outputLocation() const
 +{
 +    if(m_actualOutputLocation.isEmpty())
 +    {
@@ -4140,7 +4140,7 @@ index 000000000..1be434023
 +    return m_actualOutputLocation;
 +}
 +
-+bool QOPenHarmonyCaptureSession::setOutputLocation(const QUrl &location)
++bool QOhCaptureSession::setOutputLocation(const QUrl &location)
 +{
 +    if (m_requestedOutputLocation == location)
 +        return false;
@@ -4160,22 +4160,22 @@ index 000000000..1be434023
 +    return false;
 +}
 +
-+qint64 QOPenHarmonyCaptureSession::duration() const
++qint64 QOhCaptureSession::duration() const
 +{
 +    return m_duration;
 +}
 +
-+QMediaRecorder::State QOPenHarmonyCaptureSession::state() const
++QMediaRecorder::State QOhCaptureSession::state() const
 +{
 +    return m_state;
 +}
 +
-+QMediaRecorder::Status QOPenHarmonyCaptureSession::status() const
++QMediaRecorder::Status QOhCaptureSession::status() const
 +{
 +    return m_status;
 +}
 +
-+void QOPenHarmonyCaptureSession::setState(QMediaRecorder::State state)
++void QOhCaptureSession::setState(QMediaRecorder::State state)
 +{
 +    if (m_state == state)
 +        return;
@@ -4193,7 +4193,7 @@ index 000000000..1be434023
 +    }
 +}
 +
-+void QOPenHarmonyCaptureSession::setContainerFormat(const QString &format)
++void QOhCaptureSession::setContainerFormat(const QString &format)
 +{
 +    if (m_containerFormat == format)
 +        return;
@@ -4202,7 +4202,7 @@ index 000000000..1be434023
 +    m_containerFormatDirty = true;
 +}
 +
-+void QOPenHarmonyCaptureSession::setAudioSettings(const QAudioEncoderSettings &settings)
++void QOhCaptureSession::setAudioSettings(const QAudioEncoderSettings &settings)
 +{
 +    if (m_audioSettings == settings)
 +        return;
@@ -4211,7 +4211,7 @@ index 000000000..1be434023
 +    m_audioSettingsDirty = true;
 +}
 +
-+void QOPenHarmonyCaptureSession::setVideoSettings(const QVideoEncoderSettings &settings)
++void QOhCaptureSession::setVideoSettings(const QVideoEncoderSettings &settings)
 +{
 +    if (!m_cameraSession || m_videoSettings == settings)
 +        return;
@@ -4220,7 +4220,7 @@ index 000000000..1be434023
 +    m_videoSettingsDirty = true;
 +}
 +
-+void QOPenHarmonyCaptureSession::applySettings()
++void QOhCaptureSession::applySettings()
 +{
 +    // container settings
 +    if (m_containerFormatDirty) {
@@ -4239,13 +4239,13 @@ index 000000000..1be434023
 +            m_audioSettings.setSampleRate(48000);
 +
 +        if (m_audioSettings.codec().isEmpty())
-+            m_audioEncoder = OPenHarmonyMediaRecorder::AAC;
++            m_audioEncoder = OhMediaRecorder::AAC;
 +        else if (m_audioSettings.codec() == QLatin1String("audio/mp4a-latm"))
-+            m_audioEncoder = OPenHarmonyMediaRecorder::AAC;
++            m_audioEncoder = OhMediaRecorder::AAC;
 +        else if (m_audioSettings.codec() == QLatin1String("audio/g711mu"))
-+            m_audioEncoder = OPenHarmonyMediaRecorder::G711MU;
++            m_audioEncoder = OhMediaRecorder::G711MU;
 +        else
-+            m_audioEncoder = OPenHarmonyMediaRecorder::AAC;
++            m_audioEncoder = OhMediaRecorder::AAC;
 +
 +        m_audioSettingsDirty = false;
 +    }
@@ -4274,13 +4274,13 @@ index 000000000..1be434023
 +        if (m_videoSettings.bitRate() <= 0)
 +            m_videoSettings.setBitRate(200000);
 +
-+        m_videoEncoder = OPenHarmonyMediaRecorder::AVC;
++        m_videoEncoder = OhMediaRecorder::AVC;
 +
 +        m_videoSettingsDirty = false;
 +    }
 +}
 +
-+void QOPenHarmonyCaptureSession::updateDuration()
++void QOhCaptureSession::updateDuration()
 +{
 +    if (m_elapsedTime.isValid())
 +        m_duration = m_elapsedTime.elapsed();
@@ -4288,7 +4288,7 @@ index 000000000..1be434023
 +    emit durationChanged(m_duration);
 +}
 +
-+void QOPenHarmonyCaptureSession::onCameraLoaded()
++void QOhCaptureSession::onCameraLoaded()
 +{
 +    Camera_OutputCapability *ability = m_cameraSession->cameraAbility();
 +    if(!ability)
@@ -4326,7 +4326,7 @@ index 000000000..1be434023
 +    applySettings();
 +}
 +
-+void QOPenHarmonyCaptureSession::onError(int what, int extra)
++void QOhCaptureSession::onError(int what, int extra)
 +{
 +    Q_UNUSED(what)
 +    Q_UNUSED(extra)
@@ -4334,7 +4334,7 @@ index 000000000..1be434023
 +    emit error(QMediaRecorder::ResourceError, QLatin1String("Unknown error."));
 +}
 +
-+void QOPenHarmonyCaptureSession::onInfo(int what, int extra)
++void QOhCaptureSession::onInfo(int what, int extra)
 +{
 +    Q_UNUSED(extra)
 +    if (what == 800) {
@@ -4348,7 +4348,7 @@ index 000000000..1be434023
 +    }
 +}
 +
-+void QOPenHarmonyCaptureSession::start()
++void QOhCaptureSession::start()
 +{
 +    if (m_state == QMediaRecorder::PausedState && m_mediaRecorder)
 +    {
@@ -4368,14 +4368,14 @@ index 000000000..1be434023
 +        delete m_mediaRecorder;
 +    }
 +
-+    const bool granted = OPenHarmonyMultimediaUtils::qt_openharmonyRequestPermission();
++    const bool granted = OhMultimediaUtils::qt_openharmonyRequestPermission();
 +    if (!granted) {
 +        setStatus(QMediaRecorder::UnavailableStatus);
 +        Q_EMIT error(QMediaRecorder::ResourceError, QLatin1String("Permission denied."));
 +        return;
 +    }
 +
-+    m_mediaRecorder = new OPenHarmonyMediaRecorder;
++    m_mediaRecorder = new OhMediaRecorder;
 +    connect(m_mediaRecorder, SIGNAL(error(int,int)), this, SLOT(onError(int,int)));
 +    connect(m_mediaRecorder, SIGNAL(info(int,int)), this, SLOT(onInfo(int,int)));
 +
@@ -4444,7 +4444,7 @@ index 000000000..1be434023
 +    emit actualLocationChanged(m_actualOutputLocation);
 +}
 +
-+void QOPenHarmonyCaptureSession::stop(bool error)
++void QOhCaptureSession::stop(bool error)
 +{
 +    if (m_state == QMediaRecorder::StoppedState || m_mediaRecorder == 0)
 +        return;
@@ -4473,7 +4473,7 @@ index 000000000..1be434023
 +        setStatus(QMediaRecorder::LoadedStatus);
 +}
 +
-+void QOPenHarmonyCaptureSession::paused()
++void QOhCaptureSession::paused()
 +{
 +    if (m_state != QMediaRecorder::RecordingState || m_mediaRecorder == 0)
 +        return;
@@ -4484,7 +4484,7 @@ index 000000000..1be434023
 +    setStatus(QMediaRecorder::PausedStatus);
 +}
 +
-+void QOPenHarmonyCaptureSession::setStatus(QMediaRecorder::Status status)
++void QOhCaptureSession::setStatus(QMediaRecorder::Status status)
 +{
 +    if (m_status == status)
 +        return;
@@ -4493,46 +4493,46 @@ index 000000000..1be434023
 +    emit statusChanged(m_status);
 +}
 +
-+void QOPenHarmonyCaptureSession::updateViewfinder()
++void QOhCaptureSession::updateViewfinder()
 +{
 +
 +}
 +
-+void QOPenHarmonyCaptureSession::restartViewfinder()
++void QOhCaptureSession::restartViewfinder()
 +{
 +
 +}
 +
 +QT_END_NAMESPACE
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonycapturesession.h b/src/plugins/openharmony/src/mediacapture/qopenharmonycapturesession.h
+diff --git a/src/plugins/openharmony/src/mediacapture/qohcapturesession.h b/src/plugins/openharmony/src/mediacapture/qohcapturesession.h
 new file mode 100644
-index 000000000..b80129166
+index 00000000..a9f367fe
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonycapturesession.h
++++ b/src/plugins/openharmony/src/mediacapture/qohcapturesession.h
 @@ -0,0 +1,102 @@
-+#ifndef QOPENHARMONYCAPTURESESSION_H
-+#define QOPENHARMONYCAPTURESESSION_H
++#ifndef QOHCAPTURESESSION_H
++#define QOHCAPTURESESSION_H
 +
 +#include <qurl.h>
 +#include <qtimer.h>
 +#include <qobject.h>
 +#include <qelapsedtimer.h>
 +#include <qmediarecorder.h>
-+#include "openharmonymediarecorder.h"
++#include "ohmediarecorder.h"
 +#include <private/qmediastoragelocation_p.h>
 +
 +QT_BEGIN_NAMESPACE
 +
-+class QOPenHarmonyCameraSession;
++class QOhCameraSession;
 +struct Camera_OutputCapability;
 +
-+class QOPenHarmonyCaptureSession : public QObject
++class QOhCaptureSession : public QObject
 +{
 +    Q_OBJECT
 +
 +public:
-+    QOPenHarmonyCaptureSession(QOPenHarmonyCameraSession *cameraSession = Q_NULLPTR);
-+    ~QOPenHarmonyCaptureSession();
++    QOhCaptureSession(QOhCameraSession *cameraSession = Q_NULLPTR);
++    ~QOhCaptureSession();
 +
 +    QList<QSize> supportedResolutions() const { return m_supportedResolutions; }
 +    QList<qreal> supportedFrameRates() const { return m_supportedFramerates; }
@@ -4580,8 +4580,8 @@ index 000000000..b80129166
 +    void updateViewfinder();
 +    void restartViewfinder();
 +
-+    OPenHarmonyMediaRecorder *m_mediaRecorder;
-+    QOPenHarmonyCameraSession *m_cameraSession;
++    OhMediaRecorder *m_mediaRecorder;
++    QOhCameraSession *m_cameraSession;
 +
 +    QMediaStorageLocation m_mediaStorageLocation;
 +
@@ -4601,8 +4601,8 @@ index 000000000..b80129166
 +    bool m_containerFormatDirty;
 +    bool m_videoSettingsDirty;
 +    bool m_audioSettingsDirty;
-+    OPenHarmonyMediaRecorder::AudioEncoder m_audioEncoder;
-+    OPenHarmonyMediaRecorder::VideoEncoder m_videoEncoder;
++    OhMediaRecorder::AudioEncoder m_audioEncoder;
++    OhMediaRecorder::VideoEncoder m_videoEncoder;
 +
 +    QList<QSize> m_supportedResolutions;
 +    QList<qreal> m_supportedFramerates;
@@ -4611,37 +4611,37 @@ index 000000000..b80129166
 +
 +
 +QT_END_NAMESPACE
-+#endif // QOPENHARMONYCAPTURESESSION_H
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonycontainercontrol.cpp b/src/plugins/openharmony/src/mediacapture/qopenharmonycontainercontrol.cpp
++#endif // QOHCAPTURESESSION_H
+diff --git a/src/plugins/openharmony/src/mediacapture/qohcontainercontrol.cpp b/src/plugins/openharmony/src/mediacapture/qohcontainercontrol.cpp
 new file mode 100644
-index 000000000..7e1ecfb95
+index 00000000..cb6a1177
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonycontainercontrol.cpp
++++ b/src/plugins/openharmony/src/mediacapture/qohcontainercontrol.cpp
 @@ -0,0 +1,43 @@
-+#include "qopenharmonycapturesession.h"
-+#include "qopenharmonycontainercontrol.h"
++#include "QOhCaptureSession.h"
++#include "qohcontainercontrol.h"
 +#include <QDebug>
 +
 +QT_BEGIN_NAMESPACE
 +
-+QOpenharmonyContainerControl::QOpenharmonyContainerControl(QOPenHarmonyCaptureSession *session)
++QOhContainerControl::QOhContainerControl(QOhCaptureSession *session)
 +    : QMediaContainerControl()
 +    , m_session(session)
 +{
 +
 +}
 +
-+QString QOpenharmonyContainerControl::containerFormat() const
++QString QOhContainerControl::containerFormat() const
 +{
 +    return m_session->containerFormat();
 +}
 +
-+QStringList QOpenharmonyContainerControl::supportedContainers() const
++QStringList QOhContainerControl::supportedContainers() const
 +{
 +    return QStringList() << QLatin1String("mp4");
 +}
 +
-+void QOpenharmonyContainerControl::setContainerFormat(const QString &format)
++void QOhContainerControl::setContainerFormat(const QString &format)
 +{
 +    if(format != QLatin1String("mp4"))
 +    {
@@ -4652,7 +4652,7 @@ index 000000000..7e1ecfb95
 +    m_session->setContainerFormat(format);
 +}
 +
-+QString QOpenharmonyContainerControl::containerDescription(const QString &formatMimeType) const
++QString QOhContainerControl::containerDescription(const QString &formatMimeType) const
 +{
 +    if (formatMimeType == QLatin1String("mp4"))
 +        return tr("MPEG4 media file format");
@@ -4661,26 +4661,26 @@ index 000000000..7e1ecfb95
 +}
 +
 +QT_END_NAMESPACE
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonycontainercontrol.h b/src/plugins/openharmony/src/mediacapture/qopenharmonycontainercontrol.h
+diff --git a/src/plugins/openharmony/src/mediacapture/qohcontainercontrol.h b/src/plugins/openharmony/src/mediacapture/qohcontainercontrol.h
 new file mode 100644
-index 000000000..8933c9696
+index 00000000..7f6a41b9
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonycontainercontrol.h
++++ b/src/plugins/openharmony/src/mediacapture/qohcontainercontrol.h
 @@ -0,0 +1,27 @@
-+#ifndef QOPENHARMONYCONTAINERCONTROL_H
-+#define QOPENHARMONYCONTAINERCONTROL_H
++#ifndef QOHCONTAINERCONTROL_H
++#define QOHCONTAINERCONTROL_H
 +
 +#include <qmediacontainercontrol.h>
 +
 +QT_BEGIN_NAMESPACE
-+class QOPenHarmonyCaptureSession;
++class QOhCaptureSession;
 +
-+class QOpenharmonyContainerControl : public QMediaContainerControl
++class QOhContainerControl : public QMediaContainerControl
 +{
 +    Q_OBJECT
 +
 +public:
-+    QOpenharmonyContainerControl(QOPenHarmonyCaptureSession *session);
++    QOhContainerControl(QOhCaptureSession *session);
 +
 +    QString containerFormat() const override;
 +    QStringList supportedContainers() const override;
@@ -4688,46 +4688,47 @@ index 000000000..8933c9696
 +    QString containerDescription(const QString &formatMimeType) const override;
 +
 +private:
-+    QOPenHarmonyCaptureSession *m_session;
++    QOhCaptureSession *m_session;
 +};
 +
 +QT_END_NAMESPACE
 +
-+#endif // QOPENHARMONYCONTAINERCONTROL_H
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonydevicecontrol.cpp b/src/plugins/openharmony/src/mediacapture/qopenharmonydevicecontrol.cpp
++#endif // QOHCONTAINERCONTROL_H
+diff --git a/src/plugins/openharmony/src/mediacapture/qohdevicecontrol.cpp b/src/plugins/openharmony/src/mediacapture/qohdevicecontrol.cpp
 new file mode 100644
-index 000000000..b7d3aa2b0
+index 00000000..b15abe20
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonydevicecontrol.cpp
-@@ -0,0 +1,69 @@
-+#include "qopenharmonydevicecontrol.h"
-+#include "qopenharmonycamerasession.h"
-+#include <qelapsedtimer.h>
++++ b/src/plugins/openharmony/src/mediacapture/qohdevicecontrol.cpp
+@@ -0,0 +1,70 @@
 +#include <QDebug>
++#include <qelapsedtimer.h>
++
++#include "qohdevicecontrol.h"
++#include "qohcamerasession.h"
 +
 +QT_BEGIN_NAMESPACE
 +
-+QOpenharmonyDeviceControl::QOpenharmonyDeviceControl(QObject *parent)
++QOhDeviceControl::QOhDeviceControl(QObject *parent)
 +    : QVideoDeviceSelectorControl(parent)
 +{
-+    m_session = qobject_cast<QOPenHarmonyCameraSession*>(parent);
++    m_session = qobject_cast<QOhCameraSession*>(parent);
 +    selected = 0;
 +}
 +
-+QOpenharmonyDeviceControl::~QOpenharmonyDeviceControl()
++QOhDeviceControl::~QOhDeviceControl()
 +{
-+    qDebug() << "~QOpenharmonyDeviceControl";
++
 +}
 +
-+int QOpenharmonyDeviceControl::deviceCount() const
++int QOhDeviceControl::deviceCount() const
 +{
-+    const QList<OPenHarmonyCameraInfo> &deviceList = QOPenHarmonyCameraSession::availableCameras();
++    const QList<OhCameraInfo> &deviceList = QOhCameraSession::availableCameras();
 +    return deviceList.count();
 +}
 +
-+QString QOpenharmonyDeviceControl::deviceName(int index) const
++QString QOhDeviceControl::deviceName(int index) const
 +{
-+    const QList<OPenHarmonyCameraInfo> &deviceList = QOPenHarmonyCameraSession::availableCameras();
++    const QList<OhCameraInfo> &deviceList = QOhCameraSession::availableCameras();
 +
 +    if (index >= 0 && index <= deviceList.count())
 +        return QString::fromUtf8(deviceList.at(index).name.constData());
@@ -4735,9 +4736,9 @@ index 000000000..b7d3aa2b0
 +    return QString();
 +}
 +
-+QString QOpenharmonyDeviceControl::deviceDescription(int index) const
++QString QOhDeviceControl::deviceDescription(int index) const
 +{
-+    const QList<OPenHarmonyCameraInfo> &deviceList = QOPenHarmonyCameraSession::availableCameras();
++    const QList<OhCameraInfo> &deviceList = QOhCameraSession::availableCameras();
 +
 +    if (index >= 0 && index <= deviceList.count())
 +        return deviceList.at(index).description;
@@ -4745,19 +4746,19 @@ index 000000000..b7d3aa2b0
 +    return QString();
 +}
 +
-+int QOpenharmonyDeviceControl::defaultDevice() const
++int QOhDeviceControl::defaultDevice() const
 +{
 +    return 0;
 +}
 +
-+int QOpenharmonyDeviceControl::selectedDevice() const
++int QOhDeviceControl::selectedDevice() const
 +{
 +    return selected;
 +}
 +
-+void QOpenharmonyDeviceControl::setSelectedDevice(int index)
++void QOhDeviceControl::setSelectedDevice(int index)
 +{
-+    const QList<OPenHarmonyCameraInfo> &deviceList = QOPenHarmonyCameraSession::availableCameras();
++    const QList<OhCameraInfo> &deviceList = QOhCameraSession::availableCameras();
 +
 +    if (index >= 0 && index < deviceList.count()) {
 +        if (m_session) {
@@ -4769,28 +4770,27 @@ index 000000000..b7d3aa2b0
 +}
 +
 +QT_END_NAMESPACE
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonydevicecontrol.h b/src/plugins/openharmony/src/mediacapture/qopenharmonydevicecontrol.h
+diff --git a/src/plugins/openharmony/src/mediacapture/qohdevicecontrol.h b/src/plugins/openharmony/src/mediacapture/qohdevicecontrol.h
 new file mode 100644
-index 000000000..8b97443ae
+index 00000000..844f775b
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonydevicecontrol.h
-@@ -0,0 +1,33 @@
-+#ifndef QOPENHARMONYDEVICECONTROL_H
-+#define QOPENHARMONYDEVICECONTROL_H
++++ b/src/plugins/openharmony/src/mediacapture/qohdevicecontrol.h
+@@ -0,0 +1,32 @@
++#ifndef QOHDEVICECONTROL_H
++#define QOHDEVICECONTROL_H
 +
 +#include <qvideodeviceselectorcontrol.h>
-+#include "openharmonycamera.h"
 +
 +QT_BEGIN_NAMESPACE
 +
-+class QOPenHarmonyCameraSession;
++class QOhCameraSession;
 +
-+class QOpenharmonyDeviceControl: public QVideoDeviceSelectorControl
++class QOhDeviceControl: public QVideoDeviceSelectorControl
 +{
 +    Q_OBJECT
 +public:
-+    QOpenharmonyDeviceControl(QObject *parent = nullptr);
-+    ~QOpenharmonyDeviceControl();
++    QOhDeviceControl(QObject *parent = nullptr);
++    ~QOhDeviceControl();
 +
 +    int deviceCount() const override;
 +    QString deviceName(int index) const override;
@@ -4802,22 +4802,22 @@ index 000000000..8b97443ae
 +    void setSelectedDevice(int index) override;
 +
 +private:
-+    QOPenHarmonyCameraSession* m_session;
++    QOhCameraSession* m_session;
 +    int selected;
 +};
 +
 +QT_END_NAMESPACE
-+#endif // QOPENHARMONYDEVICECONTROL_H
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonyrecordercontrol.cpp b/src/plugins/openharmony/src/mediacapture/qopenharmonyrecordercontrol.cpp
++#endif // QOHDEVICECONTROL_H
+diff --git a/src/plugins/openharmony/src/mediacapture/qohrecordercontrol.cpp b/src/plugins/openharmony/src/mediacapture/qohrecordercontrol.cpp
 new file mode 100644
-index 000000000..d8b80bf97
+index 00000000..e7fc9d53
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonyrecordercontrol.cpp
++++ b/src/plugins/openharmony/src/mediacapture/qohrecordercontrol.cpp
 @@ -0,0 +1,70 @@
-+#include "qopenharmonyrecordercontrol.h"
-+#include "qopenharmonycapturesession.h"
++#include "qohcapturesession.h"
++#include "qohrecordercontrol.h"
 +
-+QOpenharmonyRecorderControl::QOpenharmonyRecorderControl(QOPenHarmonyCaptureSession *session)
++QOhRecorderControl::QOhRecorderControl(QOhCaptureSession *session)
 +    :QMediaRecorderControl()
 +    , m_session(session)
 +{
@@ -4828,82 +4828,82 @@ index 000000000..d8b80bf97
 +    connect(m_session, SIGNAL(error(int,QString)), this, SIGNAL(error(int,QString)));
 +}
 +
-+QUrl QOpenharmonyRecorderControl::outputLocation() const
++QUrl QOhRecorderControl::outputLocation() const
 +{
 +    return m_session->outputLocation();
 +}
 +
-+bool QOpenharmonyRecorderControl::setOutputLocation(const QUrl &location)
++bool QOhRecorderControl::setOutputLocation(const QUrl &location)
 +{
 +    return m_session->setOutputLocation(location);
 +}
 +
-+QMediaRecorder::State QOpenharmonyRecorderControl::state() const
++QMediaRecorder::State QOhRecorderControl::state() const
 +{
 +    return m_session->state();
 +}
 +
-+QMediaRecorder::Status QOpenharmonyRecorderControl::status() const
++QMediaRecorder::Status QOhRecorderControl::status() const
 +{
 +    return m_session->status();
 +}
 +
-+qint64 QOpenharmonyRecorderControl::duration() const
++qint64 QOhRecorderControl::duration() const
 +{
 +    return m_session->duration();
 +}
 +
-+bool QOpenharmonyRecorderControl::isMuted() const
++bool QOhRecorderControl::isMuted() const
 +{
 +    return false;
 +}
 +
-+qreal QOpenharmonyRecorderControl::volume() const
++qreal QOhRecorderControl::volume() const
 +{
 +    return 1.0f;
 +}
 +
-+void QOpenharmonyRecorderControl::applySettings()
++void QOhRecorderControl::applySettings()
 +{
 +    m_session->applySettings();
 +}
 +
-+void QOpenharmonyRecorderControl::setState(QMediaRecorder::State state)
++void QOhRecorderControl::setState(QMediaRecorder::State state)
 +{
 +    m_session->setState(state);
 +}
 +
-+void QOpenharmonyRecorderControl::setMuted(bool muted)
++void QOhRecorderControl::setMuted(bool muted)
 +{
 +    Q_UNUSED(muted)
 +    qWarning("QMediaRecorder::setMuted() is not supported on Openharmony.");
 +}
 +
-+void QOpenharmonyRecorderControl::setVolume(qreal volume)
++void QOhRecorderControl::setVolume(qreal volume)
 +{
 +    Q_UNUSED(volume)
 +    qWarning("QMediaRecorder::setVolume() is not supported on Openharmony.");
 +}
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonyrecordercontrol.h b/src/plugins/openharmony/src/mediacapture/qopenharmonyrecordercontrol.h
+diff --git a/src/plugins/openharmony/src/mediacapture/qohrecordercontrol.h b/src/plugins/openharmony/src/mediacapture/qohrecordercontrol.h
 new file mode 100644
-index 000000000..683f25bb4
+index 00000000..4d1a4a2d
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonyrecordercontrol.h
++++ b/src/plugins/openharmony/src/mediacapture/qohrecordercontrol.h
 @@ -0,0 +1,36 @@
-+#ifndef QOPENHARMONYRECORDERCONTROL_H
-+#define QOPENHARMONYRECORDERCONTROL_H
++#ifndef QOHRECORDERCONTROL_H
++#define QOHRECORDERCONTROL_H
 +
 +#include <qmediarecordercontrol.h>
 +
 +QT_BEGIN_NAMESPACE
 +
-+class QOPenHarmonyCaptureSession;
++class QOhCaptureSession;
 +
-+class QOpenharmonyRecorderControl : public QMediaRecorderControl
++class QOhRecorderControl : public QMediaRecorderControl
 +{
 +    Q_OBJECT
 +public:
-+    explicit QOpenharmonyRecorderControl(QOPenHarmonyCaptureSession *session);
++    explicit QOhRecorderControl(QOhCaptureSession *session);
 +
 +    QUrl outputLocation() const override;
 +    bool setOutputLocation(const QUrl &location) override;
@@ -4920,26 +4920,26 @@ index 000000000..683f25bb4
 +    void setVolume(qreal volume) override;
 +
 +private:
-+    QOPenHarmonyCaptureSession *m_session;
++    QOhCaptureSession *m_session;
 +};
 +
 +QT_END_NAMESPACE
 +
-+#endif // QOPENHARMONYRECORDERCONTROL_H
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonyvideoencodercontrol.cpp b/src/plugins/openharmony/src/mediacapture/qopenharmonyvideoencodercontrol.cpp
++#endif // QOHRECORDERCONTROL_H
+diff --git a/src/plugins/openharmony/src/mediacapture/qohvideoencodercontrol.cpp b/src/plugins/openharmony/src/mediacapture/qohvideoencodercontrol.cpp
 new file mode 100644
-index 000000000..4cb0d2232
+index 00000000..0c1f67d2
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonyvideoencodercontrol.cpp
++++ b/src/plugins/openharmony/src/mediacapture/qohvideoencodercontrol.cpp
 @@ -0,0 +1,73 @@
-+#include "qopenharmonyvideoencodercontrol.h"
-+#include "qopenharmonycapturesession.h"
++#include "qohcapturesession.h"
++#include "qohvideoencodercontrol.h"
 +
-+QOpenharmonyVideoEncoderControl::QOpenharmonyVideoEncoderControl(QOPenHarmonyCaptureSession *session)
++QOhVideoEncoderControl::QOhVideoEncoderControl(QOhCaptureSession *session)
 +    : QVideoEncoderSettingsControl()
 +      , m_session(session) { }
 +
-+QList<QSize> QOpenharmonyVideoEncoderControl::supportedResolutions(const QVideoEncoderSettings &settings, bool *continuous) const
++QList<QSize> QOhVideoEncoderControl::supportedResolutions(const QVideoEncoderSettings &settings, bool *continuous) const
 +{
 +    if (continuous)
 +        *continuous = false;
@@ -4947,7 +4947,7 @@ index 000000000..4cb0d2232
 +    return m_session->supportedResolutions();
 +}
 +
-+QList<qreal> QOpenharmonyVideoEncoderControl::supportedFrameRates(const QVideoEncoderSettings &settings, bool *continuous) const
++QList<qreal> QOhVideoEncoderControl::supportedFrameRates(const QVideoEncoderSettings &settings, bool *continuous) const
 +{
 +    if (continuous)
 +        *continuous = false;
@@ -4955,12 +4955,12 @@ index 000000000..4cb0d2232
 +    return m_session->supportedFrameRates();
 +}
 +
-+QStringList QOpenharmonyVideoEncoderControl::supportedVideoCodecs() const
++QStringList QOhVideoEncoderControl::supportedVideoCodecs() const
 +{
 +    return QStringList() << QLatin1String("video/avc");
 +}
 +
-+QString QOpenharmonyVideoEncoderControl::videoCodecDescription(const QString &codecName) const
++QString QOhVideoEncoderControl::videoCodecDescription(const QString &codecName) const
 +{
 +    if (codecName == QLatin1String("video/avc"))
 +        return tr("Advanced Video Coding (H.264)");
@@ -4980,12 +4980,12 @@ index 000000000..4cb0d2232
 +    return QString();
 +}
 +
-+QVideoEncoderSettings QOpenharmonyVideoEncoderControl::videoSettings() const
++QVideoEncoderSettings QOhVideoEncoderControl::videoSettings() const
 +{
 +    return m_session->videoSettings();
 +}
 +
-+void QOpenharmonyVideoEncoderControl::setVideoSettings(const QVideoEncoderSettings &settings)
++void QOhVideoEncoderControl::setVideoSettings(const QVideoEncoderSettings &settings)
 +{
 +    QVideoEncoderSettings tsettings(settings);
 +    if(tsettings.bitRate() == 0)
@@ -5005,26 +5005,26 @@ index 000000000..4cb0d2232
 +
 +    m_session->setVideoSettings(tsettings);
 +}
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonyvideoencodercontrol.h b/src/plugins/openharmony/src/mediacapture/qopenharmonyvideoencodercontrol.h
+diff --git a/src/plugins/openharmony/src/mediacapture/qohvideoencodercontrol.h b/src/plugins/openharmony/src/mediacapture/qohvideoencodercontrol.h
 new file mode 100644
-index 000000000..3e35d181f
+index 00000000..47b6a901
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonyvideoencodercontrol.h
++++ b/src/plugins/openharmony/src/mediacapture/qohvideoencodercontrol.h
 @@ -0,0 +1,28 @@
-+#ifndef QOPENHARMONYVIDEOENCODERCONTROL_H
-+#define QOPENHARMONYVIDEOENCODERCONTROL_H
++#ifndef QOHVIDEOENCODERCONTROL_H
++#define QOHVIDEOENCODERCONTROL_H
 +
 +#include <qvideoencodersettingscontrol.h>
 +
 +QT_BEGIN_NAMESPACE
 +
-+class QOPenHarmonyCaptureSession;
++class QOhCaptureSession;
 +
-+class QOpenharmonyVideoEncoderControl : public QVideoEncoderSettingsControl
++class QOhVideoEncoderControl : public QVideoEncoderSettingsControl
 +{
 +    Q_OBJECT
 +public:
-+    QOpenharmonyVideoEncoderControl(QOPenHarmonyCaptureSession *session);
++    QOhVideoEncoderControl(QOhCaptureSession *session);
 +
 +    QList<QSize> supportedResolutions(const QVideoEncoderSettings &settings, bool *continuous = 0) const override;
 +    QList<qreal> supportedFrameRates(const QVideoEncoderSettings &settings, bool *continuous = 0) const override;
@@ -5033,29 +5033,28 @@ index 000000000..3e35d181f
 +    QVideoEncoderSettings videoSettings() const override;
 +    void setVideoSettings(const QVideoEncoderSettings &settings) override;
 +private:
-+    QOPenHarmonyCaptureSession *m_session;
++    QOhCaptureSession *m_session;
 +};
 +
 +QT_END_NAMESPACE
 +
-+#endif // QOPENHARMONYVIDEOENCODERCONTROL_H
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonyviewfindersettingscontrol2.cpp b/src/plugins/openharmony/src/mediacapture/qopenharmonyviewfindersettingscontrol2.cpp
++#endif // QOHVIDEOENCODERCONTROL_H
+diff --git a/src/plugins/openharmony/src/mediacapture/qohviewfindersettingscontrol2.cpp b/src/plugins/openharmony/src/mediacapture/qohviewfindersettingscontrol2.cpp
 new file mode 100644
-index 000000000..607bc79a8
+index 00000000..d1a4d812
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonyviewfindersettingscontrol2.cpp
-@@ -0,0 +1,37 @@
-+#include "qopenharmonyviewfindersettingscontrol2.h"
-+
-+#include "qopenharmonycamerasession.h"
++++ b/src/plugins/openharmony/src/mediacapture/qohviewfindersettingscontrol2.cpp
+@@ -0,0 +1,36 @@
++#include "qohcamerasession.h"
 +#include "ohcamera/camera.h"
++#include "qohviewfindersettingscontrol2.h"
 +
-+QOpenharmonyViewfinderSettingsControl2::QOpenharmonyViewfinderSettingsControl2(QOPenHarmonyCameraSession *session)
++QOhViewfinderSettingsControl2::QOhViewfinderSettingsControl2(QOhCameraSession *session)
 +    : m_cameraSession(session)
 +{
 +}
 +
-+QList<QCameraViewfinderSettings> QOpenharmonyViewfinderSettingsControl2::supportedViewfinderSettings() const
++QList<QCameraViewfinderSettings> QOhViewfinderSettingsControl2::supportedViewfinderSettings() const
 +{
 +    Camera_OutputCapability *ability = m_cameraSession->cameraAbility();
 +    if(!ability)
@@ -5073,51 +5072,51 @@ index 000000000..607bc79a8
 +    return viewfinderSettings;
 +}
 +
-+QCameraViewfinderSettings QOpenharmonyViewfinderSettingsControl2::viewfinderSettings() const
++QCameraViewfinderSettings QOhViewfinderSettingsControl2::viewfinderSettings() const
 +{
 +    return m_cameraSession->viewfinderSettings();
 +}
 +
-+void QOpenharmonyViewfinderSettingsControl2::setViewfinderSettings(const QCameraViewfinderSettings &settings)
++void QOhViewfinderSettingsControl2::setViewfinderSettings(const QCameraViewfinderSettings &settings)
 +{
 +    m_cameraSession->setViewfinderSettings(settings);
 +}
-diff --git a/src/plugins/openharmony/src/mediacapture/qopenharmonyviewfindersettingscontrol2.h b/src/plugins/openharmony/src/mediacapture/qopenharmonyviewfindersettingscontrol2.h
+diff --git a/src/plugins/openharmony/src/mediacapture/qohviewfindersettingscontrol2.h b/src/plugins/openharmony/src/mediacapture/qohviewfindersettingscontrol2.h
 new file mode 100644
-index 000000000..68b026591
+index 00000000..4f3513ff
 --- /dev/null
-+++ b/src/plugins/openharmony/src/mediacapture/qopenharmonyviewfindersettingscontrol2.h
++++ b/src/plugins/openharmony/src/mediacapture/qohviewfindersettingscontrol2.h
 @@ -0,0 +1,25 @@
-+#ifndef QOPENHARMONYVIEWFINDERSETTINGSCONTROL2_H
-+#define QOPENHARMONYVIEWFINDERSETTINGSCONTROL2_H
++#ifndef QOHVIEWFINDERSETTINGSCONTROL2_H
++#define QOHVIEWFINDERSETTINGSCONTROL2_H
 +
 +#include <QtMultimedia/qcameraviewfindersettingscontrol.h>
 +#include <QtMultimedia/qcameraviewfindersettings.h>
 +
 +QT_BEGIN_NAMESPACE
-+class QOPenHarmonyCameraSession;
++class QOhCameraSession;
 +
-+class QOpenharmonyViewfinderSettingsControl2 : public QCameraViewfinderSettingsControl2
++class QOhViewfinderSettingsControl2 : public QCameraViewfinderSettingsControl2
 +{
 +    Q_OBJECT
 +public:
-+    explicit QOpenharmonyViewfinderSettingsControl2(QOPenHarmonyCameraSession *session);
++    explicit QOhViewfinderSettingsControl2(QOhCameraSession *session);
 +
 +    QList<QCameraViewfinderSettings> supportedViewfinderSettings() const override;
 +    QCameraViewfinderSettings viewfinderSettings() const override;
 +    void setViewfinderSettings(const QCameraViewfinderSettings &settings) override;
 +private:
-+    QOPenHarmonyCameraSession *m_cameraSession;
++    QOhCameraSession *m_cameraSession;
 +};
 +
 +QT_END_NAMESPACE
 +
-+#endif // QOPENHARMONYVIEWFINDERSETTINGSCONTROL2_H
-diff --git a/src/plugins/openharmony/src/openharmony_mediaservice.json b/src/plugins/openharmony/src/openharmony_mediaservice.json
++#endif // QOHVIEWFINDERSETTINGSCONTROL2_H
+diff --git a/src/plugins/openharmony/src/oh_mediaservice.json b/src/plugins/openharmony/src/oh_mediaservice.json
 new file mode 100644
-index 000000000..5c0f28152
+index 00000000..5c0f2815
 --- /dev/null
-+++ b/src/plugins/openharmony/src/openharmony_mediaservice.json
++++ b/src/plugins/openharmony/src/oh_mediaservice.json
 @@ -0,0 +1,4 @@
 +{
 +    "Keys": ["openharmonymultimedia"],
@@ -5125,7 +5124,7 @@ index 000000000..5c0f28152
 +}
 diff --git a/src/plugins/openharmony/src/player/player.pri b/src/plugins/openharmony/src/player/player.pri
 new file mode 100644
-index 000000000..d4eea67d7
+index 00000000..03487698
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/player.pri
 @@ -0,0 +1,29 @@
@@ -5138,29 +5137,29 @@ index 000000000..d4eea67d7
 +    $$PWD/qohcodekit.h \
 +    $$PWD/qohdecoder.h \
 +    $$PWD/qohdemuxer.h \
++    $$PWD/qohplayer.h \
++    $$PWD/qohplayercontrol.h \
++    $$PWD/qohplayerservice.h \
 +    $$PWD/qohvideorenderercontrol.h \
-+    $$PWD/qopenharmonyplayerservice.h \
-+    $$PWD/qopenharmonyplayercontrol.h \
-+    $$PWD/qopenharmonywindowcontrol.h \
-+    $$PWD/qopenharmonyplayer.h \
 +    $$PWD/qohaudiorolecontrol.h \
-+    $$PWD/qohcustomaudiorolecontrol.h
++    $$PWD/qohcustomaudiorolecontrol.h \
++    $$PWD/qohwindowcontrol.h
 +
 +SOURCES += \
 +    $$PWD/qohcodekit.cpp \
 +    $$PWD/qohdecoder.cpp \
 +    $$PWD/qohdemuxer.cpp \
++    $$PWD/qohplayer.cpp \
++    $$PWD/qohplayercontrol.cpp \
++    $$PWD/qohplayerservice.cpp \
 +    $$PWD/qohvideorenderercontrol.cpp \
-+    $$PWD/qopenharmonyplayerservice.cpp \
-+    $$PWD/qopenharmonyplayercontrol.cpp \
-+    $$PWD/qopenharmonywindowcontrol.cpp \
-+    $$PWD/qopenharmonyplayer.cpp \
 +    $$PWD/qohaudiorolecontrol.cpp \
-+    $$PWD/qohcustomaudiorolecontrol.cpp
++    $$PWD/qohcustomaudiorolecontrol.cpp \
++    $$PWD/qohwindowcontrol.cpp
 +
 diff --git a/src/plugins/openharmony/src/player/private/qohcodekit_p.h b/src/plugins/openharmony/src/player/private/qohcodekit_p.h
 new file mode 100644
-index 000000000..69b0f88a4
+index 00000000..e4c5377b
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/private/qohcodekit_p.h
 @@ -0,0 +1,23 @@
@@ -5170,18 +5169,18 @@ index 000000000..69b0f88a4
 +#include <qglobal.h>
 +
 +QT_BEGIN_NAMESPACE
-+class QOHCodeKit;
-+class QOHCodeKitPrivate
++class QOhCodeKit;
++class QOhCodeKitPrivate
 +{
-+    Q_DECLARE_PUBLIC(QOHCodeKit)
-+    Q_DISABLE_COPY_MOVE(QOHCodeKitPrivate)
++    Q_DECLARE_PUBLIC(QOhCodeKit)
++    Q_DISABLE_COPY_MOVE(QOhCodeKitPrivate)
 +
 +public:
-+    explicit QOHCodeKitPrivate(QOHCodeKit *const qq);
-+    virtual ~QOHCodeKitPrivate();
++    explicit QOhCodeKitPrivate(QOhCodeKit *const qq);
++    virtual ~QOhCodeKitPrivate();
 +
 +protected:
-+    QOHCodeKit *const q_ptr;
++    QOhCodeKit *const q_ptr;
 +};
 +
 +QT_END_NAMESPACE
@@ -5189,7 +5188,7 @@ index 000000000..69b0f88a4
 +#endif // QOHCODEKIT_P_H
 diff --git a/src/plugins/openharmony/src/player/qohaudiorolecontrol.cpp b/src/plugins/openharmony/src/player/qohaudiorolecontrol.cpp
 new file mode 100644
-index 000000000..2b699805c
+index 00000000..2b699805
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/qohaudiorolecontrol.cpp
 @@ -0,0 +1,39 @@
@@ -5234,7 +5233,7 @@ index 000000000..2b699805c
 +QT_END_NAMESPACE
 diff --git a/src/plugins/openharmony/src/player/qohaudiorolecontrol.h b/src/plugins/openharmony/src/player/qohaudiorolecontrol.h
 new file mode 100644
-index 000000000..c7fa0350f
+index 00000000..c7fa0350
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/qohaudiorolecontrol.h
 @@ -0,0 +1,24 @@
@@ -5264,7 +5263,7 @@ index 000000000..c7fa0350f
 +#endif // QOHAUDIOROLECONTROL_H
 diff --git a/src/plugins/openharmony/src/player/qohcodekit.cpp b/src/plugins/openharmony/src/player/qohcodekit.cpp
 new file mode 100644
-index 000000000..cc6a1e921
+index 00000000..14f234d0
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/qohcodekit.cpp
 @@ -0,0 +1,38 @@
@@ -5276,28 +5275,28 @@ index 000000000..cc6a1e921
 +QT_BEGIN_NAMESPACE
 +Q_LOGGING_CATEGORY(AvCoder, "qt.oh.avcoder")
 +
-+QOHCodeKitPrivate::QOHCodeKitPrivate(QOHCodeKit * const qq)
++QOhCodeKitPrivate::QOhCodeKitPrivate(QOhCodeKit * const qq)
 +    : q_ptr(qq)
 +{
 +
 +}
 +
-+QOHCodeKitPrivate::~QOHCodeKitPrivate()
++QOhCodeKitPrivate::~QOhCodeKitPrivate()
 +{
 +
 +}
 +
-+QOHCodeKit::QOHCodeKit(QObject *parent) : QObject { parent }
-+    , d_ptr(new QOHCodeKitPrivate(this))
++QOhCodeKit::QOhCodeKit(QObject *parent) : QObject { parent }
++    , d_ptr(new QOhCodeKitPrivate(this))
 +{
 +}
 +
-+QOHCodeKit::~QOHCodeKit()
++QOhCodeKit::~QOhCodeKit()
 +{
 +
 +}
 +
-+QOHCodeKit::QOHCodeKit(QOHCodeKitPrivate &dd, QObject *parent)
++QOhCodeKit::QOhCodeKit(QOhCodeKitPrivate &dd, QObject *parent)
 +    : QObject { parent }
 +    , d_ptr(&dd)
 +{
@@ -5308,7 +5307,7 @@ index 000000000..cc6a1e921
 +
 diff --git a/src/plugins/openharmony/src/player/qohcodekit.h b/src/plugins/openharmony/src/player/qohcodekit.h
 new file mode 100644
-index 000000000..b97bbe323
+index 00000000..850e5c90
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/qohcodekit.h
 @@ -0,0 +1,46 @@
@@ -5319,12 +5318,12 @@ index 000000000..b97bbe323
 +#include <QScopedPointer>
 +
 +QT_BEGIN_NAMESPACE
-+class QOHCodeKitPrivate;
-+class QOHCodeKit : public QObject
++class QOhCodeKitPrivate;
++class QOhCodeKit : public QObject
 +{
 +    Q_OBJECT
-+    Q_DECLARE_PRIVATE(QOHCodeKit)
-+    Q_DISABLE_COPY_MOVE(QOHCodeKit)
++    Q_DECLARE_PRIVATE(QOhCodeKit)
++    Q_DISABLE_COPY_MOVE(QOhCodeKit)
 +
 +public:
 +    struct Video {
@@ -5347,12 +5346,12 @@ index 000000000..b97bbe323
 +        int64_t channelLayout;  /* 所需编码通道布局-仅适用于编码器 */
 +    };
 +
-+    explicit QOHCodeKit(QObject *parent = nullptr);
-+    virtual ~QOHCodeKit();
++    explicit QOhCodeKit(QObject *parent = nullptr);
++    virtual ~QOhCodeKit();
 +
 +protected:
-+    explicit QOHCodeKit(QOHCodeKitPrivate &dd, QObject *parent = nullptr);
-+    QScopedPointer<QOHCodeKitPrivate> d_ptr;
++    explicit QOhCodeKit(QOhCodeKitPrivate &dd, QObject *parent = nullptr);
++    QScopedPointer<QOhCodeKitPrivate> d_ptr;
 +};
 +
 +QT_END_NAMESPACE
@@ -5360,7 +5359,7 @@ index 000000000..b97bbe323
 +#endif // QOHCODEKIT_H
 diff --git a/src/plugins/openharmony/src/player/qohcustomaudiorolecontrol.cpp b/src/plugins/openharmony/src/player/qohcustomaudiorolecontrol.cpp
 new file mode 100644
-index 000000000..352f5b3aa
+index 00000000..352f5b3a
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/qohcustomaudiorolecontrol.cpp
 @@ -0,0 +1,34 @@
@@ -5400,7 +5399,7 @@ index 000000000..352f5b3aa
 +QT_END_NAMESPACE
 diff --git a/src/plugins/openharmony/src/player/qohcustomaudiorolecontrol.h b/src/plugins/openharmony/src/player/qohcustomaudiorolecontrol.h
 new file mode 100644
-index 000000000..87c9d90c5
+index 00000000..87c9d90c
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/qohcustomaudiorolecontrol.h
 @@ -0,0 +1,24 @@
@@ -5430,7 +5429,7 @@ index 000000000..87c9d90c5
 +#endif // QOHCUSTOMAUDIOROLECONTROL_H
 diff --git a/src/plugins/openharmony/src/player/qohdecoder.cpp b/src/plugins/openharmony/src/player/qohdecoder.cpp
 new file mode 100644
-index 000000000..f4cdb06f9
+index 00000000..4d700fce
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/qohdecoder.cpp
 @@ -0,0 +1,407 @@
@@ -5467,10 +5466,10 @@ index 000000000..f4cdb06f9
 +QT_BEGIN_NAMESPACE
 +Q_DECLARE_LOGGING_CATEGORY(AvCoder)
 +
-+class QOHVideoDecoderPrivate : public QOHCodeKitPrivate
++class QOhVideoDecoderPrivate : public QOhCodeKitPrivate
 +{
-+    Q_DECLARE_PUBLIC(QOHVideoDecoder)
-+    Q_DISABLE_COPY_MOVE(QOHVideoDecoderPrivate)
++    Q_DECLARE_PUBLIC(QOhVideoDecoder)
++    Q_DISABLE_COPY_MOVE(QOhVideoDecoderPrivate)
 +
 +public:
 +    struct Frame {
@@ -5484,9 +5483,9 @@ index 000000000..f4cdb06f9
 +        int32_t sliceStride;    /* 视频帧高跨距 */
 +        int32_t pixelFormat;    /* 视频像素格式 */
 +    };
-+    explicit QOHVideoDecoderPrivate(QOHDemuxer *const demuxer,
-+                                    QOHVideoDecoder *const qq);
-+    ~QOHVideoDecoderPrivate();
++    explicit QOhVideoDecoderPrivate(QOhDemuxer *const demuxer,
++                                    QOhVideoDecoder *const qq);
++    ~QOhVideoDecoderPrivate();
 +
 +protected:
 +    void updateFrame(OH_AVFormat *format);
@@ -5499,13 +5498,13 @@ index 000000000..f4cdb06f9
 +    static void OnNewOutputBuffer(OH_AVCodec *codec, uint32_t index, OH_AVBuffer *buffer, void *userData);
 +
 +private:
-+    QOHDemuxer *const m_demuxer;
++    QOhDemuxer *const m_demuxer;
 +    QSharedPointer<Frame> m_frame;
 +    QSharedPointer<OH_AVCodec> m_decoder;
 +};
 +
-+QOHVideoDecoderPrivate::QOHVideoDecoderPrivate(QOHDemuxer * const demuxer, QOHVideoDecoder * const qq)
-+    : QOHCodeKitPrivate(qq)
++QOhVideoDecoderPrivate::QOhVideoDecoderPrivate(QOhDemuxer * const demuxer, QOhVideoDecoder * const qq)
++    : QOhCodeKitPrivate(qq)
 +    , m_demuxer(demuxer)
 +    , m_frame(nullptr)
 +    , m_decoder(nullptr)
@@ -5513,12 +5512,12 @@ index 000000000..f4cdb06f9
 +
 +}
 +
-+QOHVideoDecoderPrivate::~QOHVideoDecoderPrivate()
++QOhVideoDecoderPrivate::~QOhVideoDecoderPrivate()
 +{
 +
 +}
 +
-+void QOHVideoDecoderPrivate::updateFrame(OH_AVFormat *format)
++void QOhVideoDecoderPrivate::updateFrame(OH_AVFormat *format)
 +{
 +    if (m_frame.isNull())
 +        m_frame.reset(new Frame());
@@ -5535,7 +5534,7 @@ index 000000000..f4cdb06f9
 +    OH_AVFormat_GetIntValue(format, OH_MD_KEY_VIDEO_CROP_BOTTOM, &m_frame->cropBottom);
 +}
 +
-+QVideoFrame QOHVideoDecoderPrivate::fromRawData(uint8_t * const data, int32_t size, Frame frame)
++QVideoFrame QOhVideoDecoderPrivate::fromRawData(uint8_t * const data, int32_t size, Frame frame)
 +{
 +    switch (frame.pixelFormat) {
 +    case AV_PIXEL_FORMAT_RGBA:
@@ -5585,7 +5584,7 @@ index 000000000..f4cdb06f9
 + * \param errorCode
 + * \param userData
 + */
-+void QOHVideoDecoderPrivate::OnCodecError(OH_AVCodec *codec, int32_t errorCode, void *userData)
++void QOhVideoDecoderPrivate::OnCodecError(OH_AVCodec *codec, int32_t errorCode, void *userData)
 +{
 +    Q_UNUSED(codec);
 +    Q_UNUSED(userData);
@@ -5597,13 +5596,13 @@ index 000000000..f4cdb06f9
 + * \param format
 + * \param userData
 + */
-+void QOHVideoDecoderPrivate::OnStreamChanged(OH_AVCodec *codec, OH_AVFormat *format, void *userData)
++void QOhVideoDecoderPrivate::OnStreamChanged(OH_AVCodec *codec, OH_AVFormat *format, void *userData)
 +{
 +    Q_UNUSED(codec);
 +    Q_UNUSED(format);
 +    Q_UNUSED(userData);
 +
-+    QOHVideoDecoder *decoder = reinterpret_cast<QOHVideoDecoder*>(userData);
++    QOhVideoDecoder *decoder = reinterpret_cast<QOhVideoDecoder*>(userData);
 +    if (!decoder)
 +        return;
 +
@@ -5618,7 +5617,7 @@ index 000000000..f4cdb06f9
 + * \param buffer
 + * \param userData
 + */
-+void QOHVideoDecoderPrivate::OnNeedInputBuffer(OH_AVCodec *codec, uint32_t index, OH_AVBuffer *buffer, void *userData)
++void QOhVideoDecoderPrivate::OnNeedInputBuffer(OH_AVCodec *codec, uint32_t index, OH_AVBuffer *buffer, void *userData)
 +{
 +    //LOGI("on video input buffer, codec: [%{public}p] index: [%{public}d]", codec, index);
 +    qCInfo(AvCoder) << "on video input buffer, codec: [" << codec << "] index: [" << index << ']';
@@ -5627,11 +5626,11 @@ index 000000000..f4cdb06f9
 +    if (nullptr == userData)
 +        return;
 +
-+    QOHVideoDecoder *decoder = reinterpret_cast<QOHVideoDecoder*>(userData);
++    QOhVideoDecoder *decoder = reinterpret_cast<QOhVideoDecoder*>(userData);
 +    if (!decoder)
 +        return;
 +
-+    QOHDemuxer *demuxer = decoder->d_func()->m_demuxer;
++    QOhDemuxer *demuxer = decoder->d_func()->m_demuxer;
 +    if (!demuxer)
 +        return;
 +
@@ -5649,7 +5648,7 @@ index 000000000..f4cdb06f9
 + * \param buffer
 + * \param userData
 + */
-+void QOHVideoDecoderPrivate::OnNewOutputBuffer(OH_AVCodec *codec, uint32_t index, OH_AVBuffer *buffer, void *userData)
++void QOhVideoDecoderPrivate::OnNewOutputBuffer(OH_AVCodec *codec, uint32_t index, OH_AVBuffer *buffer, void *userData)
 +{
 +    //LOGI("on video output buffer, codec: [%{public}p] index: [%{public}d]", codec, index);
 +    qCInfo(AvCoder) << "on video output buffer, codec: [" << codec << "] index: [" << index << ']';
@@ -5657,11 +5656,11 @@ index 000000000..f4cdb06f9
 +        return;
 +    }
 +
-+    QOHVideoDecoder *decoder = reinterpret_cast<QOHVideoDecoder*>(userData);
++    QOhVideoDecoder *decoder = reinterpret_cast<QOhVideoDecoder*>(userData);
 +    if (!decoder)
 +        return;
 +
-+    QOHDemuxer *demuxer = decoder->d_func()->m_demuxer;
++    QOhDemuxer *demuxer = decoder->d_func()->m_demuxer;
 +    if (!demuxer)
 +        return;
 +
@@ -5685,7 +5684,7 @@ index 000000000..f4cdb06f9
 +    int ret = OH_AVBuffer_GetBufferAttr(buffer, &attr);
 +    if (AV_ERR_OK == ret && (AVCODEC_BUFFER_FLAGS_EOS & attr.flags)) {
 +        OH_VideoDecoder_FreeOutputBuffer(codec, index);
-+        Q_EMIT decoder->finished(QOHVideoDecoder::QPrivateSignal());
++        Q_EMIT decoder->finished(QOhVideoDecoder::QPrivateSignal());
 +        return;
 +    }
 +
@@ -5693,24 +5692,24 @@ index 000000000..f4cdb06f9
 +    uint8_t *data = OH_AVBuffer_GetAddr(buffer);
 +    Frame *frameInfo = decoder->d_func()->m_frame.get();
 +    const QVideoFrame &frame = decoder->d_func()->fromRawData(data, attr.size, *frameInfo);
-+    Q_EMIT decoder->videoFrameChange(frame, QOHVideoDecoder::QPrivateSignal());
++    Q_EMIT decoder->videoFrameChange(frame, QOhVideoDecoder::QPrivateSignal());
 +
 +    OH_VideoDecoder_FreeOutputBuffer(codec, index);
 +}
 +
-+QOHVideoDecoder::QOHVideoDecoder(QOHDemuxer *const demuxer, QObject *parent)
-+    : QOHCodeKit(*(new QOHVideoDecoderPrivate(demuxer, this)), parent)
++QOhVideoDecoder::QOhVideoDecoder(QOhDemuxer *const demuxer, QObject *parent)
++    : QOhCodeKit(*(new QOhVideoDecoderPrivate(demuxer, this)), parent)
 +{
 +}
 +
-+QOHVideoDecoder::~QOHVideoDecoder()
++QOhVideoDecoder::~QOhVideoDecoder()
 +{
 +
 +}
 +
-+bool QOHVideoDecoder::stop()
++bool QOhVideoDecoder::stop()
 +{
-+    Q_D(QOHVideoDecoder);
++    Q_D(QOhVideoDecoder);
 +    if (d->m_decoder.isNull()) {
 +        qCCritical(AvCoder) << "video decoder is null, call configure function first.";
 +        return false;
@@ -5725,9 +5724,9 @@ index 000000000..f4cdb06f9
 +    return true;
 +}
 +
-+bool QOHVideoDecoder::start()
++bool QOhVideoDecoder::start()
 +{
-+    Q_D(QOHVideoDecoder);
++    Q_D(QOhVideoDecoder);
 +    if (d->m_decoder.isNull()) {
 +        qCCritical(AvCoder) << "video decoder is null, call configure function first.";
 +        return false;
@@ -5742,9 +5741,9 @@ index 000000000..f4cdb06f9
 +    return true;
 +}
 +
-+bool QOHVideoDecoder::reset()
++bool QOhVideoDecoder::reset()
 +{
-+    Q_D(QOHVideoDecoder);
++    Q_D(QOhVideoDecoder);
 +    if (d->m_decoder.isNull()) {
 +        qCCritical(AvCoder) << "video decoder is null, call configure function first.";
 +        return false;
@@ -5759,9 +5758,9 @@ index 000000000..f4cdb06f9
 +    return true;
 +}
 +
-+bool QOHVideoDecoder::prepare()
++bool QOhVideoDecoder::prepare()
 +{
-+    Q_D(QOHVideoDecoder);
++    Q_D(QOhVideoDecoder);
 +    int ret = OH_VideoDecoder_Prepare(d->m_decoder.get());
 +    if (AV_ERR_OK != ret) {
 +        qCCritical(AvCoder) << "video decoder prepare failed. ret: " << ret;
@@ -5770,7 +5769,7 @@ index 000000000..f4cdb06f9
 +    return true;
 +}
 +
-+bool QOHVideoDecoder::configure(QSharedPointer<Video> info)
++bool QOhVideoDecoder::configure(QSharedPointer<Video> info)
 +{
 +    OH_AVCodec *code = OH_VideoDecoder_CreateByMime(info->codeMime.c_str());
 +    if (nullptr == code) {
@@ -5819,10 +5818,10 @@ index 000000000..f4cdb06f9
 +        return false;
 +    }
 +
-+    OH_AVCodecCallback cb = { &QOHVideoDecoderPrivate::OnCodecError,
-+                              &QOHVideoDecoderPrivate::OnStreamChanged,
-+                              &QOHVideoDecoderPrivate::OnNeedInputBuffer,
-+                              &QOHVideoDecoderPrivate::OnNewOutputBuffer };
++    OH_AVCodecCallback cb = { &QOhVideoDecoderPrivate::OnCodecError,
++                              &QOhVideoDecoderPrivate::OnStreamChanged,
++                              &QOhVideoDecoderPrivate::OnNeedInputBuffer,
++                              &QOhVideoDecoderPrivate::OnNewOutputBuffer };
 +
 +    ret = OH_VideoDecoder_RegisterCallback(code, cb, reinterpret_cast<void*>(this));
 +    if (AV_ERR_OK != ret) {
@@ -5831,7 +5830,7 @@ index 000000000..f4cdb06f9
 +    }
 +
 +
-+    Q_D(QOHVideoDecoder);
++    Q_D(QOhVideoDecoder);
 +    d->m_decoder = QSharedPointer<OH_AVCodec>(code, OH_VideoDecoder_Destroy);
 +
 +    return true;
@@ -5843,7 +5842,7 @@ index 000000000..f4cdb06f9
 +
 diff --git a/src/plugins/openharmony/src/player/qohdecoder.h b/src/plugins/openharmony/src/player/qohdecoder.h
 new file mode 100644
-index 000000000..1e092d2e1
+index 00000000..1e44bdab
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/qohdecoder.h
 @@ -0,0 +1,54 @@
@@ -5870,28 +5869,28 @@ index 000000000..1e092d2e1
 +#include "qohcodekit.h"
 +
 +QT_BEGIN_NAMESPACE
-+class QOHDemuxer;
++class QOhDemuxer;
 +class QVideoFrame;
-+class QOHVideoDecoderPrivate;
++class QOhVideoDecoderPrivate;
 +
 +/*!
 + * \brief 视频解码
 + */
-+class QOHVideoDecoder : public QOHCodeKit
++class QOhVideoDecoder : public QOhCodeKit
 +{
 +    Q_OBJECT
-+    Q_DECLARE_PRIVATE(QOHVideoDecoder)
-+    Q_DISABLE_COPY_MOVE(QOHVideoDecoder)
++    Q_DECLARE_PRIVATE(QOhVideoDecoder)
++    Q_DISABLE_COPY_MOVE(QOhVideoDecoder)
 +
 +public:
-+    explicit QOHVideoDecoder(QOHDemuxer *const demuxer, QObject *parent = nullptr);
-+    ~QOHVideoDecoder();
++    explicit QOhVideoDecoder(QOhDemuxer *const demuxer, QObject *parent = nullptr);
++    ~QOhVideoDecoder();
 +
 +    bool stop();
 +    bool start();
 +    bool reset();
 +    bool prepare();
-+    bool configure(QSharedPointer<QOHCodeKit::Video> info);
++    bool configure(QSharedPointer<QOhCodeKit::Video> info);
 +
 +Q_SIGNALS:
 +    void finished(QPrivateSignal);
@@ -5903,7 +5902,7 @@ index 000000000..1e092d2e1
 +#endif // QOHDECODER_H
 diff --git a/src/plugins/openharmony/src/player/qohdemuxer.cpp b/src/plugins/openharmony/src/player/qohdemuxer.cpp
 new file mode 100644
-index 000000000..4d8e212fd
+index 00000000..2c6a06be
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/qohdemuxer.cpp
 @@ -0,0 +1,336 @@
@@ -5938,14 +5937,14 @@ index 000000000..4d8e212fd
 +
 +QT_BEGIN_NAMESPACE
 +Q_DECLARE_LOGGING_CATEGORY(AvCoder)
-+class QOHDemuxerPrivate : public QOHCodeKitPrivate
++class QOhDemuxerPrivate : public QOhCodeKitPrivate
 +{
-+    Q_DECLARE_PUBLIC(QOHDemuxer)
-+    Q_DISABLE_COPY_MOVE(QOHDemuxerPrivate)
++    Q_DECLARE_PUBLIC(QOhDemuxer)
++    Q_DISABLE_COPY_MOVE(QOhDemuxerPrivate)
 +
 +public:
-+    explicit QOHDemuxerPrivate(QOHDemuxer *const qq);
-+    ~QOHDemuxerPrivate();
++    explicit QOhDemuxerPrivate(QOhDemuxer *const qq);
++    ~QOhDemuxerPrivate();
 +
 +    /* 创建媒体源 */
 +    QSharedPointer<OH_AVSource> createSource(const QUrl &url);
@@ -5958,20 +5957,20 @@ index 000000000..4d8e212fd
 +                         const QSharedPointer<OH_AVDemuxer> demuxer);
 +
 +private:
-+    QOHDemuxer::Type m_type;
++    QOhDemuxer::Type m_type;
 +
 +    /* 媒体源 */
 +    QSharedPointer<OH_AVSource> m_source;
 +    /* 解封装器 */
 +    QSharedPointer<OH_AVDemuxer> m_demuxer;    
 +    /* 视频信息 */
-+    QSharedPointer<QOHCodeKit::Video> m_videoInfo;
-+    QSharedPointer<QOHCodeKit::Audio> m_audioInfo;
++    QSharedPointer<QOhCodeKit::Video> m_videoInfo;
++    QSharedPointer<QOhCodeKit::Audio> m_audioInfo;
 +};
 +
-+QOHDemuxerPrivate::QOHDemuxerPrivate(QOHDemuxer * const qq)
-+    : QOHCodeKitPrivate(qq)
-+    , m_type(QOHDemuxer::Type::E_NONE)
++QOhDemuxerPrivate::QOhDemuxerPrivate(QOhDemuxer * const qq)
++    : QOhCodeKitPrivate(qq)
++    , m_type(QOhDemuxer::Type::E_NONE)
 +    , m_source(nullptr)
 +    , m_demuxer(nullptr)
 +    , m_videoInfo(nullptr)
@@ -5980,11 +5979,11 @@ index 000000000..4d8e212fd
 +
 +}
 +
-+QOHDemuxerPrivate::~QOHDemuxerPrivate()
++QOhDemuxerPrivate::~QOhDemuxerPrivate()
 +{
 +}
 +
-+QSharedPointer<OH_AVSource> QOHDemuxerPrivate::createSource(const QUrl &url)
++QSharedPointer<OH_AVSource> QOhDemuxerPrivate::createSource(const QUrl &url)
 +{
 +    if (url.isEmpty())
 +        return nullptr;
@@ -6032,7 +6031,7 @@ index 000000000..4d8e212fd
 +    return avSource;
 +}
 +
-+QSharedPointer<OH_AVDemuxer> QOHDemuxerPrivate::createDemuxer(const QSharedPointer<OH_AVSource> source)
++QSharedPointer<OH_AVDemuxer> QOhDemuxerPrivate::createDemuxer(const QSharedPointer<OH_AVSource> source)
 +{
 +    OH_AVDemuxer *demuxer = OH_AVDemuxer_CreateWithSource(source.get());
 +    if (nullptr == demuxer) {
@@ -6043,7 +6042,7 @@ index 000000000..4d8e212fd
 +    return QSharedPointer<OH_AVDemuxer>(demuxer, OH_AVDemuxer_Destroy);
 +}
 +
-+bool QOHDemuxerPrivate::selectTrackType(const QSharedPointer<OH_AVSource> source,
++bool QOhDemuxerPrivate::selectTrackType(const QSharedPointer<OH_AVSource> source,
 +                                        const QSharedPointer<OH_AVDemuxer> demuxer)
 +{
 +    OH_AVFormat *sfm = OH_AVSource_GetSourceFormat(source.get());
@@ -6070,10 +6069,10 @@ index 000000000..4d8e212fd
 +        OH_AVFormat_GetIntValue(trackFormat.get(), OH_MD_KEY_TRACK_TYPE, &trackType);
 +
 +        /* 视频轨 */
-+        if ((QOHDemuxer::E_VIDEO == (QOHDemuxer::E_VIDEO & m_type)) &&
++        if ((QOhDemuxer::E_VIDEO == (QOhDemuxer::E_VIDEO & m_type)) &&
 +          MEDIA_TYPE_VID == trackType)
 +        {
-+            m_videoInfo.reset(new QOHCodeKit::Video());
++            m_videoInfo.reset(new QOhCodeKit::Video());
 +
 +            char *codeMime;
 +            bool result = false;
@@ -6103,17 +6102,17 @@ index 000000000..4d8e212fd
 +
 +            m_videoInfo->codeMime = std::string(codeMime);
 +
-+            LOGI("====== QOHDemuxer Video config ======");
++            LOGI("====== QOhDemuxer Video config ======");
 +            LOGI("%{public}d*%{public}d, %{public}.1ffps, %{public}d kbps", m_videoInfo->width,
 +                 m_videoInfo->height, m_videoInfo->frameRate, m_videoInfo->bitRate / 1024);
-+            LOGI("====== QOHDemuxer Video config ======");
++            LOGI("====== QOhDemuxer Video config ======");
 +        }
 +
 +        /* 音频轨 */
-+        if ((QOHDemuxer::E_AUDIO == (QOHDemuxer::E_AUDIO & m_type)) &&
++        if ((QOhDemuxer::E_AUDIO == (QOhDemuxer::E_AUDIO & m_type)) &&
 +            MEDIA_TYPE_AUD == trackType)
 +        {
-+            m_audioInfo.reset(new QOHCodeKit::Audio());
++            m_audioInfo.reset(new QOhCodeKit::Audio());
 +
 +            char *codeMime;
 +            bool result = false;
@@ -6137,7 +6136,7 @@ index 000000000..4d8e212fd
 +
 +            m_audioInfo->codeMime = std::string(codeMime);
 +
-+            LOGI("====== QOHDemuxer Audio config ======");
++            LOGI("====== QOhDemuxer Audio config ======");
 +            LOGI("Mime: %{public}s", codeMime);
 +            LOGI("audioMime:%{public}s sampleForamt:%{public}d "
 +                 "sampleRate:%{public}d channelCount:%{public}d channelLayout:%{public}d",
@@ -6146,33 +6145,33 @@ index 000000000..4d8e212fd
 +                 m_audioInfo->sampleRate,
 +                 m_audioInfo->channelCount,
 +                 (int)m_audioInfo->channelLayout);
-+            LOGI("====== QOHDemuxer Audio config ======");
++            LOGI("====== QOhDemuxer Audio config ======");
 +        }
 +    }
 +
 +    return true;
 +}
 +
-+QOHDemuxer::QOHDemuxer(Type type)
-+    : QOHCodeKit(*(new QOHDemuxerPrivate(this)))
++QOhDemuxer::QOhDemuxer(Type type)
++    : QOhCodeKit(*(new QOhDemuxerPrivate(this)))
 +{
 +    d_func()->m_type = type;
 +}
 +
-+QOHDemuxer::~QOHDemuxer()
++QOhDemuxer::~QOhDemuxer()
 +{
 +
 +}
 +
-+bool QOHDemuxer::isValid() const
++bool QOhDemuxer::isValid() const
 +{
-+    Q_D(const QOHDemuxer);
++    Q_D(const QOhDemuxer);
 +    return (!d->m_source.isNull() && !d->m_demuxer.isNull());
 +}
 +
-+bool QOHDemuxer::configure(const QUrl &url)
++bool QOhDemuxer::configure(const QUrl &url)
 +{
-+    Q_D(QOHDemuxer);
++    Q_D(QOhDemuxer);
 +    /* FIXME 以下调用顺序不可修改 */
 +
 +    /* 创建媒体源 */
@@ -6198,9 +6197,9 @@ index 000000000..4d8e212fd
 +    return true;
 +}
 +
-+bool QOHDemuxer::seekTime(qint64 millisecond)
++bool QOhDemuxer::seekTime(qint64 millisecond)
 +{
-+    Q_D(QOHDemuxer);
++    Q_D(QOhDemuxer);
 +    if (d->m_demuxer.isNull())
 +        return false;
 +
@@ -6214,21 +6213,21 @@ index 000000000..4d8e212fd
 +    return true;
 +}
 +
-+QSharedPointer<QOHCodeKit::Audio> QOHDemuxer::audioInfo() const
++QSharedPointer<QOhCodeKit::Audio> QOhDemuxer::audioInfo() const
 +{
-+    Q_D(const QOHDemuxer);
++    Q_D(const QOhDemuxer);
 +    return d->m_audioInfo;
 +}
 +
-+QSharedPointer<QOHCodeKit::Video> QOHDemuxer::videoInfo() const
++QSharedPointer<QOhCodeKit::Video> QOhDemuxer::videoInfo() const
 +{
-+    Q_D(const QOHDemuxer);
++    Q_D(const QOhDemuxer);
 +    return d->m_videoInfo;
 +}
 +
-+bool QOHDemuxer::readSample(int32_t trackId, OH_AVBuffer *buffer)
++bool QOhDemuxer::readSample(int32_t trackId, OH_AVBuffer *buffer)
 +{
-+    Q_D(QOHDemuxer);
++    Q_D(QOhDemuxer);
 +    if (d->m_demuxer.isNull() || !buffer)
 +        return false;
 +
@@ -6245,7 +6244,7 @@ index 000000000..4d8e212fd
 +
 diff --git a/src/plugins/openharmony/src/player/qohdemuxer.h b/src/plugins/openharmony/src/player/qohdemuxer.h
 new file mode 100644
-index 000000000..2e800d205
+index 00000000..86ec12b3
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/qohdemuxer.h
 @@ -0,0 +1,51 @@
@@ -6271,12 +6270,12 @@ index 000000000..2e800d205
 +struct OH_AVBuffer;
 +QT_BEGIN_NAMESPACE
 +class QUrl;
-+class QOHDemuxerPrivate;
++class QOhDemuxerPrivate;
 +
-+class QOHDemuxer : public QOHCodeKit
++class QOhDemuxer : public QOhCodeKit
 +{
-+    Q_DECLARE_PRIVATE(QOHDemuxer)
-+    Q_DISABLE_COPY_MOVE(QOHDemuxer)
++    Q_DECLARE_PRIVATE(QOhDemuxer)
++    Q_DISABLE_COPY_MOVE(QOhDemuxer)
 +
 +public:
 +    enum Type {
@@ -6286,170 +6285,26 @@ index 000000000..2e800d205
 +    };
 +
 +    Q_DECLARE_FLAGS(Types, Type)
-+    explicit QOHDemuxer(Type type);
-+    ~QOHDemuxer();
++    explicit QOhDemuxer(Type type);
++    ~QOhDemuxer();
 +
 +    bool isValid() const;
 +    bool configure(const QUrl &url);
 +    bool seekTime(qint64 millisecond);
-+    QSharedPointer<QOHCodeKit::Audio> audioInfo() const;
-+    QSharedPointer<QOHCodeKit::Video> videoInfo() const;
++    QSharedPointer<QOhCodeKit::Audio> audioInfo() const;
++    QSharedPointer<QOhCodeKit::Video> videoInfo() const;
 +    bool readSample(int32_t trackId, OH_AVBuffer *buffer);
 +};
-+Q_DECLARE_OPERATORS_FOR_FLAGS(QOHDemuxer::Types)
++Q_DECLARE_OPERATORS_FOR_FLAGS(QOhDemuxer::Types)
 +QT_END_NAMESPACE
 +
 +#endif // QOHDEMUXER_H
-diff --git a/src/plugins/openharmony/src/player/qohvideorenderercontrol.cpp b/src/plugins/openharmony/src/player/qohvideorenderercontrol.cpp
+diff --git a/src/plugins/openharmony/src/player/qohplayer.cpp b/src/plugins/openharmony/src/player/qohplayer.cpp
 new file mode 100644
-index 000000000..1f050d25d
+index 00000000..ac537540
 --- /dev/null
-+++ b/src/plugins/openharmony/src/player/qohvideorenderercontrol.cpp
-@@ -0,0 +1,94 @@
-+#include <QFile>
-+#include <QDebug>
-+#include <QNetworkRequest>
-+#include <QVideoSurfaceFormat>
-+#include <QAbstractVideoSurface>
-+
-+#include "qohdecoder.h"
-+#include "qohdemuxer.h"
-+#include "qohvideorenderercontrol.h"
-+
-+QT_BEGIN_NAMESPACE
-+
-+QOHVideoRendererControl::QOHVideoRendererControl(QObject *parent)
-+    : QVideoRendererControl { parent }
-+    , m_prepare(false)
-+    , m_surface(nullptr)
-+    , m_demuxer(nullptr)
-+    , m_videoDecoder(nullptr)
-+{
-+    m_demuxer.reset(new QOHDemuxer(QOHDemuxer::E_VIDEO));
-+    m_videoDecoder.reset(new QOHVideoDecoder(m_demuxer.get()));
-+    connect(m_videoDecoder.get(), &QOHVideoDecoder::finished, [this]{ this->stop(); });
-+    connect(m_videoDecoder.get(), &QOHVideoDecoder::videoFrameChange, [this](const QVideoFrame &frame){
-+        if (!this->m_surface)
-+            return;
-+
-+        if (!this->m_surface->isActive()) {
-+            QVideoSurfaceFormat format(frame.size(), frame.pixelFormat(), QAbstractVideoBuffer::QPixmapHandle);
-+            this->m_surface->start(format);
-+        }
-+        /* Qt内置的QVideoSurfaceGenericPainter没有对帧图片进行格式转换
-+         * 因此这里使用frame转换后的RGB32格式的图片
-+         */
-+        this->m_surface->present(frame.image());
-+    });
-+}
-+
-+QOHVideoRendererControl::~QOHVideoRendererControl()
-+{
-+    stop();
-+}
-+
-+void QOHVideoRendererControl::play()
-+{
-+    if (!m_prepare)
-+        m_prepare = m_videoDecoder->prepare();
-+
-+    m_videoDecoder->start();
-+}
-+
-+void QOHVideoRendererControl::stop()
-+{
-+    m_prepare = false;
-+    m_videoDecoder->stop();
-+    if (m_surface)
-+        m_surface->present(QVideoFrame());
-+
-+    seekTo(0);
-+}
-+
-+void QOHVideoRendererControl::pause()
-+{
-+    /* TODO */
-+    stop();
-+}
-+
-+void QOHVideoRendererControl::seekTo(qint64 msec)
-+{
-+    m_demuxer->seekTime(msec);
-+}
-+
-+void QOHVideoRendererControl::setDataSource(const QNetworkRequest &request)
-+{
-+    if (!m_demuxer->configure(request.url()))
-+        return;
-+
-+    auto videoInfo = m_demuxer->videoInfo();
-+    if (!m_videoDecoder->configure(videoInfo))
-+        return;
-+
-+    seekTo(0);
-+}
-+
-+QAbstractVideoSurface *QOHVideoRendererControl::surface() const
-+{
-+    return m_surface;
-+}
-+
-+void QOHVideoRendererControl::setSurface(QAbstractVideoSurface *surface)
-+{
-+    m_surface = surface;
-+}
-+
-+QT_END_NAMESPACE
-diff --git a/src/plugins/openharmony/src/player/qohvideorenderercontrol.h b/src/plugins/openharmony/src/player/qohvideorenderercontrol.h
-new file mode 100644
-index 000000000..b02dbab3b
---- /dev/null
-+++ b/src/plugins/openharmony/src/player/qohvideorenderercontrol.h
-@@ -0,0 +1,38 @@
-+#ifndef QOHVIDEORENDERERCONTROL_H
-+#define QOHVIDEORENDERERCONTROL_H
-+
-+#include <QUrl>
-+#include <QVideoRendererControl>
-+
-+QT_BEGIN_NAMESPACE
-+class QOHDemuxer;
-+class QOHVideoDecoder;
-+class QNetworkRequest;
-+class QOHVideoRendererControl : public QVideoRendererControl
-+{
-+    Q_OBJECT
-+    Q_DISABLE_COPY_MOVE(QOHVideoRendererControl)
-+
-+public:
-+    explicit QOHVideoRendererControl(QObject *parent = nullptr);
-+    ~QOHVideoRendererControl();
-+
-+    void play();
-+    void stop();
-+    void pause();
-+    void seekTo(qint64 msec);
-+    void setDataSource(const QNetworkRequest &request);
-+
-+    QAbstractVideoSurface *surface() const override;
-+    void setSurface(QAbstractVideoSurface *surface) override;
-+
-+private:
-+    bool m_prepare;
-+    QAbstractVideoSurface *m_surface;
-+    QScopedPointer<QOHDemuxer> m_demuxer;
-+    QScopedPointer<QOHVideoDecoder> m_videoDecoder;
-+};
-+
-+QT_END_NAMESPACE
-+
-+#endif // QOHVIDEORENDERERCONTROL_H
-diff --git a/src/plugins/openharmony/src/player/qopenharmonyplayer.cpp b/src/plugins/openharmony/src/player/qopenharmonyplayer.cpp
-new file mode 100644
-index 000000000..d746b25e8
---- /dev/null
-+++ b/src/plugins/openharmony/src/player/qopenharmonyplayer.cpp
-@@ -0,0 +1,437 @@
++++ b/src/plugins/openharmony/src/player/qohplayer.cpp
+@@ -0,0 +1,446 @@
 +#include <QUrl>
 +#include <QFile>
 +#include <QHash>
@@ -6460,28 +6315,28 @@ index 000000000..d746b25e8
 +#include <rawfile/raw_file_manager.h>
 +#include <multimedia/player_framework/avplayer_base.h>
 +
-+#include "qopenharmonyplayer.h"
++#include "qohplayer.h"
 +
-+typedef QHash<OH_AVPlayer *, QOpenHarmonyPlayer *> MediaPlayers;
++typedef QHash<OH_AVPlayer *, QOhPlayer *> MediaPlayers;
 +Q_GLOBAL_STATIC(MediaPlayers, mediaPlayers)
 +Q_GLOBAL_STATIC(QReadWriteLock, rwLock)
 +
 +QT_BEGIN_NAMESPACE
 +
-+QOpenHarmonyPlayer::QOpenHarmonyPlayer()
++QOhPlayer::QOhPlayer()
 +    : QObject()
 +    , m_state(AV_IDLE)
 +{
 +    QWriteLocker locker(rwLock);
 +    m_player = OH_AVPlayer_Create();
 +    if (m_player != nullptr) {
-+        OH_AVPlayer_SetOnInfoCallback(m_player, &QOpenHarmonyPlayer::onPlayerInfo, Q_NULLPTR);
-+        OH_AVPlayer_SetOnErrorCallback(m_player, &QOpenHarmonyPlayer::onPlayerError, Q_NULLPTR);
++        OH_AVPlayer_SetOnInfoCallback(m_player, &QOhPlayer::onPlayerInfo, Q_NULLPTR);
++        OH_AVPlayer_SetOnErrorCallback(m_player, &QOhPlayer::onPlayerError, Q_NULLPTR);
 +        mediaPlayers->insert(m_player, this);
 +    }
 +}
 +
-+QOpenHarmonyPlayer::~QOpenHarmonyPlayer()
++QOhPlayer::~QOhPlayer()
 +{
 +    if (m_player != nullptr) {
 +        QWriteLocker locker(rwLock);
@@ -6490,17 +6345,17 @@ index 000000000..d746b25e8
 +    }
 +}
 +
-+void QOpenHarmonyPlayer::release()
++void QOhPlayer::release()
 +{
 +    OH_AVPlayer_Release(m_player);
 +}
 +
-+void QOpenHarmonyPlayer::reset()
++void QOhPlayer::reset()
 +{
 +    OH_AVPlayer_Reset(m_player);
 +}
 +
-+int QOpenHarmonyPlayer::getCurrentPosition()
++int QOhPlayer::getCurrentPosition()
 +{
 +    if ((m_state == AV_PLAYING)
 +        || (m_state == AV_PAUSED)
@@ -6512,7 +6367,7 @@ index 000000000..d746b25e8
 +    return 0;
 +}
 +
-+int QOpenHarmonyPlayer::getDuration()
++int QOhPlayer::getDuration()
 +{
 +    if (m_state < AV_PREPARED)
 +        return 0;
@@ -6521,22 +6376,22 @@ index 000000000..d746b25e8
 +    return duration;
 +}
 +
-+bool QOpenHarmonyPlayer::isPlaying()
++bool QOhPlayer::isPlaying()
 +{
 +    return m_state == AV_PLAYING;
 +}
 +
-+int QOpenHarmonyPlayer::volume()
++int QOhPlayer::volume()
 +{
 +    return m_volume * 100;
 +}
 +
-+bool QOpenHarmonyPlayer::isMuted()
++bool QOhPlayer::isMuted()
 +{
 +    return qFuzzyCompare(m_volume, 0.0);
 +}
 +
-+qreal QOpenHarmonyPlayer::playbackRate()
++qreal QOhPlayer::playbackRate()
 +{
 +    qreal rate(1.0);
 +
@@ -6562,7 +6417,7 @@ index 000000000..d746b25e8
 +    return rate;
 +}
 +
-+void QOpenHarmonyPlayer::play()
++void QOhPlayer::play()
 +{
 +    if (m_state == AV_PLAYING)
 +        return;
@@ -6581,13 +6436,13 @@ index 000000000..d746b25e8
 +    }
 +}
 +
-+void QOpenHarmonyPlayer::pause()
++void QOhPlayer::pause()
 +{
 +    if (m_state == AV_PLAYING)
 +        OH_AVPlayer_Pause(m_player);
 +}
 +
-+void QOpenHarmonyPlayer::stop()
++void QOhPlayer::stop()
 +{
 +    if ((m_state == AV_PLAYING) ||
 +        (m_state == AV_COMPLETED) ||
@@ -6598,7 +6453,7 @@ index 000000000..d746b25e8
 +    }
 +}
 +
-+void QOpenHarmonyPlayer::seekTo(qint32 msec)
++void QOhPlayer::seekTo(qint32 msec)
 +{
 +    if ((m_state == AV_PLAYING) ||
 +        (m_state == AV_PAUSED) ||
@@ -6607,7 +6462,7 @@ index 000000000..d746b25e8
 +    }
 +}
 +
-+void QOpenHarmonyPlayer::setMuted(bool mute)
++void QOhPlayer::setMuted(bool mute)
 +{
 +    if (mute) {
 +        m_volumeBeforeMute = m_volume;
@@ -6617,7 +6472,7 @@ index 000000000..d746b25e8
 +    }
 +}
 +
-+void QOpenHarmonyPlayer::setDataSource(const QNetworkRequest &request)
++void QOhPlayer::setDataSource(const QNetworkRequest &request)
 +{
 +    if (AV_IDLE != m_state)
 +        reset();
@@ -6651,18 +6506,18 @@ index 000000000..d746b25e8
 +    }
 +}
 +
-+void QOpenHarmonyPlayer::prepare()
++void QOhPlayer::prepare()
 +{
 +    OH_AVPlayer_Prepare(m_player);
 +}
 +
-+void QOpenHarmonyPlayer::setVolume(int volume)
++void QOhPlayer::setVolume(int volume)
 +{
 +    m_volume = volume;
 +    OH_AVPlayer_SetVolume(m_player, m_volume / 100.0, m_volume / 100.0);
 +}
 +
-+bool QOpenHarmonyPlayer::setPlaybackRate(qreal rate)
++bool QOhPlayer::setPlaybackRate(qreal rate)
 +{
 +    AVPlaybackSpeed speed;
 +    if (rate < 0.75)
@@ -6678,11 +6533,13 @@ index 000000000..d746b25e8
 +    return OH_AVPlayer_SetPlaybackSpeed(m_player, speed) == AV_ERR_OK;
 +}
 +
-+void QOpenHarmonyPlayer::setDisplay(OHNativeWindow *window)
++#include <native_window/external_window.h>
++void QOhPlayer::setDisplay(OHNativeWindow *window)
 +{
 +    if (window == nullptr)
 +        return;
 +    m_window = window;
++
 +    if (m_state == AV_INITIALIZED) {
 +        OH_AVErrCode result = OH_AVPlayer_SetVideoSurface(m_player, m_window);
 +        qWarning() << "Set Video Surface Result" << result;
@@ -6691,17 +6548,17 @@ index 000000000..d746b25e8
 +    }
 +}
 +
-+OHNativeWindow *QOpenHarmonyPlayer::display() const
++OHNativeWindow *QOhPlayer::display() const
 +{
 +    return m_window;
 +}
 +
-+void QOpenHarmonyPlayer::setErrorString(int code, const QString &errorString)
++void QOhPlayer::setErrorString(int code, const QString &errorString)
 +{
 +    emit error(code, errorString);
 +}
 +
-+void QOpenHarmonyPlayer::setPlayerInfo(AVPlayerOnInfoType type, OH_AVFormat *infoBody)
++void QOhPlayer::setPlayerInfo(AVPlayerOnInfoType type, OH_AVFormat *infoBody)
 +{
 +    switch(type) {
 +    case AV_INFO_TYPE_STATE_CHANGE: {
@@ -6745,7 +6602,7 @@ index 000000000..d746b25e8
 +    }
 +}
 +
-+void QOpenHarmonyPlayer::setState(int32_t state)
++void QOhPlayer::setState(int32_t state)
 +{
 +    m_state = AVPlayerState(state);
 +    switch(state) {
@@ -6756,6 +6613,11 @@ index 000000000..d746b25e8
 +        if (!m_surfaceSetted && m_window != nullptr) {
 +            OH_AVErrCode result = OH_AVPlayer_SetVideoSurface(m_player, m_window);
 +            qWarning() << "Set Video Surface Result" << result;
++
++            int32_t height, width;
++            height = width = 0;
++            int32_t ret = OH_NativeWindow_NativeWindowHandleOpt(m_window, GET_BUFFER_GEOMETRY, &height, &width);
++            qWarning() << "get ---- OH_NativeWindow_NativeWindowHandleOpt GET_BUFFER_GEOMETRY ret:" << ret << height << width;
 +            m_surfaceSetted = true;
 +        }
 +        prepare();
@@ -6789,7 +6651,7 @@ index 000000000..d746b25e8
 +    stateChanged(state);
 +}
 +
-+void QOpenHarmonyPlayer::setAudioRole(QAudio::Role role)
++void QOhPlayer::setAudioRole(QAudio::Role role)
 +{
 +    OH_AudioStream_Usage ohAudioRole = AUDIOSTREAM_USAGE_UNKNOWN;
 +
@@ -6828,7 +6690,7 @@ index 000000000..d746b25e8
 +    OH_AVPlayer_SetAudioRendererInfo(m_player, ohAudioRole);
 +}
 +
-+void QOpenHarmonyPlayer::setCustomAudioRole(const QString &role)
++void QOhPlayer::setCustomAudioRole(const QString &role)
 +{
 +    OH_AudioStream_Usage ohAudioRole = AUDIOSTREAM_USAGE_UNKNOWN;
 +
@@ -6849,7 +6711,7 @@ index 000000000..d746b25e8
 +    OH_AVPlayer_SetAudioRendererInfo(m_player, ohAudioRole);
 +}
 +
-+void QOpenHarmonyPlayer::obtainVideoSize()
++void QOhPlayer::obtainVideoSize()
 +{
 +    int32_t w, h = 0;
 +    OH_AVErrCode result = OH_AVPlayer_GetVideoWidth(m_player, &w);
@@ -6859,42 +6721,44 @@ index 000000000..d746b25e8
 +    if (result != AV_ERR_OK)
 +        return;
 +    emit videoSizeChanged(w, h);
++
++    qWarning() << "obtainVideoSize ---- get video w, h:" << w << h;
 +}
 +
-+void QOpenHarmonyPlayer::onPlayerInfo(OH_AVPlayer *player, AVPlayerOnInfoType type,
++void QOhPlayer::onPlayerInfo(OH_AVPlayer *player, AVPlayerOnInfoType type,
 +                                      OH_AVFormat *infoBody, void *userData)
 +{
 +    Q_UNUSED(userData);
-+    QOpenHarmonyPlayer *p = mediaPlayers->value(player);
++    QOhPlayer *p = mediaPlayers->value(player);
 +    if (p == nullptr)
 +        return;
 +    p->setPlayerInfo(type, infoBody);
 +}
 +
-+void QOpenHarmonyPlayer::onPlayerError(OH_AVPlayer *player, int32_t errorCode,
++void QOhPlayer::onPlayerError(OH_AVPlayer *player, int32_t errorCode,
 +                                       const char *errorMsg, void *userData)
 +{
 +    Q_UNUSED(userData);
-+    QOpenHarmonyPlayer *p = mediaPlayers->value(player);
++    QOhPlayer *p = mediaPlayers->value(player);
 +    if (p == nullptr)
 +        return;
 +    p->setErrorString(errorCode, QString::fromLatin1(errorMsg));
 +}
 +
-+AVPlayerState QOpenHarmonyPlayer::state() const
++AVPlayerState QOhPlayer::state() const
 +{
 +    return m_state;
 +}
 +
 +QT_END_NAMESPACE
-diff --git a/src/plugins/openharmony/src/player/qopenharmonyplayer.h b/src/plugins/openharmony/src/player/qopenharmonyplayer.h
+diff --git a/src/plugins/openharmony/src/player/qohplayer.h b/src/plugins/openharmony/src/player/qohplayer.h
 new file mode 100644
-index 000000000..e156d0416
+index 00000000..c2ead3ff
 --- /dev/null
-+++ b/src/plugins/openharmony/src/player/qopenharmonyplayer.h
++++ b/src/plugins/openharmony/src/player/qohplayer.h
 @@ -0,0 +1,82 @@
-+#ifndef QOPENHARMONYPLAYER_H
-+#define QOPENHARMONYPLAYER_H
++#ifndef QOHPLAYER_H
++#define QOHPLAYER_H
 +
 +#include <cstdint>
 +#include <QObject>
@@ -6907,12 +6771,12 @@ index 000000000..e156d0416
 +class QNetworkRequest;
 +struct NativeResourceManager;
 +
-+class QOpenHarmonyPlayer : public QObject
++class QOhPlayer : public QObject
 +{
 +    Q_OBJECT
 +public:
-+    QOpenHarmonyPlayer();
-+    ~QOpenHarmonyPlayer();
++    QOhPlayer();
++    ~QOhPlayer();
 +
 +    void release();
 +    void reset();
@@ -6974,28 +6838,28 @@ index 000000000..e156d0416
 +    QUrl m_url;
 +};
 +
-+#endif // QOPENHARMONYPLAYER_H
-diff --git a/src/plugins/openharmony/src/player/qopenharmonyplayercontrol.cpp b/src/plugins/openharmony/src/player/qopenharmonyplayercontrol.cpp
++#endif // QOHPLAYER_H
+diff --git a/src/plugins/openharmony/src/player/qohplayercontrol.cpp b/src/plugins/openharmony/src/player/qohplayercontrol.cpp
 new file mode 100644
-index 000000000..d6dbc8f23
+index 00000000..1fe9d3fd
 --- /dev/null
-+++ b/src/plugins/openharmony/src/player/qopenharmonyplayercontrol.cpp
++++ b/src/plugins/openharmony/src/player/qohplayercontrol.cpp
 @@ -0,0 +1,379 @@
 +#include <qaudio.h>
 +#include <QtCore/qmath.h>
 +#include <QtCore/qcoreapplication.h>
 +#include <multimedia/player_framework/avplayer.h>
 +
-+#include "qopenharmonyplayer.h"
++#include "qohplayer.h"
 +#include "qohvideorenderercontrol.h"
-+#include "qopenharmonyplayercontrol.h"
-+#include "qopenharmonyplayerservice.h"
-+#include "qopenharmonywindowcontrol.h"
++#include "qohplayercontrol.h"
++#include "qohplayerservice.h"
++#include "qohwindowcontrol.h"
 +
-+QOpenHarmonyPlayerControl::QOpenHarmonyPlayerControl(QObject *parent)
++QOhPlayerControl::QOhPlayerControl(QObject *parent)
 +    : QMediaPlayerControl(parent)
 +{
-+    m_player = new QOpenHarmonyPlayer();
++    m_player = new QOhPlayer();
 +    connect(m_player,SIGNAL(bufferingChanged(qint32)),
 +            this,SLOT(onBufferingChanged(qint32)));
 +    connect(m_player,SIGNAL(error(int,QString)),
@@ -7018,26 +6882,26 @@ index 000000000..d6dbc8f23
 +            this,SLOT(setMediaStatus(QMediaPlayer::MediaStatus)));
 +}
 +
-+QOpenHarmonyPlayerControl::~QOpenHarmonyPlayerControl()
++QOhPlayerControl::~QOhPlayerControl()
 +{
 +    m_player->release();
 +    delete m_player;
 +}
 +
-+void QOpenHarmonyPlayerControl::setVideoRenderOutput(QOHVideoRendererControl *control)
++void QOhPlayerControl::setVideoRenderOutput(QOhVideoRendererControl *control)
 +{
 +    m_videoRenderControl = control;
 +}
 +
-+void QOpenHarmonyPlayerControl::setVideoWindowOutput(QOpenHarmonyWindowControl *control)
++void QOhPlayerControl::setVideoWindowOutput(QOhWindowControl *control)
 +{
 +    m_videoWindowcControl = control;
 +
 +    if (nullptr != m_videoWindowcControl)
-+        connect(m_videoWindowcControl, &QOpenHarmonyWindowControl::windowCreated, this, &QOpenHarmonyPlayerControl::onWindowCreated);
++        connect(m_videoWindowcControl, &QOhWindowControl::windowCreated, this, &QOhPlayerControl::onWindowCreated);
 +}
 +
-+QMediaPlayer::State QOpenHarmonyPlayerControl::state() const
++QMediaPlayer::State QOhPlayerControl::state() const
 +{
 +     AVPlayerState state = m_player->state();
 +     if (state == AV_PLAYING)
@@ -7048,24 +6912,24 @@ index 000000000..d6dbc8f23
 +         return QMediaPlayer::StoppedState;
 +}
 +
-+QMediaPlayer::MediaStatus QOpenHarmonyPlayerControl::mediaStatus() const
++QMediaPlayer::MediaStatus QOhPlayerControl::mediaStatus() const
 +{
 +    return m_status;
 +}
 +
-+qint64 QOpenHarmonyPlayerControl::duration() const
++qint64 QOhPlayerControl::duration() const
 +{
 +    return m_player->getDuration();
 +}
 +
-+qint64 QOpenHarmonyPlayerControl::position() const
++qint64 QOhPlayerControl::position() const
 +{
 +    if (m_status == QMediaPlayer::EndOfMedia)
 +        return duration();
 +    return m_player->getCurrentPosition();
 +}
 +
-+void QOpenHarmonyPlayerControl::setPosition(qint64 position)
++void QOhPlayerControl::setPosition(qint64 position)
 +{
 +    if (m_status == QMediaPlayer::EndOfMedia) {
 +        m_status = QMediaPlayer::LoadedMedia;
@@ -7083,12 +6947,12 @@ index 000000000..d6dbc8f23
 +    Q_EMIT positionChanged(seekPosition);
 +}
 +
-+int QOpenHarmonyPlayerControl::volume() const
++int QOhPlayerControl::volume() const
 +{
 +    return m_volume;
 +}
 +
-+void QOpenHarmonyPlayerControl::setVolume(int volume)
++void QOhPlayerControl::setVolume(int volume)
 +{
 +    if (m_volume == volume)
 +        return;
@@ -7097,12 +6961,12 @@ index 000000000..d6dbc8f23
 +    Q_EMIT volumeChanged(volume);
 +}
 +
-+bool QOpenHarmonyPlayerControl::isMuted() const
++bool QOhPlayerControl::isMuted() const
 +{
 +    return m_muted;
 +}
 +
-+void QOpenHarmonyPlayerControl::setMuted(bool muted)
++void QOhPlayerControl::setMuted(bool muted)
 +{
 +    if (m_muted == muted)
 +        return;
@@ -7112,32 +6976,32 @@ index 000000000..d6dbc8f23
 +    Q_EMIT mutedChanged(muted);
 +}
 +
-+int QOpenHarmonyPlayerControl::bufferStatus() const
++int QOhPlayerControl::bufferStatus() const
 +{
 +    return m_bufferFilled ? 100 : 0;
 +}
 +
-+bool QOpenHarmonyPlayerControl::isAudioAvailable() const
++bool QOhPlayerControl::isAudioAvailable() const
 +{
 +    return m_audioAvailable;
 +}
 +
-+bool QOpenHarmonyPlayerControl::isVideoAvailable() const
++bool QOhPlayerControl::isVideoAvailable() const
 +{
 +    return m_videoAvailable;
 +}
 +
-+bool QOpenHarmonyPlayerControl::isSeekable() const
++bool QOhPlayerControl::isSeekable() const
 +{
 +    return m_seekable;
 +}
 +
-+QMediaTimeRange QOpenHarmonyPlayerControl::availablePlaybackRanges() const
++QMediaTimeRange QOhPlayerControl::availablePlaybackRanges() const
 +{
 +    return m_availablePlaybackRange;
 +}
 +
-+void QOpenHarmonyPlayerControl::updateAvailablePlaybackRanges()
++void QOhPlayerControl::updateAvailablePlaybackRanges()
 +{
 +    if (m_buffering) {
 +        const qint64 pos = position();
@@ -7152,29 +7016,29 @@ index 000000000..d6dbc8f23
 +    Q_EMIT availablePlaybackRangesChanged(m_availablePlaybackRange);
 +}
 +
-+qreal QOpenHarmonyPlayerControl::playbackRate() const
++qreal QOhPlayerControl::playbackRate() const
 +{
 +    return m_player->playbackRate();
 +}
 +
-+void QOpenHarmonyPlayerControl::setPlaybackRate(qreal rate)
++void QOhPlayerControl::setPlaybackRate(qreal rate)
 +{
 +    if (m_player->setPlaybackRate(rate)) {
 +        emit playbackRateChanged(rate);
 +    }
 +}
 +
-+QMediaContent QOpenHarmonyPlayerControl::media() const
++QMediaContent QOhPlayerControl::media() const
 +{
 +    return m_media;
 +}
 +
-+const QIODevice *QOpenHarmonyPlayerControl::mediaStream() const
++const QIODevice *QOhPlayerControl::mediaStream() const
 +{
 +    return m_stream;
 +}
 +
-+void QOpenHarmonyPlayerControl::setMedia(const QMediaContent &media, QIODevice *stream)
++void QOhPlayerControl::setMedia(const QMediaContent &media, QIODevice *stream)
 +{
 +    if (m_media == media && m_stream == stream)
 +        return;
@@ -7195,17 +7059,17 @@ index 000000000..d6dbc8f23
 +    Q_EMIT mediaChanged(media);
 +}
 +
-+void QOpenHarmonyPlayerControl::play()
++void QOhPlayerControl::play()
 +{
 +    playOrPause(QMediaPlayer::PlayingState);
 +}
 +
-+void QOpenHarmonyPlayerControl::pause()
++void QOhPlayerControl::pause()
 +{
 +    playOrPause(QMediaPlayer::PausedState);
 +}
 +
-+void QOpenHarmonyPlayerControl::playOrPause(QMediaPlayer::State state)
++void QOhPlayerControl::playOrPause(QMediaPlayer::State state)
 +{
 +    if (m_status == QMediaPlayer::NoMedia || state == QMediaPlayer::StoppedState)
 +        return;
@@ -7230,7 +7094,7 @@ index 000000000..d6dbc8f23
 +    emit stateChanged(state);
 +}
 +
-+void QOpenHarmonyPlayerControl::stop()
++void QOhPlayerControl::stop()
 +{
 +    if (m_videoRenderControl)
 +        m_videoRenderControl->stop();
@@ -7239,22 +7103,22 @@ index 000000000..d6dbc8f23
 +    emit stateChanged(QMediaPlayer::StoppedState);
 +}
 +
-+QSize QOpenHarmonyPlayerControl::videoSize() const
++QSize QOhPlayerControl::videoSize() const
 +{
 +    return m_videoSize;
 +}
 +
-+void QOpenHarmonyPlayerControl::setAudioRole(QAudio::Role role)
++void QOhPlayerControl::setAudioRole(QAudio::Role role)
 +{
 +    m_player->setAudioRole(role);
 +}
 +
-+void QOpenHarmonyPlayerControl::setCustomAudioRole(const QString &role)
++void QOhPlayerControl::setCustomAudioRole(const QString &role)
 +{
 +    m_player->setCustomAudioRole(role);
 +}
 +
-+void QOpenHarmonyPlayerControl::setSeekable(bool seekable)
++void QOhPlayerControl::setSeekable(bool seekable)
 +{
 +    if (m_seekable == seekable)
 +        return;
@@ -7263,7 +7127,7 @@ index 000000000..d6dbc8f23
 +    Q_EMIT seekableChanged(m_seekable);
 +}
 +
-+void QOpenHarmonyPlayerControl::setAudioAvailable(bool available)
++void QOhPlayerControl::setAudioAvailable(bool available)
 +{
 +    if (m_audioAvailable == available)
 +        return;
@@ -7272,7 +7136,7 @@ index 000000000..d6dbc8f23
 +    Q_EMIT videoAvailableChanged(m_audioAvailable);
 +}
 +
-+void QOpenHarmonyPlayerControl::setVideoAvailable(bool available)
++void QOhPlayerControl::setVideoAvailable(bool available)
 +{
 +    if (m_videoAvailable == available)
 +        return;
@@ -7281,17 +7145,17 @@ index 000000000..d6dbc8f23
 +    Q_EMIT videoAvailableChanged(m_videoAvailable);
 +}
 +
-+void QOpenHarmonyPlayerControl::onWindowCreated()
++void QOhPlayerControl::onWindowCreated()
 +{
 +    m_player->setDisplay(m_videoWindowcControl->nativeWindow());
 +}
 +
-+void QOpenHarmonyPlayerControl::onStateChanged(qint32)
++void QOhPlayerControl::onStateChanged(qint32)
 +{
 +    emit stateChanged(state());
 +}
 +
-+void QOpenHarmonyPlayerControl::onVideoSizeChanged(qint32 width, qint32 height)
++void QOhPlayerControl::onVideoSizeChanged(qint32 width, qint32 height)
 +{
 +    QSize newSize(width, height);
 +
@@ -7301,7 +7165,7 @@ index 000000000..d6dbc8f23
 +    m_videoSize = newSize;
 +}
 +
-+void QOpenHarmonyPlayerControl::setMediaStatus(QMediaPlayer::MediaStatus status)
++void QOhPlayerControl::setMediaStatus(QMediaPlayer::MediaStatus status)
 +{
 +    if (m_status == status)
 +        return;
@@ -7319,7 +7183,7 @@ index 000000000..d6dbc8f23
 +    updateBufferStatus();
 +}
 +
-+void QOpenHarmonyPlayerControl::updateBufferStatus()
++void QOhPlayerControl::updateBufferStatus()
 +{
 +    bool bufferFilled = (m_status == QMediaPlayer::BufferedMedia
 +                         || m_status == QMediaPlayer::BufferingMedia);
@@ -7330,7 +7194,7 @@ index 000000000..d6dbc8f23
 +    }
 +}
 +
-+void QOpenHarmonyPlayerControl::onBufferingChanged(qint32 percent)
++void QOhPlayerControl::onBufferingChanged(qint32 percent)
 +{
 +    m_buffering = percent != 100;
 +    m_bufferPercent = percent;
@@ -7341,7 +7205,7 @@ index 000000000..d6dbc8f23
 +        setMediaStatus(m_buffering ? QMediaPlayer::BufferingMedia : QMediaPlayer::BufferedMedia);
 +}
 +
-+void QOpenHarmonyPlayerControl::onError(int code, const QString &errorString)
++void QOhPlayerControl::onError(int code, const QString &errorString)
 +{
 +    qWarning() <<"open harmony player error: " << code << errorString;
 +    // Todo 鸿蒙errorCode和QMediaPlayer::Error对应
@@ -7360,14 +7224,14 @@ index 000000000..d6dbc8f23
 +
 +    emit error(mError, errorString);
 +}
-diff --git a/src/plugins/openharmony/src/player/qopenharmonyplayercontrol.h b/src/plugins/openharmony/src/player/qopenharmonyplayercontrol.h
+diff --git a/src/plugins/openharmony/src/player/qohplayercontrol.h b/src/plugins/openharmony/src/player/qohplayercontrol.h
 new file mode 100644
-index 000000000..32905eb6f
+index 00000000..15f70995
 --- /dev/null
-+++ b/src/plugins/openharmony/src/player/qopenharmonyplayercontrol.h
++++ b/src/plugins/openharmony/src/player/qohplayercontrol.h
 @@ -0,0 +1,101 @@
-+#ifndef QOPENHARMONYPLAYERCONTROL_H
-+#define QOPENHARMONYPLAYERCONTROL_H
++#ifndef QOHPLAYERCONTROL_H
++#define QOHPLAYERCONTROL_H
 +
 +#include "qmediacontent.h"
 +#include "qmediaplayercontrol.h"
@@ -7376,19 +7240,19 @@ index 000000000..32905eb6f
 +#include <QtCore/qcoreevent.h>
 +
 +QT_BEGIN_NAMESPACE
-+class QOpenHarmonyPlayer;
-+class QOHVideoRendererControl;
-+class QOpenHarmonyWindowControl;
++class QOhPlayer;
++class QOhVideoRendererControl;
++class QOhWindowControl;
 +
-+class QOpenHarmonyPlayerControl : public QMediaPlayerControl
++class QOhPlayerControl : public QMediaPlayerControl
 +{
 +    Q_OBJECT
 +public:
-+    QOpenHarmonyPlayerControl(QObject *parent = nullptr);
-+    ~QOpenHarmonyPlayerControl() override;
++    QOhPlayerControl(QObject *parent = nullptr);
++    ~QOhPlayerControl() override;
 +
-+    void setVideoRenderOutput(QOHVideoRendererControl *control);
-+    void setVideoWindowOutput(QOpenHarmonyWindowControl *control);
++    void setVideoRenderOutput(QOhVideoRendererControl *control);
++    void setVideoWindowOutput(QOhWindowControl *control);
 +
 +    QMediaPlayer::State state() const override;
 +
@@ -7444,9 +7308,9 @@ index 000000000..32905eb6f
 +    void updateAvailablePlaybackRanges();
 +    void updateBufferStatus();
 +    void playOrPause(QMediaPlayer::State state);
-+    QOHVideoRendererControl *m_videoRenderControl = nullptr;
-+    QOpenHarmonyWindowControl *m_videoWindowcControl = nullptr;
-+    QOpenHarmonyPlayer *m_player = nullptr;
++    QOhVideoRendererControl *m_videoRenderControl = nullptr;
++    QOhWindowControl *m_videoWindowcControl = nullptr;
++    QOhPlayer *m_player = nullptr;
 +    QMediaPlayer::MediaStatus m_status = QMediaPlayer::NoMedia;
 +    QMediaPlayer::Error m_error = QMediaPlayer::NoError;
 +    QMediaTimeRange m_availablePlaybackRange;
@@ -7467,36 +7331,36 @@ index 000000000..32905eb6f
 +QT_END_NAMESPACE
 +
 +#endif
-diff --git a/src/plugins/openharmony/src/player/qopenharmonyplayerservice.cpp b/src/plugins/openharmony/src/player/qopenharmonyplayerservice.cpp
+diff --git a/src/plugins/openharmony/src/player/qohplayerservice.cpp b/src/plugins/openharmony/src/player/qohplayerservice.cpp
 new file mode 100644
-index 000000000..2093c2dbd
+index 00000000..6bbeee3b
 --- /dev/null
-+++ b/src/plugins/openharmony/src/player/qopenharmonyplayerservice.cpp
++++ b/src/plugins/openharmony/src/player/qohplayerservice.cpp
 @@ -0,0 +1,87 @@
 +#include "qvideorenderercontrol.h"
 +#include "qohvideorenderercontrol.h"
-+#include "qopenharmonyplayerservice.h"
-+#include "qopenharmonyplayercontrol.h"
-+#include "qopenharmonywindowcontrol.h"
++#include "qohplayerservice.h"
++#include "qohplayercontrol.h"
++#include "qohwindowcontrol.h"
 +#include "qohaudiorolecontrol.h"
 +#include "qohcustomaudiorolecontrol.h"
 +
 +QT_BEGIN_NAMESPACE
 +
-+QOpenHarmonyPlayerService::QOpenHarmonyPlayerService(QObject *parent)
++QOhPlayerService::QOhPlayerService(QObject *parent)
 +    : QMediaService(parent)
 +{
-+    m_playerControl = new QOpenHarmonyPlayerControl(this);
++    m_playerControl = new QOhPlayerControl(this);
 +
 +    m_audioRoleControl = new QOhAudioRoleControl;
 +    m_customAudioRoleControl = new QOhCustomAudioRoleControl;
 +    connect(m_audioRoleControl, &QOhAudioRoleControl::audioRoleChanged,
-+            m_playerControl, &QOpenHarmonyPlayerControl::setAudioRole);
++            m_playerControl, &QOhPlayerControl::setAudioRole);
 +    connect(m_customAudioRoleControl, &QOhCustomAudioRoleControl::customAudioRoleChanged,
-+            m_playerControl, &QOpenHarmonyPlayerControl::setCustomAudioRole);
++            m_playerControl, &QOhPlayerControl::setCustomAudioRole);
 +}
 +
-+QOpenHarmonyPlayerService::~QOpenHarmonyPlayerService()
++QOhPlayerService::~QOhPlayerService()
 +{
 +    if (m_playerControl) {
 +        delete m_playerControl;
@@ -7514,20 +7378,20 @@ index 000000000..2093c2dbd
 +    }
 +}
 +
-+QMediaControl *QOpenHarmonyPlayerService::requestControl(const char *name)
++QMediaControl *QOhPlayerService::requestControl(const char *name)
 +{
 +    if (0 == qstrcmp(QMediaPlayerControl_iid, name))
 +        return m_playerControl;
 +
 +    if (0 == qstrcmp(QVideoWindowControl_iid, name)) {
-+        m_videoWindowControl = new QOpenHarmonyWindowControl();
++        m_videoWindowControl = new QOhWindowControl();
 +        m_videoWindowControl->setPlayerControl(m_playerControl);
 +        m_playerControl->setVideoWindowOutput(m_videoWindowControl);
 +        return m_videoWindowControl;
 +    }
 +
 +    if (0 == qstrcmp(QVideoRendererControl_iid, name)) {
-+        m_videoRenderControl = new QOHVideoRendererControl();
++        m_videoRenderControl = new QOhVideoRendererControl();
 +        m_playerControl->setVideoRenderOutput(m_videoRenderControl);
 +        return m_videoRenderControl;
 +    }
@@ -7543,7 +7407,7 @@ index 000000000..2093c2dbd
 +    return nullptr;
 +}
 +
-+void QOpenHarmonyPlayerService::releaseControl(QMediaControl *control)
++void QOhPlayerService::releaseControl(QMediaControl *control)
 +{
 +    if (m_videoWindowControl == control) {
 +        delete m_videoWindowControl;
@@ -7560,39 +7424,39 @@ index 000000000..2093c2dbd
 +}
 +
 +QT_END_NAMESPACE
-diff --git a/src/plugins/openharmony/src/player/qopenharmonyplayerservice.h b/src/plugins/openharmony/src/player/qopenharmonyplayerservice.h
+diff --git a/src/plugins/openharmony/src/player/qohplayerservice.h b/src/plugins/openharmony/src/player/qohplayerservice.h
 new file mode 100644
-index 000000000..8c4fdf3d5
+index 00000000..ec396187
 --- /dev/null
-+++ b/src/plugins/openharmony/src/player/qopenharmonyplayerservice.h
++++ b/src/plugins/openharmony/src/player/qohplayerservice.h
 @@ -0,0 +1,34 @@
-+#ifndef QOPENHARMONYPLAYERSERVICE_H
-+#define QOPENHARMONYPLAYERSERVICE_H
++#ifndef QOHPLAYERSERVICE_H
++#define QOHPLAYERSERVICE_H
 +
 +#include "qmediaservice.h"
 +
 +QT_BEGIN_NAMESPACE
 +
-+class QOHVideoRendererControl;
-+class QOpenHarmonyPlayerControl;
-+class QOpenHarmonyWindowControl;
++class QOhVideoRendererControl;
++class QOhPlayerControl;
++class QOhWindowControl;
 +class QOhAudioRoleControl;
 +class QOhCustomAudioRoleControl;
 +
-+class QOpenHarmonyPlayerService : public QMediaService
++class QOhPlayerService : public QMediaService
 +{
 +    Q_OBJECT
 +public:
-+    QOpenHarmonyPlayerService(QObject *parent = nullptr);
-+    ~QOpenHarmonyPlayerService() override;
++    QOhPlayerService(QObject *parent = nullptr);
++    ~QOhPlayerService() override;
 +
 +    QMediaControl *requestControl(const char *name) override;
 +    void releaseControl(QMediaControl *control) override;
 +
 +private:
-+    QOpenHarmonyPlayerControl *m_playerControl = nullptr;
-+    QOHVideoRendererControl *m_videoRenderControl  = nullptr;
-+    QOpenHarmonyWindowControl *m_videoWindowControl = nullptr;
++    QOhPlayerControl *m_playerControl = nullptr;
++    QOhVideoRendererControl *m_videoRenderControl  = nullptr;
++    QOhWindowControl *m_videoWindowControl = nullptr;
 +    QOhAudioRoleControl *m_audioRoleControl = nullptr;
 +    QOhCustomAudioRoleControl *m_customAudioRoleControl = nullptr;
 +};
@@ -7600,16 +7464,160 @@ index 000000000..8c4fdf3d5
 +QT_END_NAMESPACE
 +
 +#endif
-diff --git a/src/plugins/openharmony/src/player/qopenharmonywindowcontrol.cpp b/src/plugins/openharmony/src/player/qopenharmonywindowcontrol.cpp
+diff --git a/src/plugins/openharmony/src/player/qohvideorenderercontrol.cpp b/src/plugins/openharmony/src/player/qohvideorenderercontrol.cpp
 new file mode 100644
-index 000000000..03cca0adf
+index 00000000..bcc7d491
 --- /dev/null
-+++ b/src/plugins/openharmony/src/player/qopenharmonywindowcontrol.cpp
-@@ -0,0 +1,203 @@
-+#include "qopenharmonywindowcontrol.h"
++++ b/src/plugins/openharmony/src/player/qohvideorenderercontrol.cpp
+@@ -0,0 +1,94 @@
++#include <QFile>
++#include <QDebug>
++#include <QNetworkRequest>
++#include <QVideoSurfaceFormat>
++#include <QAbstractVideoSurface>
++
++#include "qohdecoder.h"
++#include "qohdemuxer.h"
++#include "qohvideorenderercontrol.h"
++
++QT_BEGIN_NAMESPACE
++
++QOhVideoRendererControl::QOhVideoRendererControl(QObject *parent)
++    : QVideoRendererControl { parent }
++    , m_prepare(false)
++    , m_surface(nullptr)
++    , m_demuxer(nullptr)
++    , m_videoDecoder(nullptr)
++{
++    m_demuxer.reset(new QOhDemuxer(QOhDemuxer::E_VIDEO));
++    m_videoDecoder.reset(new QOhVideoDecoder(m_demuxer.get()));
++    connect(m_videoDecoder.get(), &QOhVideoDecoder::finished, [this]{ this->stop(); });
++    connect(m_videoDecoder.get(), &QOhVideoDecoder::videoFrameChange, [this](const QVideoFrame &frame){
++        if (!this->m_surface)
++            return;
++
++        if (!this->m_surface->isActive()) {
++            QVideoSurfaceFormat format(frame.size(), frame.pixelFormat(), QAbstractVideoBuffer::QPixmapHandle);
++            this->m_surface->start(format);
++        }
++        /* Qt内置的QVideoSurfaceGenericPainter没有对帧图片进行格式转换
++         * 因此这里使用frame转换后的RGB32格式的图片
++         */
++        this->m_surface->present(frame.image());
++    });
++}
++
++QOhVideoRendererControl::~QOhVideoRendererControl()
++{
++    stop();
++}
++
++void QOhVideoRendererControl::play()
++{
++    if (!m_prepare)
++        m_prepare = m_videoDecoder->prepare();
++
++    m_videoDecoder->start();
++}
++
++void QOhVideoRendererControl::stop()
++{
++    m_prepare = false;
++    m_videoDecoder->stop();
++    if (m_surface)
++        m_surface->present(QVideoFrame());
++
++    seekTo(0);
++}
++
++void QOhVideoRendererControl::pause()
++{
++    /* TODO */
++    stop();
++}
++
++void QOhVideoRendererControl::seekTo(qint64 msec)
++{
++    m_demuxer->seekTime(msec);
++}
++
++void QOhVideoRendererControl::setDataSource(const QNetworkRequest &request)
++{
++    if (!m_demuxer->configure(request.url()))
++        return;
++
++    auto videoInfo = m_demuxer->videoInfo();
++    if (!m_videoDecoder->configure(videoInfo))
++        return;
++
++    seekTo(0);
++}
++
++QAbstractVideoSurface *QOhVideoRendererControl::surface() const
++{
++    return m_surface;
++}
++
++void QOhVideoRendererControl::setSurface(QAbstractVideoSurface *surface)
++{
++    m_surface = surface;
++}
++
++QT_END_NAMESPACE
+diff --git a/src/plugins/openharmony/src/player/qohvideorenderercontrol.h b/src/plugins/openharmony/src/player/qohvideorenderercontrol.h
+new file mode 100644
+index 00000000..16013e42
+--- /dev/null
++++ b/src/plugins/openharmony/src/player/qohvideorenderercontrol.h
+@@ -0,0 +1,38 @@
++#ifndef QOHVIDEORENDERERCONTROL_H
++#define QOHVIDEORENDERERCONTROL_H
++
++#include <QUrl>
++#include <QVideoRendererControl>
++
++QT_BEGIN_NAMESPACE
++class QOhDemuxer;
++class QOhVideoDecoder;
++class QNetworkRequest;
++class QOhVideoRendererControl : public QVideoRendererControl
++{
++    Q_OBJECT
++    Q_DISABLE_COPY_MOVE(QOhVideoRendererControl)
++
++public:
++    explicit QOhVideoRendererControl(QObject *parent = nullptr);
++    ~QOhVideoRendererControl();
++
++    void play();
++    void stop();
++    void pause();
++    void seekTo(qint64 msec);
++    void setDataSource(const QNetworkRequest &request);
++
++    QAbstractVideoSurface *surface() const override;
++    void setSurface(QAbstractVideoSurface *surface) override;
++
++private:
++    bool m_prepare;
++    QAbstractVideoSurface *m_surface;
++    QScopedPointer<QOhDemuxer> m_demuxer;
++    QScopedPointer<QOhVideoDecoder> m_videoDecoder;
++};
++
++QT_END_NAMESPACE
++
++#endif // QOHVIDEORENDERERCONTROL_H
+diff --git a/src/plugins/openharmony/src/player/qohwindowcontrol.cpp b/src/plugins/openharmony/src/player/qohwindowcontrol.cpp
+new file mode 100644
+index 00000000..723950c0
+--- /dev/null
++++ b/src/plugins/openharmony/src/player/qohwindowcontrol.cpp
+@@ -0,0 +1,210 @@
++#include "qohwindowcontrol.h"
 +#include <qopenharmonydefines.h>
 +#include <QHash>
-+#include "qopenharmonyplayercontrol.h"
++#include "qohplayercontrol.h"
 +#include <arkui/native_node.h>
 +#include <arkui/native_type.h>
 +#include <arkui/native_interface.h>
@@ -7617,7 +7625,6 @@ index 000000000..03cca0adf
 +#include <QTimer>
 +#include <QWidget>
 +#include <uv.h>
-+#include <QWindow>
 +
 +struct Node {
 +    ArkUI_NodeType nodeType; // Type of the node. The value can be ARKUI_NODE_XCOMPONENT or other types supported in later versions.
@@ -7638,14 +7645,15 @@ index 000000000..03cca0adf
 +public:
 +    VideoOutWidget(QWidget *parent) : QWidget(parent)
 +    {
++        setUpdatesEnabled(false);
 +        setObjectName("_q_oh_videowidget");
-+        setAttribute(Qt::WA_UpdatesDisabled);
-+        setAttribute(Qt::WA_StyledBackground);
++        //setAttribute(Qt::WA_UpdatesDisabled);
++        //setAttribute(Qt::WA_StyledBackground);
 +    }
 +};
 +
 +
-+QOpenHarmonyWindowControl::QOpenHarmonyWindowControl(QObject *parent)
++QOhWindowControl::QOhWindowControl(QObject *parent)
 +    : QVideoWindowControl(parent)
 +    , m_timer(nullptr)
 +    , m_widget(nullptr)
@@ -7653,17 +7661,17 @@ index 000000000..03cca0adf
 +
 +}
 +
-+QOpenHarmonyWindowControl::~QOpenHarmonyWindowControl()
++QOhWindowControl::~QOhWindowControl()
 +{
 +
 +}
 +
-+WId QOpenHarmonyWindowControl::winId() const
++WId QOhWindowControl::winId() const
 +{
 +    return m_windowId;
 +}
 +
-+void QOpenHarmonyWindowControl::setWinId(WId id)
++void QOhWindowControl::setWinId(WId id)
 +{
 +    if (m_windowId == id)
 +        return;
@@ -7674,6 +7682,7 @@ index 000000000..03cca0adf
 +        qWarning() << "set player output widget failed";
 +        return;
 +    }
++
 +    m_widget = new VideoOutWidget(widget);
 +    WId videoId = m_widget->winId();
 +    m_widget->show();
@@ -7690,7 +7699,7 @@ index 000000000..03cca0adf
 +        if (m_timer == nullptr) {
 +            m_timer = new QTimer(this);
 +            connect(m_timer, &QTimer::timeout, this, [node, this]{
-+                if (node->window != nullptr) {
++                if (node->window != nullptr) {                    
 +                    setNativeWindow(reinterpret_cast<OHNativeWindow *>(node->window));
 +                    m_timer->stop();
 +                }
@@ -7702,134 +7711,140 @@ index 000000000..03cca0adf
 +    }
 +}
 +
-+QRect QOpenHarmonyWindowControl::displayRect() const
++QRect QOhWindowControl::displayRect() const
 +{
 +    return m_displayRect;
 +}
 +
-+void QOpenHarmonyWindowControl::setDisplayRect(const QRect &rect)
++void QOhWindowControl::setDisplayRect(const QRect &rect)
 +{
 +    m_displayRect = rect;
 +    if (m_widget != nullptr)
 +        m_widget->setGeometry(0, 0, rect.width(), rect.height());
 +}
 +
-+bool QOpenHarmonyWindowControl::isFullScreen() const
++bool QOhWindowControl::isFullScreen() const
 +{
 +    return m_fullScreen;
 +}
 +
-+void QOpenHarmonyWindowControl::setFullScreen(bool fullScreen)
++void QOhWindowControl::setFullScreen(bool fullScreen)
 +{
 +    emit fullScreenChanged(m_fullScreen = fullScreen);
 +}
 +
-+void QOpenHarmonyWindowControl::repaint()
++void QOhWindowControl::repaint()
 +{
 +
 +}
 +
-+QSize QOpenHarmonyWindowControl::nativeSize() const
++QSize QOhWindowControl::nativeSize() const
 +{
 +    return m_playerControl == nullptr ? QSize() : m_playerControl->videoSize();
 +}
 +
-+Qt::AspectRatioMode QOpenHarmonyWindowControl::aspectRatioMode() const
++Qt::AspectRatioMode QOhWindowControl::aspectRatioMode() const
 +{
 +    return m_aspectRatioMode;
 +}
 +
-+void QOpenHarmonyWindowControl::setAspectRatioMode(Qt::AspectRatioMode mode)
++void QOhWindowControl::setAspectRatioMode(Qt::AspectRatioMode mode)
 +{
 +    m_aspectRatioMode = mode;
 +}
 +
-+int QOpenHarmonyWindowControl::brightness() const
++int QOhWindowControl::brightness() const
 +{
 +    return m_brightness;
 +}
 +
-+void QOpenHarmonyWindowControl::setBrightness(int brightness)
++void QOhWindowControl::setBrightness(int brightness)
 +{
 +    m_brightness = brightness;
 +
 +    emit brightnessChanged(brightness);
 +}
 +
-+int QOpenHarmonyWindowControl::contrast() const
++int QOhWindowControl::contrast() const
 +{
 +    return m_contrast;
 +}
 +
-+void QOpenHarmonyWindowControl::setContrast(int contrast)
++void QOhWindowControl::setContrast(int contrast)
 +{
 +    m_contrast = contrast;
 +
 +    emit contrastChanged(contrast);
 +}
 +
-+int QOpenHarmonyWindowControl::hue() const
++int QOhWindowControl::hue() const
 +{
 +    return m_hue;
 +}
 +
-+void QOpenHarmonyWindowControl::setHue(int hue)
++void QOhWindowControl::setHue(int hue)
 +{
 +    m_hue = hue;
 +
 +    emit hueChanged(hue);
 +}
 +
-+int QOpenHarmonyWindowControl::saturation() const
++int QOhWindowControl::saturation() const
 +{
 +    return m_saturation;
 +}
 +
-+void QOpenHarmonyWindowControl::setSaturation(int saturation)
++void QOhWindowControl::setSaturation(int saturation)
 +{
 +    m_saturation = saturation;
 +
 +    emit saturationChanged(saturation);
 +}
 +
-+void QOpenHarmonyWindowControl::setNativeWindow(OHNativeWindow *nativeWindow)
++void QOhWindowControl::setNativeWindow(OHNativeWindow *nativeWindow)
 +{
 +    m_nativeWindow = nativeWindow;
++    int32_t ret = OH_NativeWindow_NativeWindowSetScalingModeV2(m_nativeWindow, OH_SCALING_MODE_SCALE_FIT_V2);
++    qWarning() << "<---OH_NativeWindow_NativeWindowSetScalingModeV2: " << ret;
++
++    ret = OH_NativeWindow_NativeWindowHandleOpt(m_nativeWindow, SET_BUFFER_GEOMETRY, 1080, 1920);
++
++    qWarning() << "<---OH_NativeWindow_NativeWindowHandleOpt SET_BUFFER_GEOMETRY: " << ret <<  m_widget->height() << m_widget->width();
 +    QMetaObject::invokeMethod(this, "windowCreated");
 +}
 +
-+OHNativeWindow *QOpenHarmonyWindowControl::nativeWindow() const
++OHNativeWindow *QOhWindowControl::nativeWindow() const
 +{
 +    return m_nativeWindow;
 +}
 +
-+void QOpenHarmonyWindowControl::setPlayerControl(QOpenHarmonyPlayerControl *control)
++void QOhWindowControl::setPlayerControl(QOhPlayerControl *control)
 +{
 +    if (control == nullptr)
 +        return;
 +    m_playerControl = control;
 +}
-diff --git a/src/plugins/openharmony/src/player/qopenharmonywindowcontrol.h b/src/plugins/openharmony/src/player/qopenharmonywindowcontrol.h
+diff --git a/src/plugins/openharmony/src/player/qohwindowcontrol.h b/src/plugins/openharmony/src/player/qohwindowcontrol.h
 new file mode 100644
-index 000000000..72acb332c
+index 00000000..dd25ca08
 --- /dev/null
-+++ b/src/plugins/openharmony/src/player/qopenharmonywindowcontrol.h
++++ b/src/plugins/openharmony/src/player/qohwindowcontrol.h
 @@ -0,0 +1,70 @@
-+#ifndef QOPENHARMONYWINDOWCONTROL_H
-+#define QOPENHARMONYWINDOWCONTROL_H
++#ifndef QOHWINDOWCONTROL_H
++#define QOHWINDOWCONTROL_H
 +
 +#include "qvideowindowcontrol.h"
 +#include <multimedia/player_framework/avplayer.h>
 +
 +QT_BEGIN_NAMESPACE
 +class VideoOutWidget;
-+class QOpenHarmonyPlayerControl;
-+class QOpenHarmonyWindowControl : public QVideoWindowControl
++class QOhPlayerControl;
++class QOhWindowControl : public QVideoWindowControl
 +{
 +    Q_OBJECT
 +public:
-+    QOpenHarmonyWindowControl(QObject *parent = nullptr);
-+    ~QOpenHarmonyWindowControl() override;
++    QOhWindowControl(QObject *parent = nullptr);
++    ~QOhWindowControl() override;
 +
 +    WId winId() const override;
 +    void setWinId(WId id) override;
@@ -7862,7 +7877,7 @@ index 000000000..72acb332c
 +    void setNativeWindow(OHNativeWindow *nativeWindow);
 +    OHNativeWindow *nativeWindow() const;
 +
-+    void setPlayerControl(QOpenHarmonyPlayerControl *control);
++    void setPlayerControl(QOhPlayerControl *control);
 +
 +Q_SIGNALS:
 +    void windowCreated();
@@ -7877,7 +7892,7 @@ index 000000000..72acb332c
 +    int m_hue = 0;
 +    int m_saturation = 0;
 +    bool m_fullScreen = false;
-+    QOpenHarmonyPlayerControl *m_playerControl;
++    QOhPlayerControl *m_playerControl;
 +    QTimer *m_timer;
 +    VideoOutWidget *m_widget;
 +};
@@ -7885,54 +7900,54 @@ index 000000000..72acb332c
 +QT_END_NAMESPACE
 +
 +#endif
-diff --git a/src/plugins/openharmony/src/qopenharmonymediaserviceplugin.cpp b/src/plugins/openharmony/src/qopenharmonymediaserviceplugin.cpp
+diff --git a/src/plugins/openharmony/src/qohmediaserviceplugin.cpp b/src/plugins/openharmony/src/qohmediaserviceplugin.cpp
 new file mode 100644
-index 000000000..8d7ee0ed1
+index 00000000..7518aca3
 --- /dev/null
-+++ b/src/plugins/openharmony/src/qopenharmonymediaserviceplugin.cpp
++++ b/src/plugins/openharmony/src/qohmediaserviceplugin.cpp
 @@ -0,0 +1,100 @@
 +#include <QLoggingCategory>
 +
 +#include "qcamera.h"
 +#include "qmediaserviceproviderplugin.h"
-+#include "qopenharmonymediaserviceplugin.h"
-+#include "mediacapture/qopenharmonycamerasession.h"
-+#include "mediacapture/qopenharmonycaptureservice.h"
-+#include "mediacapture/qopenharmonycamerainfocontrol.h"
-+#include "qopenharmonyplayerservice.h"
++#include "qohmediaserviceplugin.h"
++#include "mediacapture/qohcamerasession.h"
++#include "mediacapture/qohcaptureservice.h"
++#include "mediacapture/qohcamerainfocontrol.h"
++#include "qohplayerservice.h"
 +// #include "qopenharmonyaudioservice.h"
 +
 +QT_BEGIN_NAMESPACE
 +
 +Q_LOGGING_CATEGORY(qtOPenHaronyMediaPlugin, "qt.multimedia.plugins.openharmony")
 +
-+QOPenHarmonyMediaServicePlugin::QOPenHarmonyMediaServicePlugin()
++QOhMediaServicePlugin::QOhMediaServicePlugin()
 +{
 +}
 +
-+QOPenHarmonyMediaServicePlugin::~QOPenHarmonyMediaServicePlugin()
++QOhMediaServicePlugin::~QOhMediaServicePlugin()
 +{
 +}
 +
-+QMediaService *QOPenHarmonyMediaServicePlugin::create(const QString &key)
++QMediaService *QOhMediaServicePlugin::create(const QString &key)
 +{
 +    if (key == QLatin1String(Q_MEDIASERVICE_MEDIAPLAYER))
-+        return new QOpenHarmonyPlayerService();
++        return new QOhPlayerService();
 +
 +    if (key == QLatin1String(Q_MEDIASERVICE_CAMERA)) {
-+        return new QOPenHarmonyCaptureService();
++        return new QOhCaptureService();
 +    }
 +
 +    qCWarning(qtOPenHaronyMediaPlugin) << "OPenHarony service plugin: unsupported key:" << key;
 +    return 0;
 +}
 +
-+void QOPenHarmonyMediaServicePlugin::release(QMediaService *service)
++void QOhMediaServicePlugin::release(QMediaService *service)
 +{
 +    delete service;
 +}
 +
-+QMediaServiceProviderHint::Features QOPenHarmonyMediaServicePlugin::supportedFeatures(const QByteArray &service) const
++QMediaServiceProviderHint::Features QOhMediaServicePlugin::supportedFeatures(const QByteArray &service) const
 +{
 +    if (service == Q_MEDIASERVICE_MEDIAPLAYER)
 +        return QMediaServiceProviderHint::VideoSurface;
@@ -7944,20 +7959,20 @@ index 000000000..8d7ee0ed1
 +    return QMediaServiceProviderHint::Features();
 +}
 +
-+QByteArray QOPenHarmonyMediaServicePlugin::defaultDevice(const QByteArray &service) const
++QByteArray QOhMediaServicePlugin::defaultDevice(const QByteArray &service) const
 +{
-+    if (service == Q_MEDIASERVICE_CAMERA && !QOPenHarmonyCameraSession::availableCameras().isEmpty())
-+        return QOPenHarmonyCameraSession::availableCameras().first().name;
++    if (service == Q_MEDIASERVICE_CAMERA && !QOhCameraSession::availableCameras().isEmpty())
++        return QOhCameraSession::availableCameras().first().name;
 +
 +    return QByteArray();
 +}
 +
-+QList<QByteArray> QOPenHarmonyMediaServicePlugin::devices(const QByteArray &service) const
++QList<QByteArray> QOhMediaServicePlugin::devices(const QByteArray &service) const
 +{
 +    Q_UNUSED(service);
 +    if (service == Q_MEDIASERVICE_CAMERA) {
 +        QList<QByteArray> devices;
-+        const QList<OPenHarmonyCameraInfo> &cameras = QOPenHarmonyCameraSession::availableCameras();
++        const QList<OhCameraInfo> &cameras = QOhCameraSession::availableCameras();
 +        for (int i = 0; i < cameras.count(); ++i)
 +            devices.append(cameras.at(i).name);
 +        return devices;
@@ -7966,12 +7981,12 @@ index 000000000..8d7ee0ed1
 +    return QList<QByteArray>();
 +}
 +
-+QString QOPenHarmonyMediaServicePlugin::deviceDescription(const QByteArray &service, const QByteArray &device)
++QString QOhMediaServicePlugin::deviceDescription(const QByteArray &service, const QByteArray &device)
 +{
 +    if (service == Q_MEDIASERVICE_CAMERA) {
-+        const QList<OPenHarmonyCameraInfo> &cameras = QOPenHarmonyCameraSession::availableCameras();
++        const QList<OhCameraInfo> &cameras = QOhCameraSession::availableCameras();
 +        for (int i = 0; i < cameras.count(); ++i) {
-+            const OPenHarmonyCameraInfo &info = cameras.at(i);
++            const OhCameraInfo &info = cameras.at(i);
 +            if (info.name == device)
 +                return info.description;
 +        }
@@ -7980,31 +7995,31 @@ index 000000000..8d7ee0ed1
 +    return QString();
 +}
 +
-+QCamera::Position QOPenHarmonyMediaServicePlugin::cameraPosition(const QByteArray &device) const
++QCamera::Position QOhMediaServicePlugin::cameraPosition(const QByteArray &device) const
 +{
-+    return QOPenHarmonyCameraInfoControl::position(device);
++    return QOhCameraInfoControl::position(device);
 +}
 +
-+int QOPenHarmonyMediaServicePlugin::cameraOrientation(const QByteArray &device) const
++int QOhMediaServicePlugin::cameraOrientation(const QByteArray &device) const
 +{
-+    return QOPenHarmonyCameraInfoControl::orientation(device);
++    return QOhCameraInfoControl::orientation(device);
 +}
 +
 +QT_END_NAMESPACE
-diff --git a/src/plugins/openharmony/src/qopenharmonymediaserviceplugin.h b/src/plugins/openharmony/src/qopenharmonymediaserviceplugin.h
+diff --git a/src/plugins/openharmony/src/qohmediaserviceplugin.h b/src/plugins/openharmony/src/qohmediaserviceplugin.h
 new file mode 100644
-index 000000000..340e0b7ba
+index 00000000..6b85e476
 --- /dev/null
-+++ b/src/plugins/openharmony/src/qopenharmonymediaserviceplugin.h
++++ b/src/plugins/openharmony/src/qohmediaserviceplugin.h
 @@ -0,0 +1,42 @@
-+#ifndef QOPENHARMONYMEDIASERVICEPLUGIN_H
-+#define QOPENHARMONYMEDIASERVICEPLUGIN_H
++#ifndef QOHMEDIASERVICEPLUGIN_H
++#define QOHMEDIASERVICEPLUGIN_H
 +
 +#include <QMediaServiceProviderPlugin>
 +
 +QT_BEGIN_NAMESPACE
 +
-+class QOPenHarmonyMediaServicePlugin
++class QOhMediaServicePlugin
 +        : public QMediaServiceProviderPlugin
 +        , public QMediaServiceSupportedDevicesInterface
 +        , public QMediaServiceDefaultDeviceInterface
@@ -8017,11 +8032,11 @@ index 000000000..340e0b7ba
 +    Q_INTERFACES(QMediaServiceCameraInfoInterface)
 +    Q_INTERFACES(QMediaServiceFeaturesInterface)
 +    Q_PLUGIN_METADATA(IID "org.qt-project.qt.mediaserviceproviderfactory/5.0"
-+                      FILE "openharmony_mediaservice.json")
++                      FILE "oh_mediaservice.json")
 +
 +public:
-+    QOPenHarmonyMediaServicePlugin();
-+    ~QOPenHarmonyMediaServicePlugin();
++    QOhMediaServicePlugin();
++    ~QOhMediaServicePlugin();
 +
 +    QMediaService* create(QString const& key) override;
 +    void release(QMediaService *service) override;
@@ -8038,10 +8053,10 @@ index 000000000..340e0b7ba
 +
 +QT_END_NAMESPACE
 +
-+#endif // QOPENHARMONYMEDIASERVICEPLUGIN_H
++#endif // QOHMEDIASERVICEPLUGIN_H
 diff --git a/src/plugins/openharmony/src/src.pro b/src/plugins/openharmony/src/src.pro
 new file mode 100644
-index 000000000..b15d3f8ba
+index 00000000..79ec4b6a
 --- /dev/null
 +++ b/src/plugins/openharmony/src/src.pro
 @@ -0,0 +1,26 @@
@@ -8054,46 +8069,46 @@ index 000000000..b15d3f8ba
 +LIBS += -lace_ndk.z -lavplayer -lrawfile.z -lnative_media_core
 +LIBS += -lohcamera -lohimage -limage_receiver -lnative_image -lnative_buffer
 +LIBS += -lnative_media_codecbase -lnative_media_core -lnative_media_vdec \
-+        -lnative_media_avsource -lnative_media_avdemuxer -lohaudio
++        -lnative_media_avsource -lnative_media_avdemuxer -lohaudio -lnative_window
 +
 +QT += multimedia-private core-private network
 +
 +HEADERS += \
-+    qopenharmonymediaserviceplugin.h
++    qohmediaserviceplugin.h
 +
 +SOURCES += \
-+    qopenharmonymediaserviceplugin.cpp
++    qohmediaserviceplugin.cpp
 +
 +
 +OTHER_FILES += \
-+    openharmony_mediaservice.json
++    oh_mediaservice.json
 +
 +PLUGIN_TYPE = mediaservice
 +PLUGIN_CLASS_NAME = QOPenHarmonyMediaServicePlugin
 +load(qt_plugin)
 diff --git a/src/plugins/openharmony/src/wrappers/napi/napi.pri b/src/plugins/openharmony/src/wrappers/napi/napi.pri
 new file mode 100644
-index 000000000..f216e0db2
+index 00000000..6f279c81
 --- /dev/null
 +++ b/src/plugins/openharmony/src/wrappers/napi/napi.pri
 @@ -0,0 +1,11 @@
 +INCLUDEPATH += $$PWD
 +
 +HEADERS += \
-+    # $$PWD/openharmonycamera.h \
-+    $$PWD/openharmonymediarecorder.h \
-+    $$PWD/openharmonymultimediautils.h
++    # $$PWD/ohcamera.h \
++    $$PWD/ohmediarecorder.h \
++    $$PWD/ohmultimediautils.h
 +
 +SOURCES += \
-+    # $$PWD/openharmonycamera.cpp \
-+    $$PWD/openharmonymediarecorder.cpp \
-+    $$PWD/openharmonymultimediautils.cpp
-diff --git a/src/plugins/openharmony/src/wrappers/napi/openharmonycamera.cpp b/src/plugins/openharmony/src/wrappers/napi/openharmonycamera.cpp
++    # $$PWD/ohcamera.cpp \
++    $$PWD/ohmediarecorder.cpp \
++    $$PWD/ohmultimediautils.cpp
+diff --git a/src/plugins/openharmony/src/wrappers/napi/ohcamera.cpp b/src/plugins/openharmony/src/wrappers/napi/ohcamera.cpp
 new file mode 100644
-index 000000000..a0dd71aab
+index 00000000..f6981d48
 --- /dev/null
-+++ b/src/plugins/openharmony/src/wrappers/napi/openharmonycamera.cpp
-@@ -0,0 +1,168 @@
++++ b/src/plugins/openharmony/src/wrappers/napi/ohcamera.cpp
+@@ -0,0 +1,167 @@
 +#include <QDebug>
 +#include <QThread>
 +#include <QWriteLocker>
@@ -8106,7 +8121,6 @@ index 000000000..a0dd71aab
 +#include <QtCore/QJsonParseError>
 +#include <QtCore/QLoggingCategory>
 +
-+#include "openharmonycamera.h"
 +#include "QtCore/QOpenHarmonyJsObject"
 +#include "QtCore/QOpenHarmonyJsEnvironment"
 +#include "QtCore/QOpenHarmonyJsObjectLoader"
@@ -8115,47 +8129,47 @@ index 000000000..a0dd71aab
 +
 +Q_LOGGING_CATEGORY(qtCameraInfo, "qt.multimedia.plugins.openharmony.camerainfo")
 +
-+using CameraMap = QHash<QString, OPenHarmonyCamera *>;
++using CameraMap = QHash<QString, OhCamera *>;
 +
 +Q_GLOBAL_STATIC(CameraMap, cameras)
 +Q_GLOBAL_STATIC(QReadWriteLock, rwLock)
 +
-+class OPenHarmonyCameraPrivate : public QObject
++class OhCameraPrivate : public QObject
 +{
 +    Q_OBJECT
 +
 +public:
-+    OPenHarmonyCameraPrivate();
-+    ~OPenHarmonyCameraPrivate();
++    OhCameraPrivate();
++    ~OhCameraPrivate();
 +
 +    Q_INVOKABLE bool init(const QString &cameraId);
 +
 +    static QStringList getIdOfCameras();
-+    static void getCameraInfo(const QString &id, OPenHarmonyCameraInfo *info);
++    static void getCameraInfo(const QString &id, OhCameraInfo *info);
 +public:
 +    QString m_cameraId;
 +    static QSharedPointer<QOpenHarmonyJsObject> m_jsCamera;
 +};
-+QSharedPointer<QOpenHarmonyJsObject> OPenHarmonyCameraPrivate::m_jsCamera(Q_NULLPTR);
++QSharedPointer<QOpenHarmonyJsObject> OhCameraPrivate::m_jsCamera(Q_NULLPTR);
 +
-+OPenHarmonyCameraPrivate::OPenHarmonyCameraPrivate()
++OhCameraPrivate::OhCameraPrivate()
 +    : QObject()
 +{
 +    m_jsCamera = qJsObjectLoader->create("JsCameraManager");
 +}
 +
-+OPenHarmonyCameraPrivate::~OPenHarmonyCameraPrivate()
++OhCameraPrivate::~OhCameraPrivate()
 +{
 +
 +}
 +
-+bool OPenHarmonyCameraPrivate::init(const QString &cameraId)
++bool OhCameraPrivate::init(const QString &cameraId)
 +{
 +    Q_UNUSED(cameraId);
 +    return false;
 +}
 +
-+QStringList OPenHarmonyCameraPrivate::getIdOfCameras()
++QStringList OhCameraPrivate::getIdOfCameras()
 +{
 +    if (m_jsCamera.isNull()){
 +        m_jsCamera = qJsObjectLoader->create("JsCameraManager");
@@ -8164,7 +8178,7 @@ index 000000000..a0dd71aab
 +    return ids;
 +}
 +
-+void OPenHarmonyCameraPrivate::getCameraInfo(const QString &id, OPenHarmonyCameraInfo *info)
++void OhCameraPrivate::getCameraInfo(const QString &id, OhCameraInfo *info)
 +{
 +    Q_ASSERT(info);
 +    if (m_jsCamera.isNull()){
@@ -8208,29 +8222,29 @@ index 000000000..a0dd71aab
 +    info->orientation = 0; //TODO Returns the physical orientation of the camera sensor.
 +}
 +
-+OPenHarmonyCamera::~OPenHarmonyCamera()
++OhCamera::~OhCamera()
 +{
 +
 +}
 +
-+QString OPenHarmonyCamera::cameraId() const
++QString OhCamera::cameraId() const
 +{
-+    Q_D(const OPenHarmonyCamera);
++    Q_D(const OhCamera);
 +    return d->m_cameraId;
 +}
 +
-+QStringList OPenHarmonyCamera::getIdOfCameras()
++QStringList OhCamera::getIdOfCameras()
 +{
-+    return std::move(OPenHarmonyCameraPrivate::getIdOfCameras());
++    return std::move(OhCameraPrivate::getIdOfCameras());
 +}
 +
-+OPenHarmonyCamera *OPenHarmonyCamera::open(const QString &cameraId)
++OhCamera *OhCamera::open(const QString &cameraId)
 +{
-+    OPenHarmonyCameraPrivate *d = new OPenHarmonyCameraPrivate();
++    OhCameraPrivate *d = new OhCameraPrivate();
 +    QThread *worker = new QThread;
 +    worker->start();
 +    d->moveToThread(worker);
-+    connect(worker, &QThread::finished, d, &OPenHarmonyCameraPrivate::deleteLater);
++    connect(worker, &QThread::finished, d, &OhCameraPrivate::deleteLater);
 +    bool ok = true;
 +    QMetaObject::invokeMethod(d, "init", Qt::BlockingQueuedConnection, Q_RETURN_ARG(bool, ok), Q_ARG(const QString&, cameraId));
 +    if (!ok) {
@@ -8240,19 +8254,19 @@ index 000000000..a0dd71aab
 +        return 0;
 +    }
 +
-+    OPenHarmonyCamera *q = new OPenHarmonyCamera(d, worker);
++    OhCamera *q = new OhCamera(d, worker);
 +    QWriteLocker locker(rwLock);
 +    cameras->insert(cameraId, q);
 +
 +    return q;
 +}
 +
-+void OPenHarmonyCamera::getCameraInfo(const QString &id, OPenHarmonyCameraInfo *info)
++void OhCamera::getCameraInfo(const QString &id, OhCameraInfo *info)
 +{
-+    OPenHarmonyCameraPrivate::getCameraInfo(id, info);
++    OhCameraPrivate::getCameraInfo(id, info);
 +}
 +
-+OPenHarmonyCamera::OPenHarmonyCamera(OPenHarmonyCameraPrivate *d, QThread *worker) : QObject()
++OhCamera::OhCamera(OhCameraPrivate *d, QThread *worker) : QObject()
 +      , d_ptr(d)
 +      , m_worker(worker)
 +{
@@ -8261,15 +8275,15 @@ index 000000000..a0dd71aab
 +
 +QT_END_NAMESPACE
 +
-+#include "openharmonycamera.moc"
-diff --git a/src/plugins/openharmony/src/wrappers/napi/openharmonycamera.h b/src/plugins/openharmony/src/wrappers/napi/openharmonycamera.h
++#include "OhCamera.moc"
+diff --git a/src/plugins/openharmony/src/wrappers/napi/ohcamera.h b/src/plugins/openharmony/src/wrappers/napi/ohcamera.h
 new file mode 100644
-index 000000000..61baab6d8
+index 00000000..5da3f8ac
 --- /dev/null
-+++ b/src/plugins/openharmony/src/wrappers/napi/openharmonycamera.h
++++ b/src/plugins/openharmony/src/wrappers/napi/ohcamera.h
 @@ -0,0 +1,43 @@
-+#ifndef OPENHARMONYCAMERA_H
-+#define OPENHARMONYCAMERA_H
++#ifndef OHCAMERA_H
++#define OHCAMERA_H
 +
 +#include <QObject>
 +#include <QtMultimedia/qcamera.h>
@@ -8277,47 +8291,47 @@ index 000000000..61baab6d8
 +QT_BEGIN_NAMESPACE
 +
 +class QThread;
-+class OPenHarmonyCameraPrivate;
++class OhCameraPrivate;
 +
-+struct OPenHarmonyCameraInfo
++struct OhCameraInfo
 +{
 +    QByteArray name;
 +    QString description;
 +    QCamera::Position position;
 +    int orientation;
 +};
-+Q_DECLARE_TYPEINFO(OPenHarmonyCameraInfo, Q_MOVABLE_TYPE);
++Q_DECLARE_TYPEINFO(OhCameraInfo, Q_MOVABLE_TYPE);
 +
-+class OPenHarmonyCamera : public QObject
++class OhCamera : public QObject
 +{
 +    Q_OBJECT    
 +
 +public:    
-+    ~OPenHarmonyCamera();
++    ~OhCamera();
 +
 +    QString cameraId() const;
 +    static QStringList getIdOfCameras();
-+    static OPenHarmonyCamera *open(const QString &cameraId);
-+    static void getCameraInfo(const QString &id, OPenHarmonyCameraInfo *info);
++    static OhCamera *open(const QString &cameraId);
++    static void getCameraInfo(const QString &id, OhCameraInfo *info);
 +
 +Q_SIGNALS:
 +
 +private:
-+    OPenHarmonyCameraPrivate *d_ptr;
++    OhCameraPrivate *d_ptr;
 +    QScopedPointer<QThread> m_worker;
-+    Q_DECLARE_PRIVATE(OPenHarmonyCamera)
-+    OPenHarmonyCamera(OPenHarmonyCameraPrivate *d, QThread *worker);
++    Q_DECLARE_PRIVATE(OhCamera)
++    OhCamera(OhCameraPrivate *d, QThread *worker);
 +};
 +
 +QT_END_NAMESPACE
-+#endif // OPENHARMONYCAMERA_H
-diff --git a/src/plugins/openharmony/src/wrappers/napi/openharmonymediarecorder.cpp b/src/plugins/openharmony/src/wrappers/napi/openharmonymediarecorder.cpp
++#endif // OHCAMERA_H
+diff --git a/src/plugins/openharmony/src/wrappers/napi/ohmediarecorder.cpp b/src/plugins/openharmony/src/wrappers/napi/ohmediarecorder.cpp
 new file mode 100644
-index 000000000..f463c9efe
+index 00000000..37b3be7a
 --- /dev/null
-+++ b/src/plugins/openharmony/src/wrappers/napi/openharmonymediarecorder.cpp
++++ b/src/plugins/openharmony/src/wrappers/napi/ohmediarecorder.cpp
 @@ -0,0 +1,215 @@
-+#include "openharmonymediarecorder.h"
++#include "ohmediarecorder.h"
 +#include "qopenharmony.h"
 +
 +#include <QDebug>
@@ -8326,7 +8340,7 @@ index 000000000..f463c9efe
 +#include <private/qjspromise_p.h>
 +#include "private/qjspromise_p.h"
 +
-+OPenHarmonyMediaRecorder::OPenHarmonyMediaRecorder()
++OhMediaRecorder::OhMediaRecorder()
 +    :QJsModule("@ohos.multimedia.media"),
 +      m_audioBitrate(48000),
 +      m_audioChannel(2),
@@ -8351,7 +8365,7 @@ index 000000000..f463c9efe
 +    });
 +}
 +
-+OPenHarmonyMediaRecorder::~OPenHarmonyMediaRecorder()
++OhMediaRecorder::~OhMediaRecorder()
 +{
 +    if(m_mediaRecorder){
 +        delete m_mediaRecorder;
@@ -8359,13 +8373,13 @@ index 000000000..f463c9efe
 +    }
 +}
 +
-+void OPenHarmonyMediaRecorder::release()
++void OhMediaRecorder::release()
 +{
 +    if(m_mediaRecorder)
 +        m_mediaRecorder->call("release");
 +}
 +
-+QString OPenHarmonyMediaRecorder::prepare()
++QString OhMediaRecorder::prepare()
 +{
 +    if(!m_mediaRecorder)
 +        return QString();
@@ -8458,88 +8472,88 @@ index 000000000..f463c9efe
 +        return QString();
 +}
 +
-+void OPenHarmonyMediaRecorder::reset()
++void OhMediaRecorder::reset()
 +{
 +    if(m_mediaRecorder)
 +        m_mediaRecorder->call("reset");
 +}
 +
-+void OPenHarmonyMediaRecorder::pause()
++void OhMediaRecorder::pause()
 +{
 +    if(m_mediaRecorder)
 +        m_mediaRecorder->call("pause");
 +}
 +
-+void OPenHarmonyMediaRecorder::resume()
++void OhMediaRecorder::resume()
 +{
 +    if(m_mediaRecorder)
 +        m_mediaRecorder->call("resume");
 +}
 +
-+bool OPenHarmonyMediaRecorder::start()
++bool OhMediaRecorder::start()
 +{
 +    if(m_mediaRecorder)
 +        return m_mediaRecorder->call("start").ToBoolean();
 +}
 +
-+void OPenHarmonyMediaRecorder::stop()
++void OhMediaRecorder::stop()
 +{
 +    if(m_mediaRecorder)
 +        m_mediaRecorder->call("stop");
 +}
 +
-+void OPenHarmonyMediaRecorder::setAudioChannels(int numChannels)
++void OhMediaRecorder::setAudioChannels(int numChannels)
 +{
 +    m_audioChannel = qBound(1, numChannels, 8);
 +}
 +
-+void OPenHarmonyMediaRecorder::setAudioEncoder(AudioEncoder encoder)
++void OhMediaRecorder::setAudioEncoder(AudioEncoder encoder)
 +{
 +    m_audioCodeC = encoder;
 +}
 +
-+void OPenHarmonyMediaRecorder::setAudioEncodingBitRate(int bitRate)
++void OhMediaRecorder::setAudioEncodingBitRate(int bitRate)
 +{
 +    m_audioBitrate = bitRate;
 +}
 +
-+void OPenHarmonyMediaRecorder::setAudioSamplingRate(int samplingRate)
++void OhMediaRecorder::setAudioSamplingRate(int samplingRate)
 +{
 +    m_audioSampleRate = samplingRate;
 +}
 +
-+void OPenHarmonyMediaRecorder::setVideoBitrate(int bitrate)
++void OhMediaRecorder::setVideoBitrate(int bitrate)
 +{
 +    m_videoBitrate = bitrate;
 +}
 +
-+void OPenHarmonyMediaRecorder::setVideoEncoder(VideoEncoder encoder)
++void OhMediaRecorder::setVideoEncoder(VideoEncoder encoder)
 +{
 +    m_videoCodec = encoder;
 +}
 +
-+void OPenHarmonyMediaRecorder::setvideoFramSize(const QSize &size)
++void OhMediaRecorder::setvideoFramSize(const QSize &size)
 +{
 +    m_videoFrameSize = size;
 +}
 +
-+void OPenHarmonyMediaRecorder::setvideoFrameRate(int frameRate)
++void OhMediaRecorder::setvideoFrameRate(int frameRate)
 +{
 +    m_videoFrameRate = frameRate;
 +}
 +
-+void OPenHarmonyMediaRecorder::setOutputFile(const QString &path)
++void OhMediaRecorder::setOutputFile(const QString &path)
 +{
 +    m_outputFile = path;
 +}
-diff --git a/src/plugins/openharmony/src/wrappers/napi/openharmonymediarecorder.h b/src/plugins/openharmony/src/wrappers/napi/openharmonymediarecorder.h
+diff --git a/src/plugins/openharmony/src/wrappers/napi/ohmediarecorder.h b/src/plugins/openharmony/src/wrappers/napi/ohmediarecorder.h
 new file mode 100644
-index 000000000..ff5f3a31b
+index 00000000..8cdf0679
 --- /dev/null
-+++ b/src/plugins/openharmony/src/wrappers/napi/openharmonymediarecorder.h
++++ b/src/plugins/openharmony/src/wrappers/napi/ohmediarecorder.h
 @@ -0,0 +1,88 @@
-+#ifndef OPENHARMONYMEDIARECORDER_H
-+#define OPENHARMONYMEDIARECORDER_H
++#ifndef OHMEDIARECORDER_H
++#define OHMEDIARECORDER_H
 +
 +#include "qobject.h"
 +#include <QSize>
@@ -8547,7 +8561,7 @@ index 000000000..ff5f3a31b
 +
 +QT_BEGIN_NAMESPACE
 +
-+class OPenHarmonyMediaRecorder :public QObject, public QJsModule
++class OhMediaRecorder :public QObject, public QJsModule
 +{
 +    Q_OBJECT
 +public:
@@ -8577,8 +8591,8 @@ index 000000000..ff5f3a31b
 +        CFT_MPEG_4A = 1,
 +    };
 +
-+    OPenHarmonyMediaRecorder();
-+    ~OPenHarmonyMediaRecorder();
++    OhMediaRecorder();
++    ~OhMediaRecorder();
 +
 +    void release();
 +    QString prepare();
@@ -8625,15 +8639,15 @@ index 000000000..ff5f3a31b
 +};
 +
 +QT_END_NAMESPACE
-+#endif // OPENHARMONYMEDIARECORDER_H
-diff --git a/src/plugins/openharmony/src/wrappers/napi/openharmonymultimediautils.cpp b/src/plugins/openharmony/src/wrappers/napi/openharmonymultimediautils.cpp
++#endif // OHMEDIARECORDER_H
+diff --git a/src/plugins/openharmony/src/wrappers/napi/ohmultimediautils.cpp b/src/plugins/openharmony/src/wrappers/napi/ohmultimediautils.cpp
 new file mode 100644
-index 000000000..b019115fe
+index 00000000..1747c2cc
 --- /dev/null
-+++ b/src/plugins/openharmony/src/wrappers/napi/openharmonymultimediautils.cpp
++++ b/src/plugins/openharmony/src/wrappers/napi/ohmultimediautils.cpp
 @@ -0,0 +1,96 @@
 +#include <qstring.h>
-+#include "openharmonymultimediautils.h"
++#include "ohmultimediautils.h"
 +
 +QT_BEGIN_NAMESPACE
 +
@@ -8674,7 +8688,7 @@ index 000000000..b019115fe
 +
 +public:
 +    QtMultimediaUtils();
-+    QString getDefaultMediaDirectory(OPenHarmonyMultimediaUtils::MediaType type);
++    QString getDefaultMediaDirectory(OhMultimediaUtils::MediaType type);
 +
 +    bool requestPermission();
 +};
@@ -8684,7 +8698,7 @@ index 000000000..b019115fe
 +    // m_jsUtils = qJsObjectLoader->create("JsMultimediaUtils");
 +}
 +
-+QString QtMultimediaUtils::getDefaultMediaDirectory(OPenHarmonyMultimediaUtils::MediaType type)
++QString QtMultimediaUtils::getDefaultMediaDirectory(OhMultimediaUtils::MediaType type)
 +{
 +    return QString();
 +//    QString dir = m_jsUtils->call<QString>("getMediaDirectory", type);
@@ -8694,48 +8708,48 @@ index 000000000..b019115fe
 +bool QtMultimediaUtils::requestPermission()
 +{
 +    return true;
-+    // return m_jsUtils->call<bool>("requestPermission", (int)OPenHarmonyMultimediaUtils::PerCamera);
++    // return m_jsUtils->call<bool>("requestPermission", (int)OhMultimediaUtils::PerCamera);
 +}
 +
 +Q_GLOBAL_STATIC(QtMultimediaUtils, gsUtils)
-+int OPenHarmonyMultimediaUtils::getDeviceOrientation()
++int OhMultimediaUtils::getDeviceOrientation()
 +{
 +    //TODO
 +    return 0;
 +}
 +
-+void OPenHarmonyMultimediaUtils::enableOrientationListener(bool enable)
++void OhMultimediaUtils::enableOrientationListener(bool enable)
 +{
 +    //TODO
 +    Q_UNUSED(enable);
 +}
 +
-+void OPenHarmonyMultimediaUtils::registerMediaFile(const QString &file)
++void OhMultimediaUtils::registerMediaFile(const QString &file)
 +{
 +    //TODO
 +    Q_UNUSED(file);
 +}
 +
-+QString OPenHarmonyMultimediaUtils::getDefaultMediaDirectory(MediaType type)
++QString OhMultimediaUtils::getDefaultMediaDirectory(MediaType type)
 +{
 +    const QString &dir = gsUtils->getDefaultMediaDirectory(type);
 +    return std::move(dir);
 +}
 +
-+bool OPenHarmonyMultimediaUtils::qt_openharmonyRequestPermission()
++bool OhMultimediaUtils::qt_openharmonyRequestPermission()
 +{
 +    return gsUtils->requestPermission();
 +}
 +
 +QT_END_NAMESPACE
-diff --git a/src/plugins/openharmony/src/wrappers/napi/openharmonymultimediautils.h b/src/plugins/openharmony/src/wrappers/napi/openharmonymultimediautils.h
+diff --git a/src/plugins/openharmony/src/wrappers/napi/ohmultimediautils.h b/src/plugins/openharmony/src/wrappers/napi/ohmultimediautils.h
 new file mode 100644
-index 000000000..5bb93440c
+index 00000000..201ce7bf
 --- /dev/null
-+++ b/src/plugins/openharmony/src/wrappers/napi/openharmonymultimediautils.h
++++ b/src/plugins/openharmony/src/wrappers/napi/ohmultimediautils.h
 @@ -0,0 +1,43 @@
-+#ifndef OPENHARMONYMULTIMEDIAUTILS_H
-+#define OPENHARMONYMULTIMEDIAUTILS_H
++#ifndef OHMULTIMEDIAUTILS_H
++#define OHMULTIMEDIAUTILS_H
 +
 +#include <qobject.h>
 +#include <qsize.h>
@@ -8750,7 +8764,7 @@ index 000000000..5bb93440c
 +    return qHash(size.width(), seed) ^ qHash(size.height(), seed << 1);
 +}
 +
-+class OPenHarmonyMultimediaUtils
++class OhMultimediaUtils
 +{
 +public:
 +    enum MediaType {
@@ -8776,10 +8790,10 @@ index 000000000..5bb93440c
 +};
 +
 +QT_END_NAMESPACE
-+#endif // OPENHARMONYMULTIMEDIAUTILS_H
++#endif // OHMULTIMEDIAUTILS_H
 diff --git a/src/plugins/openharmony/videonode/openharmony_videonode.json b/src/plugins/openharmony/videonode/openharmony_videonode.json
 new file mode 100644
-index 000000000..c82757cb0
+index 00000000..c82757cb
 --- /dev/null
 +++ b/src/plugins/openharmony/videonode/openharmony_videonode.json
 @@ -0,0 +1,3 @@
@@ -8788,7 +8802,7 @@ index 000000000..c82757cb0
 +}
 diff --git a/src/plugins/openharmony/videonode/qopenharmonysgvideonode.cpp b/src/plugins/openharmony/videonode/qopenharmonysgvideonode.cpp
 new file mode 100644
-index 000000000..e329ae8ee
+index 00000000..e329ae8e
 --- /dev/null
 +++ b/src/plugins/openharmony/videonode/qopenharmonysgvideonode.cpp
 @@ -0,0 +1,212 @@
@@ -9006,7 +9020,7 @@ index 000000000..e329ae8ee
 +QT_END_NAMESPACE
 diff --git a/src/plugins/openharmony/videonode/qopenharmonysgvideonode.h b/src/plugins/openharmony/videonode/qopenharmonysgvideonode.h
 new file mode 100644
-index 000000000..fa731c5af
+index 00000000..fa731c5a
 --- /dev/null
 +++ b/src/plugins/openharmony/videonode/qopenharmonysgvideonode.h
 @@ -0,0 +1,71 @@
@@ -9083,7 +9097,7 @@ index 000000000..fa731c5af
 +#endif // QOPENHARMONYSGVIDEONODE_H
 diff --git a/src/plugins/openharmony/videonode/qopenharmonysgvideonodeplugin.cpp b/src/plugins/openharmony/videonode/qopenharmonysgvideonodeplugin.cpp
 new file mode 100644
-index 000000000..ae79b8627
+index 00000000..ae79b862
 --- /dev/null
 +++ b/src/plugins/openharmony/videonode/qopenharmonysgvideonodeplugin.cpp
 @@ -0,0 +1,65 @@
@@ -9154,7 +9168,7 @@ index 000000000..ae79b8627
 +QT_END_NAMESPACE
 diff --git a/src/plugins/openharmony/videonode/qopenharmonysgvideonodeplugin.h b/src/plugins/openharmony/videonode/qopenharmonysgvideonodeplugin.h
 new file mode 100644
-index 000000000..d2cc4359f
+index 00000000..d2cc4359
 --- /dev/null
 +++ b/src/plugins/openharmony/videonode/qopenharmonysgvideonodeplugin.h
 @@ -0,0 +1,60 @@
@@ -9220,7 +9234,7 @@ index 000000000..d2cc4359f
 +#endif // QOPENHARMONYSGVIDEONODEPLUGIN_H
 diff --git a/src/plugins/openharmony/videonode/videonode.pro b/src/plugins/openharmony/videonode/videonode.pro
 new file mode 100644
-index 000000000..e4aa287f2
+index 00000000..e4aa287f
 --- /dev/null
 +++ b/src/plugins/openharmony/videonode/videonode.pro
 @@ -0,0 +1,18 @@
@@ -9243,7 +9257,7 @@ index 000000000..e4aa287f2
 +PLUGIN_CLASS_NAME = QOPenharmonySGVideoNodeFactoryPlugin
 +load(qt_plugin)
 diff --git a/src/plugins/opensles/opensles.pro b/src/plugins/opensles/opensles.pro
-index 2bb0f3cf5..de0d39ea6 100644
+index 2bb0f3cf..de0d39ea 100644
 --- a/src/plugins/opensles/opensles.pro
 +++ b/src/plugins/opensles/opensles.pro
 @@ -1,13 +1,11 @@
@@ -9271,7 +9285,7 @@ index 2bb0f3cf5..de0d39ea6 100644
      opensles.json
  
 diff --git a/src/plugins/opensles/qopenslesaudioinput.cpp b/src/plugins/opensles/qopenslesaudioinput.cpp
-index 54ed18ac1..0c4efb714 100644
+index 54ed18ac..0c4efb71 100644
 --- a/src/plugins/opensles/qopenslesaudioinput.cpp
 +++ b/src/plugins/opensles/qopenslesaudioinput.cpp
 @@ -84,13 +84,17 @@ static bool hasRecordingPermission()
@@ -9305,7 +9319,7 @@ index 54ed18ac1..0c4efb714 100644
      m_processedBytes = 0;
      m_clockStamp.restart();
 diff --git a/src/plugins/opensles/qopenslesaudiooutput.cpp b/src/plugins/opensles/qopenslesaudiooutput.cpp
-index 381ce0ec2..93716e1c9 100644
+index 381ce0ec..93716e1c 100644
 --- a/src/plugins/opensles/qopenslesaudiooutput.cpp
 +++ b/src/plugins/opensles/qopenslesaudiooutput.cpp
 @@ -360,8 +360,11 @@ void QOpenSLESAudioOutput::onEOSEvent()
@@ -9411,7 +9425,7 @@ index 381ce0ec2..93716e1c9 100644
      if (SL_RESULT_SUCCESS != (*m_playerObject)->GetInterface(m_playerObject,
                                                               SL_IID_VOLUME,
 diff --git a/src/plugins/opensles/qopenslesaudiooutput.h b/src/plugins/opensles/qopenslesaudiooutput.h
-index b480f00e6..342423d40 100644
+index b480f00e..342423d4 100644
 --- a/src/plugins/opensles/qopenslesaudiooutput.h
 +++ b/src/plugins/opensles/qopenslesaudiooutput.h
 @@ -47,6 +47,11 @@
@@ -9452,7 +9466,7 @@ index b480f00e6..342423d40 100644
      char *m_buffers;
      qreal m_volume;
 diff --git a/src/plugins/opensles/qopenslesengine.cpp b/src/plugins/opensles/qopenslesengine.cpp
-index 36025dcfd..40269e583 100644
+index 36025dcf..40269e58 100644
 --- a/src/plugins/opensles/qopenslesengine.cpp
 +++ b/src/plugins/opensles/qopenslesengine.cpp
 @@ -38,7 +38,6 @@
@@ -9472,7 +9486,7 @@ index 36025dcfd..40269e583 100644
  }
  
 diff --git a/src/plugins/opensles/qopenslesplugin.cpp b/src/plugins/opensles/qopenslesplugin.cpp
-index 9a2fbbf79..5bd58b324 100644
+index 9a2fbbf7..5bd58b32 100644
 --- a/src/plugins/opensles/qopenslesplugin.cpp
 +++ b/src/plugins/opensles/qopenslesplugin.cpp
 @@ -1,4 +1,4 @@
@@ -9490,7 +9504,7 @@ index 9a2fbbf79..5bd58b324 100644
  
  QT_BEGIN_NAMESPACE
 diff --git a/src/plugins/plugins.pro b/src/plugins/plugins.pro
-index 95c004125..08c0b9ab4 100644
+index 95c00412..08c0b9ab 100644
 --- a/src/plugins/plugins.pro
 +++ b/src/plugins/plugins.pro
 @@ -17,6 +17,10 @@ android {
@@ -9505,7 +9519,7 @@ index 95c004125..08c0b9ab4 100644
      qtConfig(mmrenderer): SUBDIRS += qnx
      SUBDIRS += audiocapture
 diff --git a/src/plugins/videonode/egl/qsgvideonode_egl.cpp b/src/plugins/videonode/egl/qsgvideonode_egl.cpp
-index c3694f533..d87cbe837 100644
+index c3694f53..d87cbe83 100644
 --- a/src/plugins/videonode/egl/qsgvideonode_egl.cpp
 +++ b/src/plugins/videonode/egl/qsgvideonode_egl.cpp
 @@ -41,7 +41,11 @@
@@ -9521,7 +9535,7 @@ index c3694f533..d87cbe837 100644
  QT_BEGIN_NAMESPACE
  
 diff --git a/src/src.pro b/src/src.pro
-index 1dc1015c6..686dd74d8 100644
+index 1dc1015c..686dd74d 100644
 --- a/src/src.pro
 +++ b/src/src.pro
 @@ -1,6 +1,7 @@

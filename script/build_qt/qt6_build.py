@@ -309,7 +309,7 @@ class Qt6Build:
             print('补丁应用成功')
         except Exception as e:
             print('警告: 补丁应用失败或已应用: {}'.format(e))
-        
+            raise EnvironmentError('补丁应用失败: {}'.format(e))
         # 清理交叉编译构建目录，确保从干净状态开始
         print('\n========== 清理交叉编译构建目录 ==========')
         self._clean_cross_build_dir()

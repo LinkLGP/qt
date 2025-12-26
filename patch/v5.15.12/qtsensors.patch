@@ -1,6 +1,6 @@
 diff --git a/src/openharmony/native/QtSensors/JsSensor.ts b/src/openharmony/native/QtSensors/JsSensor.ts
 new file mode 100644
-index 00000000..c4084769
+index 0000000..c408476
 --- /dev/null
 +++ b/src/openharmony/native/QtSensors/JsSensor.ts
 @@ -0,0 +1,106 @@
@@ -112,7 +112,7 @@ index 00000000..c4084769
 +}
 diff --git a/src/openharmony/native/QtSensors/JsSensorManager.ts b/src/openharmony/native/QtSensors/JsSensorManager.ts
 new file mode 100644
-index 00000000..51919095
+index 0000000..5191909
 --- /dev/null
 +++ b/src/openharmony/native/QtSensors/JsSensorManager.ts
 @@ -0,0 +1,18 @@
@@ -137,7 +137,7 @@ index 00000000..51919095
 \ No newline at end of file
 diff --git a/src/openharmony/native/QtSensors/JsSensorsModule.ts b/src/openharmony/native/QtSensors/JsSensorsModule.ts
 new file mode 100644
-index 00000000..8e328f10
+index 0000000..8e328f1
 --- /dev/null
 +++ b/src/openharmony/native/QtSensors/JsSensorsModule.ts
 @@ -0,0 +1,26 @@
@@ -170,7 +170,7 @@ index 00000000..8e328f10
 \ No newline at end of file
 diff --git a/src/openharmony/openharmony.pro b/src/openharmony/openharmony.pro
 new file mode 100644
-index 00000000..3fdb3db8
+index 0000000..3fdb3db
 --- /dev/null
 +++ b/src/openharmony/openharmony.pro
 @@ -0,0 +1,11 @@
@@ -187,7 +187,7 @@ index 00000000..3fdb3db8
 +OTHER_FILES += $$templates.files
 diff --git a/src/plugins/sensors/openharmony/main.cpp b/src/plugins/sensors/openharmony/main.cpp
 new file mode 100644
-index 00000000..b6507cde
+index 0000000..b6507cd
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/main.cpp
 @@ -0,0 +1,143 @@
@@ -336,7 +336,7 @@ index 00000000..b6507cde
 +#include "main.moc"
 diff --git a/src/plugins/sensors/openharmony/openharmony.pro b/src/plugins/sensors/openharmony/openharmony.pro
 new file mode 100644
-index 00000000..c6478994
+index 0000000..c647899
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/openharmony.pro
 @@ -0,0 +1,38 @@
@@ -380,7 +380,7 @@ index 00000000..c6478994
 +
 diff --git a/src/plugins/sensors/openharmony/openharmonyaccelerometer.cpp b/src/plugins/sensors/openharmony/openharmonyaccelerometer.cpp
 new file mode 100644
-index 00000000..84ad1e53
+index 0000000..84ad1e5
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/openharmonyaccelerometer.cpp
 @@ -0,0 +1,71 @@
@@ -457,7 +457,7 @@ index 00000000..84ad1e53
 +
 diff --git a/src/plugins/sensors/openharmony/openharmonyaccelerometer.h b/src/plugins/sensors/openharmony/openharmonyaccelerometer.h
 new file mode 100644
-index 00000000..a610d25b
+index 0000000..a610d25
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/openharmonyaccelerometer.h
 @@ -0,0 +1,32 @@
@@ -495,7 +495,7 @@ index 00000000..a610d25b
 +#endif // OPENHARMONYACCELEROMETER_H
 diff --git a/src/plugins/sensors/openharmony/openharmonygyroscope.cpp b/src/plugins/sensors/openharmony/openharmonygyroscope.cpp
 new file mode 100644
-index 00000000..349b7e2f
+index 0000000..349b7e2
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/openharmonygyroscope.cpp
 @@ -0,0 +1,33 @@
@@ -534,7 +534,7 @@ index 00000000..349b7e2f
 +
 diff --git a/src/plugins/sensors/openharmony/openharmonygyroscope.h b/src/plugins/sensors/openharmony/openharmonygyroscope.h
 new file mode 100644
-index 00000000..ff3e6d2a
+index 0000000..ff3e6d2
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/openharmonygyroscope.h
 @@ -0,0 +1,18 @@
@@ -558,7 +558,7 @@ index 00000000..ff3e6d2a
 +#endif // OPENHARMONYGYROSCOPE_H
 diff --git a/src/plugins/sensors/openharmony/openharmonyhumidity.cpp b/src/plugins/sensors/openharmony/openharmonyhumidity.cpp
 new file mode 100644
-index 00000000..e17df8cf
+index 0000000..e17df8c
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/openharmonyhumidity.cpp
 @@ -0,0 +1,25 @@
@@ -589,7 +589,7 @@ index 00000000..e17df8cf
 +
 diff --git a/src/plugins/sensors/openharmony/openharmonyhumidity.h b/src/plugins/sensors/openharmony/openharmonyhumidity.h
 new file mode 100644
-index 00000000..adbf4c9b
+index 0000000..adbf4c9
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/openharmonyhumidity.h
 @@ -0,0 +1,18 @@
@@ -613,7 +613,7 @@ index 00000000..adbf4c9b
 +#endif // OPENHARMONYHUMIDITY_H
 diff --git a/src/plugins/sensors/openharmony/openharmonylight.cpp b/src/plugins/sensors/openharmony/openharmonylight.cpp
 new file mode 100644
-index 00000000..7274df7c
+index 0000000..7274df7
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/openharmonylight.cpp
 @@ -0,0 +1,23 @@
@@ -642,7 +642,7 @@ index 00000000..7274df7c
 +}
 diff --git a/src/plugins/sensors/openharmony/openharmonylight.h b/src/plugins/sensors/openharmony/openharmonylight.h
 new file mode 100644
-index 00000000..f8039a92
+index 0000000..f8039a9
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/openharmonylight.h
 @@ -0,0 +1,18 @@
@@ -666,7 +666,7 @@ index 00000000..f8039a92
 +#endif // OPENHARMONYLIGHT_H
 diff --git a/src/plugins/sensors/openharmony/openharmonymagnetometer.cpp b/src/plugins/sensors/openharmony/openharmonymagnetometer.cpp
 new file mode 100644
-index 00000000..34e34b21
+index 0000000..34e34b2
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/openharmonymagnetometer.cpp
 @@ -0,0 +1,32 @@
@@ -704,7 +704,7 @@ index 00000000..34e34b21
 +
 diff --git a/src/plugins/sensors/openharmony/openharmonymagnetometer.h b/src/plugins/sensors/openharmony/openharmonymagnetometer.h
 new file mode 100644
-index 00000000..c3662243
+index 0000000..c366224
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/openharmonymagnetometer.h
 @@ -0,0 +1,18 @@
@@ -728,7 +728,7 @@ index 00000000..c3662243
 +#endif // OPENHARMONYMAGNETOMETER_H
 diff --git a/src/plugins/sensors/openharmony/openharmonypressure.cpp b/src/plugins/sensors/openharmony/openharmonypressure.cpp
 new file mode 100644
-index 00000000..c7d5d3d3
+index 0000000..c7d5d3d
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/openharmonypressure.cpp
 @@ -0,0 +1,22 @@
@@ -756,7 +756,7 @@ index 00000000..c7d5d3d3
 +}
 diff --git a/src/plugins/sensors/openharmony/openharmonypressure.h b/src/plugins/sensors/openharmony/openharmonypressure.h
 new file mode 100644
-index 00000000..8c2db8aa
+index 0000000..8c2db8a
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/openharmonypressure.h
 @@ -0,0 +1,18 @@
@@ -780,7 +780,7 @@ index 00000000..8c2db8aa
 +#endif // OPENHARMONYPRESSURE_H
 diff --git a/src/plugins/sensors/openharmony/openharmonyproximity.cpp b/src/plugins/sensors/openharmony/openharmonyproximity.cpp
 new file mode 100644
-index 00000000..e96a0b24
+index 0000000..e96a0b2
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/openharmonyproximity.cpp
 @@ -0,0 +1,28 @@
@@ -814,7 +814,7 @@ index 00000000..e96a0b24
 +
 diff --git a/src/plugins/sensors/openharmony/openharmonyproximity.h b/src/plugins/sensors/openharmony/openharmonyproximity.h
 new file mode 100644
-index 00000000..f1ef02f2
+index 0000000..f1ef02f
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/openharmonyproximity.h
 @@ -0,0 +1,21 @@
@@ -841,7 +841,7 @@ index 00000000..f1ef02f2
 +#endif // OPENHARMONYPROXIMITY_H
 diff --git a/src/plugins/sensors/openharmony/openharmonyrotation.cpp b/src/plugins/sensors/openharmony/openharmonyrotation.cpp
 new file mode 100644
-index 00000000..a4d70e6f
+index 0000000..a4d70e6
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/openharmonyrotation.cpp
 @@ -0,0 +1,29 @@
@@ -876,7 +876,7 @@ index 00000000..a4d70e6f
 +
 diff --git a/src/plugins/sensors/openharmony/openharmonyrotation.h b/src/plugins/sensors/openharmony/openharmonyrotation.h
 new file mode 100644
-index 00000000..03243797
+index 0000000..0324379
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/openharmonyrotation.h
 @@ -0,0 +1,18 @@
@@ -900,7 +900,7 @@ index 00000000..03243797
 +#endif // OPENHARMONYROTATION_H
 diff --git a/src/plugins/sensors/openharmony/openharmonytemperature.cpp b/src/plugins/sensors/openharmony/openharmonytemperature.cpp
 new file mode 100644
-index 00000000..a3865b03
+index 0000000..a3865b0
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/openharmonytemperature.cpp
 @@ -0,0 +1,23 @@
@@ -929,7 +929,7 @@ index 00000000..a3865b03
 +
 diff --git a/src/plugins/sensors/openharmony/openharmonytemperature.h b/src/plugins/sensors/openharmony/openharmonytemperature.h
 new file mode 100644
-index 00000000..cc881f20
+index 0000000..cc881f2
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/openharmonytemperature.h
 @@ -0,0 +1,18 @@
@@ -953,14 +953,14 @@ index 00000000..cc881f20
 +#endif // OPENHARMONYTEMPERATURE_H
 diff --git a/src/plugins/sensors/openharmony/plugin.json b/src/plugins/sensors/openharmony/plugin.json
 new file mode 100644
-index 00000000..ff40b670
+index 0000000..ff40b67
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/plugin.json
 @@ -0,0 +1 @@
 +{ "Keys": [ "openharmony" ] }
 diff --git a/src/plugins/sensors/openharmony/sensorbackend.h b/src/plugins/sensors/openharmony/sensorbackend.h
 new file mode 100644
-index 00000000..aa0907df
+index 0000000..aa0907d
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/sensorbackend.h
 @@ -0,0 +1,91 @@
@@ -1057,7 +1057,7 @@ index 00000000..aa0907df
 +#endif // SENSORBACKEND_H
 diff --git a/src/plugins/sensors/openharmony/sensormanager.cpp b/src/plugins/sensors/openharmony/sensormanager.cpp
 new file mode 100644
-index 00000000..71e6cfee
+index 0000000..71e6cfe
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/sensormanager.cpp
 @@ -0,0 +1,306 @@
@@ -1369,7 +1369,7 @@ index 00000000..71e6cfee
 +}
 diff --git a/src/plugins/sensors/openharmony/sensormanager.h b/src/plugins/sensors/openharmony/sensormanager.h
 new file mode 100644
-index 00000000..e90d777f
+index 0000000..e90d777
 --- /dev/null
 +++ b/src/plugins/sensors/openharmony/sensormanager.h
 @@ -0,0 +1,68 @@
@@ -1442,7 +1442,7 @@ index 00000000..e90d777f
 +
 +#endif // SENSORMANAGER_H
 diff --git a/src/plugins/sensors/sensors.pro b/src/plugins/sensors/sensors.pro
-index 7fce2071..8037ffc4 100644
+index 7fce207..8037ffc 100644
 --- a/src/plugins/sensors/sensors.pro
 +++ b/src/plugins/sensors/sensors.pro
 @@ -5,6 +5,10 @@ android {
@@ -1465,7 +1465,7 @@ index 7fce2071..8037ffc4 100644
  isEmpty(SENSORS_PLUGINS)|contains(SENSORS_PLUGINS, sensortag):linux:SUBDIRS += sensortag
  isEmpty(SENSORS_PLUGINS)|contains(SENSORS_PLUGINS, ios):darwin:SUBDIRS += ios
 diff --git a/src/sensors/qsensormanager.cpp b/src/sensors/qsensormanager.cpp
-index 425a87b9..287c0fbb 100644
+index 425a87b..287c0fb 100644
 --- a/src/sensors/qsensormanager.cpp
 +++ b/src/sensors/qsensormanager.cpp
 @@ -53,7 +53,10 @@ QT_BEGIN_NAMESPACE
@@ -1534,13 +1534,13 @@ index 425a87b9..287c0fbb 100644
  }
  
 diff --git a/src/src.pro b/src/src.pro
-index b3aa7ba0..2984f20c 100644
+index b3aa7ba..df12cad 100644
 --- a/src/src.pro
 +++ b/src/src.pro
 @@ -16,3 +16,6 @@ plugins.subdir = plugins
  plugins.target = sub-plugins
  plugins.depends = sensors
  
-+#SUBDIRS += openharmony
-+#openharmony.subdir = openharmony
-+#openharmony.target = sub-openharmony
++SUBDIRS += openharmony
++openharmony.subdir = openharmony
++openharmony.target = sub-openharmony
