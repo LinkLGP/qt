@@ -299,18 +299,18 @@ index 45223365..43cb70c1 100644
 +	branch = 5.15.17-openharmony
 diff --git a/issbuild b/issbuild
 new file mode 160000
-index 00000000..042513ba
+index 00000000..9f70b473
 --- /dev/null
 +++ b/issbuild
 @@ -0,0 +1 @@
-+Subproject commit 042513baa292cb38b5692a5d202d58ae3f12a4cf
++Subproject commit 9f70b473e2c9017162c74bf21820ac628b3ff9b3
 diff --git a/qtbase b/qtbase
-index 8e79bee4..46269e4c 160000
+index 8e79bee4..f50c8f68 160000
 --- a/qtbase
 +++ b/qtbase
 @@ -1 +1 @@
 -Subproject commit 8e79bee4afa2a1466f360f44fb07d24e432a82a6
-+Subproject commit 46269e4c111849993e787c16849dd8a2d1c86922
++Subproject commit f50c8f68872d4a529fb3fd37bfe84c979c0a8d88
 diff --git a/qtconnectivity b/qtconnectivity
 index e8de0149..43304642 160000
 --- a/qtconnectivity
@@ -319,26 +319,26 @@ index e8de0149..43304642 160000
 -Subproject commit e8de014972fc254c1125a4da24597009f2f6cc68
 +Subproject commit 43304642b1c715178d1df936f44dee56ec967b88
 diff --git a/qtdeclarative b/qtdeclarative
-index 8fb72927..10e040b3 160000
+index 8fb72927..2822f577 160000
 --- a/qtdeclarative
 +++ b/qtdeclarative
 @@ -1 +1 @@
 -Subproject commit 8fb7292711044cc256b8aaf02913ce0cd79d0d21
-+Subproject commit 10e040b3780582f97ce199e399c2746a2ccb4e58
++Subproject commit 2822f57785864b06c89e39bd572078bc7b6eabe5
 diff --git a/qtmultimedia b/qtmultimedia
-index 09dfcd32..a0a05bfb 160000
+index 09dfcd32..f8cdc084 160000
 --- a/qtmultimedia
 +++ b/qtmultimedia
 @@ -1 +1 @@
 -Subproject commit 09dfcd32f0255d6844a6bc16a1ddb9fd5bacdb7b
-+Subproject commit a0a05bfb6e6bf0bef9164ec74e17fe70b1c10327
++Subproject commit f8cdc084155a09b76a8fe43205c47896d831c0f9
 diff --git a/qtohextras b/qtohextras
 new file mode 160000
-index 00000000..7a57d49e
+index 00000000..5a252b58
 --- /dev/null
 +++ b/qtohextras
 @@ -0,0 +1 @@
-+Subproject commit 7a57d49e35325eb25681a8b832a72c9a6a5319dc
++Subproject commit 5a252b58b850da3078531c649c58605c097d07d8
 diff --git a/qtpdf b/qtpdf
 new file mode 160000
 index 00000000..c79ef4b9
@@ -354,9 +354,9 @@ index 37ee5e07..d48805ef 160000
 -Subproject commit 37ee5e07e82296e24cc02c8bf6f31cb6bd8846b1
 +Subproject commit d48805efedb12980781c007b8d0b635697245430
 diff --git a/qtsensors b/qtsensors
-index 79ed5db9..5ede4973 160000
+index 79ed5db9..ac8c2d62 160000
 --- a/qtsensors
 +++ b/qtsensors
 @@ -1 +1 @@
 -Subproject commit 79ed5db98f36b8ca70b077edef46fc793debb3ab
-+Subproject commit 5ede49735211fad86b67dda411f46377e2c3fedd
++Subproject commit ac8c2d62dd8c807201af6768a64a1260d7ccbf9c

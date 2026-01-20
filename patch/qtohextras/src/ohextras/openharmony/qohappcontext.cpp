@@ -24,7 +24,7 @@
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <QtGui/private/qguiapplication_p.h>
-
+#include "qohfunctions.h"
 #include "qohappcontext.h"
 
 namespace {
@@ -66,6 +66,8 @@ private:
     void initializeSystemConfiguration(QJsObject* jsContext);
     // 设置环境变化监听器
     void setupEnvironmentListener(QJsObject* jsContext);
+    /* 设置pcMode变化回调 */
+    void registerPcModeChangedCallback();
     // 创建配置更新回调函数
     Napi::Function createConfigurationUpdateCallback(const Napi::Env& env);
 
@@ -124,14 +126,12 @@ Napi::Function QOhAppContextPrivate::createConfigurationUpdateCallback(const Nap
                 [colorMode] { QGuiApplicationPrivate::platformTheme()->setThemeColorMode(int(colorMode)); },
                 Qt::QueuedConnection);
         }
-
         if (m_sysColorMode != colorMode) {
             Q_Q(QOhAppContext);
-            q->sysThemChanged(OhConfigurationColorMode::COLOR_MODE_DARK == m_sysColorMode
-                              ? QOhAppContext::SysThem::Dark
-                                      : QOhAppContext::SysThem::Light,
-                              QOhAppContext::QPrivateSignal());
             m_sysColorMode = colorMode;
+            Q_EMIT q->sysThemChanged(OhConfigurationColorMode::COLOR_MODE_DARK == m_sysColorMode
+                                     ? QOhAppContext::SysThem::Dark : QOhAppContext::SysThem::Light,
+                              QOhAppContext::QPrivateSignal());
         }
     });
 }
@@ -148,6 +148,28 @@ void QOhAppContextPrivate::setupEnvironmentListener(QJsObject* jsContext)
     appContext.call("on", { Napi::String::From(appContext.env(), "environment"), environmentCallback });
 }
 
+void QOhAppContextPrivate::registerPcModeChangedCallback()
+{
+    auto platformNativeInterface = qApp->platformNativeInterface();
+    if (platformNativeInterface == nullptr) {
+        return;
+    }
+    QJsObject *obj =
+            reinterpret_cast<QJsObject *>(platformNativeInterface->nativeResourceForIntegration("nativeSettings"));
+
+    if (!obj)
+        return;
+    Q_Q(QOhAppContext);
+    Napi::Function pcModeChangedListener = Napi::Function::New(obj->env(),
+                                               [guard = QPointer<QOhAppContext>(q)](const Napi::CallbackInfo& info) {
+                                                   if (guard.isNull() || info.Length() < 1 || !info[0].IsBoolean())
+                                                       return;
+                                                   bool pcMode = info[0].ToBoolean();
+                                                   emit guard->pcModeChanged(pcMode);
+                                               });
+    obj->object().Set("pcModeChangedListener", pcModeChangedListener);
+}
+
 void QOhAppContextPrivate::initialized()
 {
     QJsObject* jsContext = getValidUIAbilityContext();
@@ -158,6 +180,7 @@ void QOhAppContextPrivate::initialized()
     QtOh::runOnJsUIThreadAndWait([this, jsContext] {
         initializeSystemConfiguration(jsContext);
         setupEnvironmentListener(jsContext);
+        registerPcModeChangedCallback();
     });
 }
 
@@ -169,6 +192,7 @@ bool QOhAppContextPrivate::darkColorModeActive() const
 QOhAppContext::QOhAppContext(QObject *parent) : QObject(*(new QOhAppContextPrivate()), parent)
 {
     qRegisterMetaType<QOhAppContext::ColorMode>();
+    qRegisterMetaType<QOhAppContext::SysThem>();
     d_func()->initialized();
 }
 
@@ -180,6 +204,13 @@ QOhAppContext *QOhAppContext::instance()
         [] { QOhAppContextPrivate::m_appContext.reset(new QOhAppContext()); });
 
     return QOhAppContextPrivate::m_appContext.get();
+}
+
+QOhAppContext::SysThem QOhAppContext::sysThem() const
+{
+    Q_D(const QOhAppContext);
+    return OhConfigurationColorMode::COLOR_MODE_DARK == d->m_sysColorMode ?\
+            QOhAppContext::SysThem::Dark : QOhAppContext::SysThem::Light;
 }
 
 void QOhAppContext::setColorMode(ColorMode mode)
@@ -213,4 +244,25 @@ QOhAppContext::ColorMode QOhAppContext::colorMode() const
 {
     Q_D(const QOhAppContext);
     return d->m_colorMode;
+}
+
+bool QOhAppContext::isPermissionGranted(const QString &permission) const
+{
+    return QtOh::checkPermission(permission) == QtOh::PermissionResult::Granted;
+}
+
+bool QOhAppContext::requestPermissionFromUser(const QString &permission) const
+{
+    auto result = QtOh::requestPermissionsSync({permission});
+    if (result.authResults.isEmpty())
+        return false;
+    return result.authResults.first() == QtOh::PermissionResult::Granted;
+}
+
+bool QOhAppContext::requestPermissionsOnSetting(const QString &permission) const
+{
+    auto result = QtOh::requestPermissionsOnSettingSync({permission});
+    if (result.authResults.isEmpty())
+        return false;
+    return result.authResults.first() == QtOh::PermissionResult::Granted;
 }
