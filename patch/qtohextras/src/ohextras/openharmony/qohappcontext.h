@@ -34,6 +34,10 @@ public:
     static QOhAppContext *instance();
 
     ColorMode colorMode() const;
+    QOhAppContext::SysThem sysThem() const;
+    bool isPermissionGranted(const QString &permission) const;
+    bool requestPermissionFromUser(const QString &permission) const;
+    bool requestPermissionsOnSetting(const QString &permission) const;
 
 public Q_SLOTS:
     void setColorMode(QOhAppContext::ColorMode mode);
@@ -41,6 +45,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void sysThemChanged(QOhAppContext::SysThem, QPrivateSignal);
     void colorModeChanged(QOhAppContext::ColorMode, QPrivateSignal);
+    void pcModeChanged(bool isPCMode);
 };
 Q_DECLARE_METATYPE(QOhAppContext::SysThem)
 Q_DECLARE_METATYPE(QOhAppContext::ColorMode)

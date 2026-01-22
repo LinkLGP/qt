@@ -381,12 +381,12 @@ index e1b1a0d2..aa759fc2 160000
 -Subproject commit e1b1a0d2970fd384bd52c734a72536d8452ad070
 +Subproject commit aa759fc27a5e61e04587d7f8dc93ef634e7e83de
 diff --git a/qtbase b/qtbase
-index e4391422..8d62b2c1 160000
+index e4391422..8896a1a3 160000
 --- a/qtbase
 +++ b/qtbase
 @@ -1 +1 @@
 -Subproject commit e4391422574aa9aa89fece74f16c07c609cbbae2
-+Subproject commit 8d62b2c1db62bc94ae25330305bf13ea6bdc43d7
++Subproject commit 8896a1a39f80b294d719c7ef19c00b56aa7c3fde
 diff --git a/qtcanvas3d b/qtcanvas3d
 index 1319e096..433633fb 160000
 --- a/qtcanvas3d
@@ -437,19 +437,19 @@ index b6d96559..2286094b 160000
 -Subproject commit b6d96559cb9f5e0d79936c89887ea924b2c3514a
 +Subproject commit 2286094b4076bbc3a5d3ba9be248c7f48c426513
 diff --git a/qtmultimedia b/qtmultimedia
-index 5197ff9e..4af09205 160000
+index 5197ff9e..8fc416c1 160000
 --- a/qtmultimedia
 +++ b/qtmultimedia
 @@ -1 +1 @@
 -Subproject commit 5197ff9e91cabd90700cf0d36fb5e9e5793d7097
-+Subproject commit 4af092057f931c1b4b394f6c1229d86003e229cd-dirty
++Subproject commit 8fc416c18eb19318a5191cf85138b60671169969
 diff --git a/qtohextras b/qtohextras
 new file mode 160000
-index 00000000..0906f057
+index 00000000..5a252b58
 --- /dev/null
 +++ b/qtohextras
 @@ -0,0 +1 @@
-+Subproject commit 0906f057163587946163a49cdd830fe1dd69e7ca
++Subproject commit 5a252b58b850da3078531c649c58605c097d07d8
 diff --git a/qtpdf b/qtpdf
 new file mode 160000
 index 00000000..0e361f5b
@@ -493,12 +493,12 @@ index 5be95f96..a7eb0fae 160000
 -Subproject commit 5be95f966aabc5170f0aacfd4b0a46217241bfd6
 +Subproject commit a7eb0faeafda29c4c1b7841d4adf72aec2d7397d
 diff --git a/qtsensors b/qtsensors
-index 3011b16d..66e96da4 160000
+index 3011b16d..eca07988 160000
 --- a/qtsensors
 +++ b/qtsensors
 @@ -1 +1 @@
 -Subproject commit 3011b16d63cadbb473b6aa3a535b9f0e33170c09
-+Subproject commit 66e96da4de7e7ece32fa52c957d6f85c8e66e418
++Subproject commit eca079889040e3b9ee817c6fd906f5fd0c9b1568
 diff --git a/qtsystems b/qtsystems
 index 434af789..81e08ee5 160000
 --- a/qtsystems

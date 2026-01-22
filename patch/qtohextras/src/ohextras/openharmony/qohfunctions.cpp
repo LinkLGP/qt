@@ -177,6 +177,7 @@ void openNotificationSettings()
 
     accessCtrl->openNotificationSettings();
 }
+
 }
 
 #ifndef QT_NO_DEBUG_STREAM

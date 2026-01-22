@@ -1249,10 +1249,10 @@ index cd449e3649..d0980cb3b5 100644
          e->setAccepted(qev.isAccepted());
          } break;
 diff --git a/src/quick/scenegraph/qsgthreadedrenderloop.cpp b/src/quick/scenegraph/qsgthreadedrenderloop.cpp
-index f5e3f2e864..b146749e9d 100644
+index f5e3f2e864..dd5cd2fd4f 100644
 --- a/src/quick/scenegraph/qsgthreadedrenderloop.cpp
 +++ b/src/quick/scenegraph/qsgthreadedrenderloop.cpp
-@@ -415,7 +415,16 @@ bool QSGRenderThread::event(QEvent *e)
+@@ -415,7 +415,15 @@ bool QSGRenderThread::event(QEvent *e)
          }
  
          dpr = se->dpr;
@@ -1265,7 +1265,6 @@ index f5e3f2e864..b146749e9d 100644
 +                windowSize = xcSize;
 +            }
 +        }
-+        qCWarning(QSG_LOG_RENDERLOOP) << "WM_RequestSync windowSize: " << windowSize;
 +#endif
          pendingUpdate |= SyncRequest;
          if (se->syncInExpose) {
