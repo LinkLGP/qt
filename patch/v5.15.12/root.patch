@@ -381,12 +381,12 @@ index e1b1a0d2..aa759fc2 160000
 -Subproject commit e1b1a0d2970fd384bd52c734a72536d8452ad070
 +Subproject commit aa759fc27a5e61e04587d7f8dc93ef634e7e83de
 diff --git a/qtbase b/qtbase
-index e4391422..8896a1a3 160000
+index e4391422..41b3b94b 160000
 --- a/qtbase
 +++ b/qtbase
 @@ -1 +1 @@
 -Subproject commit e4391422574aa9aa89fece74f16c07c609cbbae2
-+Subproject commit 8896a1a39f80b294d719c7ef19c00b56aa7c3fde
++Subproject commit 41b3b94b6bd5470749d7094945ca5dd37dcdf62d
 diff --git a/qtcanvas3d b/qtcanvas3d
 index 1319e096..433633fb 160000
 --- a/qtcanvas3d
@@ -437,19 +437,19 @@ index b6d96559..2286094b 160000
 -Subproject commit b6d96559cb9f5e0d79936c89887ea924b2c3514a
 +Subproject commit 2286094b4076bbc3a5d3ba9be248c7f48c426513
 diff --git a/qtmultimedia b/qtmultimedia
-index 5197ff9e..8fc416c1 160000
+index 5197ff9e..b163bff9 160000
 --- a/qtmultimedia
 +++ b/qtmultimedia
 @@ -1 +1 @@
 -Subproject commit 5197ff9e91cabd90700cf0d36fb5e9e5793d7097
-+Subproject commit 8fc416c18eb19318a5191cf85138b60671169969
++Subproject commit b163bff95ad81acfa36631456a3f46c0ca4c5bef
 diff --git a/qtohextras b/qtohextras
 new file mode 160000
-index 00000000..5a252b58
+index 00000000..57fe416e
 --- /dev/null
 +++ b/qtohextras
 @@ -0,0 +1 @@
-+Subproject commit 5a252b58b850da3078531c649c58605c097d07d8
++Subproject commit 57fe416ebf1c2e9abbbfbf686eb05dbe1b70db72
 diff --git a/qtpdf b/qtpdf
 new file mode 160000
 index 00000000..0e361f5b
