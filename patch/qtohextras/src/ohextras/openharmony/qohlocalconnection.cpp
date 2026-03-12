@@ -1,5 +1,6 @@
 /* ***************************************************************************
  *
+ * Copyright (C) 2025 iSoftStone. All rights reserved.
  * See LGPL for detailed Information
  *
  * This file is part of the qtohextras module.
@@ -26,11 +27,10 @@ class QOhLocalConnectionPrivate : public QOhAbstractLocalSocketPrivate
 QOhLocalConnection::QOhLocalConnection(QObject *parent)
     : QOhAbstractLocalSocket(*new QOhLocalConnectionPrivate, parent)
 {
-
 }
 
 QOhLocalConnection::QOhLocalConnection(QJsObject *connection)
-   : QOhAbstractLocalSocket(*new QOhLocalConnectionPrivate, nullptr)
+    : QOhAbstractLocalSocket(*new QOhLocalConnectionPrivate, nullptr)
 {
     Q_D(QOhLocalConnection);
     d->m_object.reset(connection);

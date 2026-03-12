@@ -1,6 +1,7 @@
 
 /* ***************************************************************************
  *
+ * Copyright (C) 2025 iSoftStone. All rights reserved.
  * See LGPL for detailed Information
  *
  * This file is part of the qtohextras module.
@@ -58,9 +59,9 @@ startNativeChildProcess(const QString &entry, const Args &args,
 typedef void (*OH_Ability_OnNativeChildProcessStarted)(int errCode, OHIPCRemoteProxy *remoteProxy);
 
 //for native API OH_Ability_CreateNativeChildProcess
-Q_OPENHARMONYEXTRAS_EXPORT int
-createNativeChildProcess(const QString &entryPoint,
-                        OH_Ability_OnNativeChildProcessStarted onProcessStarted);
+Q_OPENHARMONYEXTRAS_EXPORT int createNativeChildProcess(
+    const QString &entryPoint,
+    OH_Ability_OnNativeChildProcessStarted onProcessStarted);
 
 #if OHOS_SDK_VERSION >= 20
 struct ChildProcessConfig
@@ -72,10 +73,8 @@ struct ChildProcessConfig
 #endif
 };
 
-Q_OPENHARMONYEXTRAS_EXPORT int
-createNativeChildProcessWithConfig(const QString &entryPoint,
-                                  const Config &config,
-                                  OH_Ability_OnNativeChildProcessStarted onProcessStarted);
+Q_OPENHARMONYEXTRAS_EXPORT int createNativeChildProcessWithConfig(
+    const QString &entryPoint, const Config &config, OH_Ability_OnNativeChildProcessStarted onProcessStarted);
 #endif
 }
 

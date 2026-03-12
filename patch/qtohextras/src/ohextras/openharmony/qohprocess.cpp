@@ -1,5 +1,6 @@
 /* ***************************************************************************
  *
+ * Copyright (C) 2025 iSoftStone. All rights reserved.
  * See LGPL for detailed Information
  *
  * This file is part of the qtohextras module.
@@ -22,19 +23,48 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <errno.h>
+#include <cerrno>
 QT_BEGIN_NAMESPACE
 
+#define CHILD_TIMER_INTERVAL_MS 1000
+#define SIGNALED_EXIT_OFFSET 128
 namespace {
 static QString PID = QString::fromUtf8("pid:");
 static QString STATE = QString::fromUtf8("state:");
 static QString QUIT = QString::fromUtf8("quit");
 }
 
+static void handleServerNewConnection(QOhLocalServer *server, qint64 &processPid, QEventLoop &loop)
+{
+    auto c = server->nextPendingConnection();
+    if (!c)
+        return;
+    QObject::connect(c,
+                     &QOhLocalConnection::messageReady,
+                     c,
+                     [&](const QString &message) {
+                         if (message.startsWith(PID)) {
+                             int pidLen = message.length() - PID.length();
+                             QString pid = message.right(pidLen);
+                             processPid = pid.toLongLong();
+                             if (loop.isRunning())
+                                 loop.quit();
+                         }
+                     });
+}
+
+static void setupServerConnection(QOhLocalServer *server, qint64 &processPid, QEventLoop &loop)
+{
+    QObject::connect(server, &QOhLocalServer::newConnection, server,
+                     [server, &loop, &processPid] {
+                         handleServerNewConnection(server, processPid, loop);
+                     });
+}
+
 class MainProcessHandler
 {
 public:
-    MainProcessHandler(QOhProcessPrivate *p) : m_p(p) {}
+    explicit MainProcessHandler(QOhProcessPrivate *p) : m_p(p) {}
     ~MainProcessHandler();
     void listen();
     void readMessage(const QString &message);
@@ -53,15 +83,16 @@ MainProcessHandler::~MainProcessHandler()
 
 void MainProcessHandler::sendMessage(const QString &message)
 {
-    if (m_childConnection == nullptr)
+    if (m_childConnection == nullptr) {
         return;
+    }
     m_childConnection->send(message);
 }
 
 class ProcessHandler
 {
 public:
-    ProcessHandler(QCoreApplication *app) : m_app(app) {}
+    explicit ProcessHandler(QCoreApplication *app) : m_app(app) {}
     ~ProcessHandler();
     void sendPid();
     void sendMessage(const QString &message);
@@ -74,15 +105,17 @@ private:
 
 ProcessHandler::~ProcessHandler()
 {
-    if (m_socket.isNull())
+    if (m_socket.isNull()) {
         return;
+    }
     m_socket->close();
 }
 
 void ProcessHandler::sendPid()
 {
-    if (m_app == nullptr)
+    if (m_app == nullptr) {
         return;
+    }
     auto pid = m_app->applicationPid();
     QString message = QString("%1%2").arg(PID).arg(pid);
     sendMessage(message);
@@ -91,8 +124,9 @@ void ProcessHandler::sendPid()
 void ProcessHandler::sendMessage(const QString &message)
 {
     auto s = socket();
-    if (s == nullptr)
+    if (s == nullptr) {
         return;
+    }
     s->send(message);
 }
 
@@ -127,7 +161,7 @@ QOhLocalSocket *ProcessHandler::socket()
 class QOhProcessResultReceiver : public QOpenHarmonyAbility::QAbilityResultReceiver
 {
 public:
-    QOhProcessResultReceiver(QOhProcessPrivate *p);
+    explicit QOhProcessResultReceiver(QOhProcessPrivate *p);
     virtual void handleResult(const Napi::Value &err, const Napi::Value &result = Napi::Value());
 private:
     QOhProcessPrivate *m_private;
@@ -184,17 +218,19 @@ void MainProcessHandler::listen()
             return;
         }
         m_server.reset(server.take());
-        QObject::connect(m_server.data(), &QOhLocalServer::newConnection,
-                         m_server.data(), [this] {
-                             m_childConnection = m_server->nextPendingConnection();
-                             if (!m_childConnection) {
-                                 return;
-                             }
-                             QObject::connect(m_childConnection, &QOhLocalConnection::messageReady,
-                                              m_childConnection, [this](const QString &message) {
-                                                  readMessage(message);
-                                              });
-                         });
+        QObject::connect(m_server.data(), &QOhLocalServer::newConnection, m_server.data(),
+            [this] {
+                m_childConnection = m_server->nextPendingConnection();
+                if (!m_childConnection) {
+                    return;
+                }
+                QObject::connect(m_childConnection,
+                    &QOhLocalConnection::messageReady,
+                    m_childConnection,
+                    [this](const QString &message) {
+                        readMessage(message);
+                    });
+            });
     }
 }
 
@@ -203,7 +239,6 @@ QStringList QOhProcessPrivate::m_all;
 QOhProcess::QOhProcess(QObject *parent)
     : QObject(*new QOhProcessPrivate, parent)
 {
-
 }
 
 QOhProcess::QOhProcess(QCoreApplication *app, QObject *parent)
@@ -264,25 +299,11 @@ qint64 QOhProcess::startDetached(const QString &program, const QString &moduleNa
     if (!server->listen(name.first())) {
         qWarning() << "start server failed:" << server->errorString();
     } else {
-        QObject::connect(server.data(), &QOhLocalServer::newConnection,
-                         server.data(), [&] {
-                             auto c = server->nextPendingConnection();
-                             if (!c) {
-                                 return;
-                             }
-                             QObject::connect(c, &QOhLocalConnection::messageReady,
-                                              c, [&](const QString &message) {
-                                                  if (message.startsWith(PID)) {
-                                                      QString pid = message.right(message.length() - PID.length());
-                                                      processPid = pid.toLongLong();
-                                                      if (loop.isRunning())
-                                                          loop.quit();
-                                                  }
-                                              });
-                         });
+        setupServerConnection(server.data(), processPid, loop);
     }
     QOpenHarmonyAbility::start(want);
-    QTimer::singleShot(2000, [&]{
+    const int kMs = 2000;
+    QTimer::singleShot(kMs, [&] {
         if (loop.isRunning())
             loop.quit();
     });
@@ -360,8 +381,7 @@ void QOhProcessPrivate::checkChildProcessState(int option)
 {
     int status = 0;
     pid_t result = waitpid(m_pid, &status, option);
-
-    if (result == -1/* && errno == ECHILD*/) {
+    if (result == -1) {
         qWarning() << QString("waitpid for: %1 failed,").arg(m_pid) << "error: " << errno;
         return;
     } else if (result == 0) {
@@ -372,7 +392,7 @@ void QOhProcessPrivate::checkChildProcessState(int option)
             m_exitCode = WEXITSTATUS(status);
         } else if (WIFSIGNALED(status)) {
             m_crashed = true;
-            m_exitCode = 128 + WTERMSIG(status);
+            m_exitCode = SIGNALED_EXIT_OFFSET + WTERMSIG(status);
         }
     }
     if (!m_isRunning) {
@@ -407,8 +427,9 @@ void QOhProcessPrivate::stopped()
     m_mainHandler.reset();
     emit q->stateChanged(QProcess::NotRunning, QOhProcess::QPrivateSignal());
     emit q->finished(m_exitCode, m_crashed ? QProcess::CrashExit : QProcess::NormalExit);
-    if (m_crashed)
+    if (m_crashed) {
         emit q->errorOccurred(QProcess::Crashed);
+    }
 }
 
 void QOhProcessPrivate::handleError(const QString &errorString)
@@ -428,7 +449,7 @@ void QOhProcessPrivate::startTimer()
 {
     if (m_childTimerId == 0) {
         Q_Q(QOhProcess);
-        m_childTimerId = q->startTimer(1000);
+        m_childTimerId = q->startTimer(CHILD_TIMER_INTERVAL_MS);
     }
 }
 
@@ -451,7 +472,6 @@ void QOhProcessPrivate::setErrorAndEmit(QProcess::ProcessError error, const QStr
 QOhProcessResultReceiver::QOhProcessResultReceiver(QOhProcessPrivate *p)
     : m_private(p)
 {
-
 }
 
 void QOhProcessResultReceiver::handleResult(const Napi::Value &err, const Napi::Value &result)

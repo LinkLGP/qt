@@ -1,5 +1,6 @@
 /* ***************************************************************************
  *
+ * Copyright (C) 2025 iSoftStone. All rights reserved.
  * See LGPL for detailed Information
  *
  * This file is part of the qtohextras module.
@@ -12,6 +13,7 @@
 #include <QtCore/qdebug.h>
 #include <private/qopenharmony_p.h>
 #include <private/qjspromise_p.h>
+#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
@@ -26,11 +28,11 @@ qint64 QOhChildProcess::startChildProcess(const QString &srcEntry, StartMode mod
         }
         QJsPromise promise(result.As<Napi::Promise>());
         promise.onThen([p](const Napi::CallbackInfo &info) {
-                   p->set_value(QNapi::getFirst<qint64>(info));
-               }).onCatch([p](const Napi::CallbackInfo &info) {
+                    p->set_value(QNapi::getFirst<qint64>(info));
+                }).onCatch([p](const Napi::CallbackInfo &info) {
                     auto error = QNapi::getFirst<Napi::Object>(info);
                     qWarning() << "start child process failed: " << QNapi::get<QString>(error, "message");
-                   p->set_value(-1);
+                    p->set_value(-1);
                 });
     });
 }
@@ -69,14 +71,17 @@ Ability_NativeChildProcess_ErrCode QOhChildProcess::startNativeChildProcess(cons
     NativeChildProcess_Args ca;
     QByteArray entryParams = args.entryParams.toUtf8();
     ca.entryParams = new char[entryParams.size() + 1];
-    strcpy(ca.entryParams, entryParams.constData());
+    std::copy_n(entryParams.constData(), entryParams.size(), ca.entryParams);
+    ca.entryParams[entryParams.size()] = '\0';
     ca.fdList.head = nullptr;
     NativeChildProcess_Fd *tail = ca.fdList.head;
     for (int i = 0; i < args.fds.count(); ++i) {
         auto fd = args.fds.at(i);
         NativeChildProcess_Fd *newFd = new NativeChildProcess_Fd;
-        newFd->fdName = new char[fd.name.length() + 1];
-        strcpy(newFd->fdName, fd.name.toUtf8().constData());
+        QByteArray fdNameData = fd.name.toUtf8();
+        newFd->fdName = new char[fdNameData.size() + 1];
+        std::copy_n(fdNameData.constData(), fdNameData.size(), newFd->fdName);
+        newFd->fdName[fdNameData.size()] = '\0';
         newFd->fd = fd.fd;
         newFd->next = nullptr;
         if (ca.fdList.head == nullptr) {
@@ -93,26 +98,22 @@ Ability_NativeChildProcess_ErrCode QOhChildProcess::startNativeChildProcess(cons
         .reserved = options.reserved
     };
     QByteArray entryData = entry.toUtf8();
-    Ability_NativeChildProcess_ErrCode ret = OH_Ability_StartNativeChildProcess(
-                   entryData.constData(), ca, co, pid);
+    Ability_NativeChildProcess_ErrCode ret = OH_Ability_StartNativeChildProcess(entryData.constData(), ca, co, pid);
     freeProcessArgs(ca);
     return ret;
-
 }
 
-
 int QOhChildProcess::createNativeChildProcess(const QString &entryPoint,
-                                                OH_Ability_OnNativeChildProcessStarted onProcessStarted)
+                                              OH_Ability_OnNativeChildProcessStarted onProcessStarted)
 {
-
     QByteArray entry = entryPoint.toUtf8();
     return OH_Ability_CreateNativeChildProcess(entry.constData(), onProcessStarted);
 }
 
 #if OHOS_SDK_VERSION >= 20
 int QOhChildProcess::createNativeChildProcessWithConfig(const QString &entryPoint,
-                                                          const Config &config,
-                                                          OH_Ability_OnNativeChildProcessStarted onProcessStarted)
+                                                        const Config &config,
+                                                        OH_Ability_OnNativeChildProcessStarted onProcessStarted)
 {
     auto ohConfig = OH_Ability_CreateChildProcessConfigs();
     if (ohConfig == nullptr)

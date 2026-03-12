@@ -1,5 +1,6 @@
 /* ***************************************************************************
  *
+ * Copyright (C) 2025 iSoftStone. All rights reserved.
  * See LGPL for detailed Information
  *
  * This file is part of the qtohextras module.
@@ -29,7 +30,7 @@ void QOhAbstractLocalSocketPrivate::close()
 
 void QOhAbstractLocalSocketPrivate::onError()
 {
-    QtOh::runOnJsUIThreadAndWait([this]{
+    QtOh::runOnJsUIThreadAndWait([this] {
         auto callback = QNapi::create([this](const Napi::CallbackInfo &info) {
             auto error = QNapi::getFirst<Napi::Object>(info);
             m_errorString = QNapi::get<QString>(error, "message");
@@ -60,7 +61,6 @@ void QOhAbstractLocalSocketPrivate::onMessage()
 QOhAbstractLocalSocket::QOhAbstractLocalSocket(QObject *parent)
     : QObject(*new QOhAbstractLocalSocketPrivate, parent)
 {
-
 }
 
 QOhAbstractLocalSocket::~QOhAbstractLocalSocket()
@@ -89,7 +89,6 @@ bool QOhAbstractLocalSocket::send(const QString &message)
 QOhAbstractLocalSocket::QOhAbstractLocalSocket(QOhAbstractLocalSocketPrivate &d, QObject *parent)
     : QObject(d, parent)
 {
-
 }
 
 QString QOhAbstractLocalSocket::errorString() const
