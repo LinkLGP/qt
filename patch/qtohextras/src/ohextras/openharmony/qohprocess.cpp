@@ -37,8 +37,9 @@ static QString QUIT = QString::fromUtf8("quit");
 static void handleServerNewConnection(QOhLocalServer *server, qint64 &processPid, QEventLoop &loop)
 {
     auto c = server->nextPendingConnection();
-    if (!c)
+    if (!c) {
         return;
+    }
     QObject::connect(c,
                      &QOhLocalConnection::messageReady,
                      c,
@@ -47,8 +48,9 @@ static void handleServerNewConnection(QOhLocalServer *server, qint64 &processPid
                              int pidLen = message.length() - PID.length();
                              QString pid = message.right(pidLen);
                              processPid = pid.toLongLong();
-                             if (loop.isRunning())
+                             if (loop.isRunning()) {
                                  loop.quit();
+                             }
                          }
                      });
 }
