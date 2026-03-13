@@ -6301,10 +6301,10 @@ index 000000000..86ec12b30
 +#endif // QOHDEMUXER_H
 diff --git a/src/plugins/openharmony/src/player/qohplayer.cpp b/src/plugins/openharmony/src/player/qohplayer.cpp
 new file mode 100644
-index 000000000..ac5375400
+index 000000000..808179267
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/qohplayer.cpp
-@@ -0,0 +1,446 @@
+@@ -0,0 +1,439 @@
 +#include <QUrl>
 +#include <QFile>
 +#include <QHash>
@@ -6613,11 +6613,6 @@ index 000000000..ac5375400
 +        if (!m_surfaceSetted && m_window != nullptr) {
 +            OH_AVErrCode result = OH_AVPlayer_SetVideoSurface(m_player, m_window);
 +            qWarning() << "Set Video Surface Result" << result;
-+
-+            int32_t height, width;
-+            height = width = 0;
-+            int32_t ret = OH_NativeWindow_NativeWindowHandleOpt(m_window, GET_BUFFER_GEOMETRY, &height, &width);
-+            qWarning() << "get ---- OH_NativeWindow_NativeWindowHandleOpt GET_BUFFER_GEOMETRY ret:" << ret << height << width;
 +            m_surfaceSetted = true;
 +        }
 +        prepare();
@@ -6720,9 +6715,7 @@ index 000000000..ac5375400
 +    result = OH_AVPlayer_GetVideoHeight(m_player, &h);
 +    if (result != AV_ERR_OK)
 +        return;
-+    emit videoSizeChanged(w, h);
-+
-+    qWarning() << "obtainVideoSize ---- get video w, h:" << w << h;
++    emit videoSizeChanged(w, h);    
 +}
 +
 +void QOhPlayer::onPlayerInfo(OH_AVPlayer *player, AVPlayerOnInfoType type,
@@ -7610,10 +7603,10 @@ index 000000000..16013e425
 +#endif // QOHVIDEORENDERERCONTROL_H
 diff --git a/src/plugins/openharmony/src/player/qohwindowcontrol.cpp b/src/plugins/openharmony/src/player/qohwindowcontrol.cpp
 new file mode 100644
-index 000000000..723950c06
+index 000000000..9c1d2ff0d
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/qohwindowcontrol.cpp
-@@ -0,0 +1,210 @@
+@@ -0,0 +1,206 @@
 +#include "qohwindowcontrol.h"
 +#include <qopenharmonydefines.h>
 +#include <QHash>
@@ -7625,6 +7618,8 @@ index 000000000..723950c06
 +#include <QTimer>
 +#include <QWidget>
 +#include <uv.h>
++
++#include <QtPlatformHeaders/qohwindowfunctions.h>
 +
 +struct Node {
 +    ArkUI_NodeType nodeType; // Type of the node. The value can be ARKUI_NODE_XCOMPONENT or other types supported in later versions.
@@ -7686,7 +7681,7 @@ index 000000000..723950c06
 +    m_widget = new VideoOutWidget(widget);
 +    WId videoId = m_widget->winId();
 +    m_widget->show();
-+
++    QOhWindowFunctions::setNativeNodeRenderFit(m_widget->windowHandle(), QOhWindowFunctions::NativeNodeRenderFit::FIT_RESIZE_FILL);
 +    WindowNode *node = reinterpret_cast<WindowNode*>(videoId);
 +    if (node == nullptr) {
 +        qWarning() << "set player output widget failed";
@@ -7804,12 +7799,6 @@ index 000000000..723950c06
 +void QOhWindowControl::setNativeWindow(OHNativeWindow *nativeWindow)
 +{
 +    m_nativeWindow = nativeWindow;
-+    int32_t ret = OH_NativeWindow_NativeWindowSetScalingModeV2(m_nativeWindow, OH_SCALING_MODE_SCALE_FIT_V2);
-+    qWarning() << "<---OH_NativeWindow_NativeWindowSetScalingModeV2: " << ret;
-+
-+    ret = OH_NativeWindow_NativeWindowHandleOpt(m_nativeWindow, SET_BUFFER_GEOMETRY, 1080, 1920);
-+
-+    qWarning() << "<---OH_NativeWindow_NativeWindowHandleOpt SET_BUFFER_GEOMETRY: " << ret <<  m_widget->height() << m_widget->width();
 +    QMetaObject::invokeMethod(this, "windowCreated");
 +}
 +
