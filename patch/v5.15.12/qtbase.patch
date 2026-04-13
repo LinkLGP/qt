@@ -14943,53 +14943,577 @@ index 7282e20cb3e..eed5e7c1446 100644
  
 diff --git a/src/network/kernel/qdnslookup_openharmony.cpp b/src/network/kernel/qdnslookup_openharmony.cpp
 new file mode 100644
-index 00000000000..7bd9ed578d6
+index 00000000000..4fb98609290
 --- /dev/null
 +++ b/src/network/kernel/qdnslookup_openharmony.cpp
-@@ -0,0 +1,46 @@
+@@ -0,0 +1,570 @@
 +#include "qdnslookup_p.h"
 +
-+#include "qjsmodule.h"
-+#include <private/qopenharmony_p.h>
-+#include <private/qjspromise_p.h>
 +
 +#include <QDebug>
++#include <QUrl>
++#include <QRandomGenerator>
++
++#include <sys/socket.h>
++#include <sys/time.h>
++#include <netinet/in.h>
++#include <arpa/inet.h>
++#include <unistd.h>
++#include <cstring>
++#include <fcntl.h>
++#include <errno.h>
 +
 +QT_BEGIN_NAMESPACE
++
++/*
++** DNS header structure
++**
++** id:          Transaction ID                  (16 bits)
++** flags:       Flags                           (16 bits)
++** qdcount:     Number of questions             (16 bits)
++** ancount:     Number of answers               (16 bits)
++** nscount:     Number of authority records     (16 bits)
++** arcount:     Number of additional records    (16 bits)
++**
++*/
++struct DNSHeader {
++    quint16 id;
++    quint16 flags;
++    quint16 qdcount;
++    quint16 ancount;
++    quint16 nscount;
++    quint16 arcount;
++};
++
++//
++/*
++** DNS query flags
++**
++** DNS_FLAG_RD: Recursion desired
++** DNS_FLAG_QR: Query/Response flag
++** DNS_FLAG_AA: Authoritative answer
++** DNS_FLAG_TC: Truncated message
++** DNS_FLAG_RA: Recursion available
++**
++*/
++#define DNS_FLAG_RD 0x0100
++#define DNS_FLAG_QR 0x8000
++#define DNS_FLAG_AA 0x0400
++#define DNS_FLAG_TC 0x0200
++#define DNS_FLAG_RA 0x0080
++
++/*
++** NS response codes
++*/
++#define DNS_RCODE_NOERROR  0
++#define DNS_RCODE_FORMERR  1
++#define DNS_RCODE_SERVFAIL 2
++#define DNS_RCODE_NXDOMAIN 3
++#define DNS_RCODE_NOTIMP   4
++#define DNS_RCODE_REFUSED  5
++
++/*
++** DNS classes
++*/
++#define DNS_CLASS_IN 1
++
++/*
++** Default DNS server (Google DNS)
++*/
++#define DEFAULT_DNS_SERVER "8.8.8.8"
++#define DNS_PORT 53
++#define DNS_TIMEOUT_SEC 5
++#define MAX_DNS_PACKET_SIZE 512
++#define DNS_MAX_RETRIES 5
++
++QString getDnsServers()
++{
++    /*
++    ** To do: Implement retrieval of DNS servers from system configuration in future.
++    */
++    return QString::fromUtf8(DEFAULT_DNS_SERVER);;
++}
++
++/*
++** Encode domain name into DNS format
++*/
++static QByteArray encodeDomainName(const QByteArray &domain)
++{
++    QByteArray encoded;
++    QList<QByteArray> labels = domain.split('.');
++
++    for (const auto &label : std::as_const(labels)) {
++        if (label.isEmpty())
++            continue;
++        encoded.append(static_cast<char>(label.length()));
++        encoded.append(label);
++    }
++    encoded.append('\0');  /* End of domain name */
++
++    return encoded;
++}
++
++/*
++** Decode domain name from DNS format
++*/
++static QString decodeDomainName(const unsigned char *buffer, int bufferSize,
++                               const unsigned char *ptr, int *bytesRead)
++{
++    QString result;
++    const unsigned char *p = ptr;
++    bool jumped = false;
++    int jumpCount = 0;
++    const int maxJumps = 20; /* Prevent infinite loops */
++
++    while (*p != 0 && jumpCount < maxJumps) {
++        if ((*p & 0xC0) == 0xC0) { /* Compression pointer */
++            if (!jumped) {
++                *bytesRead = (p - ptr) + 2;
++                jumped = true;
++            }
++
++            int offset = ((*p & 0x3F) << 8) | *(p + 1);
++            if (offset >= bufferSize)
++                return QString();
++            p = buffer + offset;
++            jumpCount++;
++        } else {
++            int labelLen = *p;
++            p++;
++
++            if (p + labelLen > buffer + bufferSize)
++                return QString();
++
++            if (!result.isEmpty())
++                result.append('.');
++            result.append(QString::fromLatin1(reinterpret_cast<const char*>(p), labelLen));
++            p += labelLen;
++        }
++    }
++
++    if (!jumped)
++        *bytesRead = (p - ptr) + 1;
++
++    /*
++    ** Convert from ACE (ASCII Compatible Encoding) to Unicode
++    */
++    return QUrl::fromAce(result.toLatin1());
++}
++
++/*
++** Build DNS query packet
++*/
++static QByteArray buildDNSQuery(const QByteArray &domain, quint16 queryType)
++{
++    QByteArray packet;
++
++    /*
++    ** DNS Header
++    */
++    DNSHeader header;
++    std::memset(&header, 0, sizeof(header));
++    header.id = htons(static_cast<quint16>(QRandomGenerator::global()->bounded(65536)));
++    header.flags = htons(DNS_FLAG_RD); // Standard query with recursion
++    header.qdcount = htons(1);
++    header.ancount = 0;
++    header.nscount = 0;
++    header.arcount = 0;
++
++    packet.append(reinterpret_cast<const char*>(&header), sizeof(header));
++
++    /*
++    ** Question section
++    */
++    QByteArray encodedDomain = encodeDomainName(domain);
++    packet.append(encodedDomain);
++
++    /*
++    ** Query type and class
++    */
++    quint16 qtype = htons(queryType);
++    quint16 qclass = htons(DNS_CLASS_IN);
++    packet.append(reinterpret_cast<const char*>(&qtype), sizeof(qtype));
++    packet.append(reinterpret_cast<const char*>(&qclass), sizeof(qclass));
++
++    return packet;
++}
++
++/*
++** Helper structure to hold parsed DNS record data
++*/
++struct ParsedDNSRecord {
++    QString name;
++    quint16 type;
++    quint32 ttl;
++    QByteArray rdata;
++
++    // Parsed data for specific record types
++    QString stringValue;      // For CNAME, NS, PTR
++    quint16 preference;       // For MX
++    quint16 priority;         // For SRV
++    quint16 weight;           // For SRV
++    quint16 port;             // For SRV
++    QList<QByteArray> txtValues; // For TXT
++};
++
++/*
++** Parse DNS response and return raw record data
++*/
++static bool parseDNSResponse(const QByteArray &response, QDnsLookup::Error *error,
++                            QString *errorString, QList<ParsedDNSRecord> *records)
++{
++    if (response.size() < static_cast<int>(sizeof(DNSHeader))) {
++        *error = QDnsLookup::InvalidReplyError;
++        *errorString = QDnsLookupRunnable::tr("Invalid reply received (too short)");
++        return false;
++    }
++
++    const unsigned char *buffer = reinterpret_cast<const unsigned char*>(response.constData());
++    int bufferSize = response.size();
++
++    /*
++    ** Parse header
++    */
++    DNSHeader header;
++    std::memcpy(&header, buffer, sizeof(header));
++    header.id = ntohs(header.id);
++    header.flags = ntohs(header.flags);
++    header.qdcount = ntohs(header.qdcount);
++    header.ancount = ntohs(header.ancount);
++    header.nscount = ntohs(header.nscount);
++    header.arcount = ntohs(header.arcount);
++
++    /*
++    **Check if this is a response
++    */
++    if (!(header.flags & DNS_FLAG_QR)) {
++        *error = QDnsLookup::InvalidReplyError;
++        *errorString = QDnsLookupRunnable::tr("Not a DNS response");
++        return false;
++    }
++
++    /*
++    ** Check response code
++    */
++    int rcode = header.flags & 0x000F;
++    switch (rcode) {
++    case DNS_RCODE_NOERROR:
++        break;
++    case DNS_RCODE_FORMERR:
++        *error = QDnsLookup::InvalidRequestError;
++        *errorString = QDnsLookupRunnable::tr("Server could not process query");
++        return false;
++    case DNS_RCODE_SERVFAIL:
++        *error = QDnsLookup::ServerFailureError;
++        *errorString = QDnsLookupRunnable::tr("Server failure");
++        return false;
++    case DNS_RCODE_NXDOMAIN:
++        *error = QDnsLookup::NotFoundError;
++        *errorString = QDnsLookupRunnable::tr("Non existent domain");
++        return false;
++    case DNS_RCODE_REFUSED:
++        *error = QDnsLookup::ServerRefusedError;
++        *errorString = QDnsLookupRunnable::tr("Server refused to answer");
++        return false;
++    default:
++        *error = QDnsLookup::InvalidReplyError;
++        *errorString = QDnsLookupRunnable::tr("Invalid reply received");
++        return false;
++    }
++
++    const unsigned char *ptr = buffer + sizeof(DNSHeader);
++
++    /*
++    ** Skip question section
++    */
++    for (int i = 0; i < header.qdcount; i++) {
++        int bytesRead = 0;
++        decodeDomainName(buffer, bufferSize, ptr, &bytesRead);
++        ptr += bytesRead + 4; /* Skip QTYPE and QCLASS */
++
++        if (ptr > buffer + bufferSize) {
++            *error = QDnsLookup::InvalidReplyError;
++            *errorString = QDnsLookupRunnable::tr("Invalid reply received");
++            return false;
++        }
++    }
++
++    /*
++    ** Parse answer section
++    */
++    for (int i = 0; i < header.ancount; i++) {
++        if (ptr + 12 > buffer + bufferSize)
++            break;
++
++        ParsedDNSRecord record;
++
++        int nameLen = 0;
++        record.name = decodeDomainName(buffer, bufferSize, ptr, &nameLen);
++        ptr += nameLen;
++
++        record.type = (ptr[0] << 8) | ptr[1];
++        ptr += 2;
++        quint16 rrclass = (ptr[0] << 8) | ptr[1];
++        ptr += 2;
++        Q_UNUSED(rrclass);
++
++        record.ttl = (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | ptr[3];
++        ptr += 4;
++
++        quint16 rdlength = (ptr[0] << 8) | ptr[1];
++        ptr += 2;
++
++        if (ptr + rdlength > buffer + bufferSize)
++            break;
++
++        /*
++        ** Store raw rdata
++        */
++        record.rdata = QByteArray(reinterpret_cast<const char*>(ptr), rdlength);
++
++        /*
++        ** Parse type-specific data
++        */
++        if (record.type == QDnsLookup::A && rdlength == 4) {
++            /* A record - rdata is already stored */
++        } else if (record.type == QDnsLookup::AAAA && rdlength == 16) {
++            /* AAAA record - rdata is already stored */
++        } else if (record.type == QDnsLookup::CNAME || record.type == QDnsLookup::NS || record.type == QDnsLookup::PTR) {
++            int valueLen = 0;
++            record.stringValue = decodeDomainName(buffer, bufferSize, ptr, &valueLen);
++        } else if (record.type == QDnsLookup::MX && rdlength >= 2) {
++            record.preference = (ptr[0] << 8) | ptr[1];
++            int valueLen = 0;
++            record.stringValue = decodeDomainName(buffer, bufferSize, ptr + 2, &valueLen);
++        } else if (record.type == QDnsLookup::SRV && rdlength >= 6) {
++            record.priority = (ptr[0] << 8) | ptr[1];
++            record.weight = (ptr[2] << 8) | ptr[3];
++            record.port = (ptr[4] << 8) | ptr[5];
++            int valueLen = 0;
++            record.stringValue = decodeDomainName(buffer, bufferSize, ptr + 6, &valueLen);
++        } else if (record.type == QDnsLookup::TXT) {
++            const unsigned char *txtPtr = ptr;
++            const unsigned char *txtEnd = ptr + rdlength;
++            while (txtPtr < txtEnd) {
++                quint8 txtLen = *txtPtr++;
++                if (txtPtr + txtLen > txtEnd)
++                    break;
++                record.txtValues.append(QByteArray(reinterpret_cast<const char*>(txtPtr), txtLen));
++                txtPtr += txtLen;
++            }
++        }
++
++        records->append(record);
++        ptr += rdlength;
++    }
++
++    *error = QDnsLookup::NoError;
++    return true;
++}
 +
 +void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName,
 +                               const QHostAddress &nameserver, QDnsLookupReply *reply)
 +{
-+    Q_UNUSED(requestType);
-+    Q_UNUSED(nameserver);
++    /*
++    ** Determine DNS server to use
++    */
++    QString dnsServer;
++    if (!nameserver.isNull()) {
++        if (nameserver.protocol() == QAbstractSocket::IPv4Protocol) {
++            dnsServer = nameserver.toString();
++        } else if (nameserver.protocol() == QAbstractSocket::IPv6Protocol) {
 +
-+    QtOh::runOnJsUIThreadWithPromise<bool>([requestName, &reply](auto p) {
-+        QJsModule jsNetMoudle("@ohos.net.connection");
-+        QJsPromise promise(jsNetMoudle.call(
-+                "getAddressesByName", { Napi::String::New(QtOh::uiEnv(), requestName.data()) }).As<Napi::Promise>());
-+        promise.onThen([p, requestName, &reply](const Napi::CallbackInfo &info) {
-+                   Napi::Object netAddress = info[0].As<Napi::Object>();
-+                   QString address = QString::fromStdString(netAddress.Get("address").ToString());
-+                   int family = netAddress.Get("family").ToNumber().Int32Value();
-+                   int port = netAddress.Get("port").ToNumber().Int32Value();
-+                   qWarning() << "getAddressesByName success:" << address << family << port << requestName.data();
-+                   QDnsHostAddressRecord record;
-+                   record.d->value = QHostAddress(address);
-+                   reply->hostAddressRecords.append(record);
-+                   p->set_value(true);
-+               })
-+                .onCatch([p, requestName, &reply](const Napi::CallbackInfo &info) {
-+                    Napi::Object error = info[0].As<Napi::Object>();
-+                    Napi::Number code = error.Get("code").ToNumber();
-+                    Napi::String message = error.Get("message").ToString();
-+                    qWarning() << "getAddressesByName fail:" << code.Int32Value()
-+                               << QString::fromStdString(message) <<  requestName.data();
-+                    reply->error = QDnsLookup::ServerFailureError;
-+                    reply->errorString = tr("Server failure");
-+                    p->set_value(false);
-+                    return;
-+                });
-+    });
++            /*
++            ** For simplicity, IPv6 DNS servers are not fully supported in this implementation
++            */
++            qWarning("IPv6 DNS servers not fully supported in this implementation");
++            reply->error = QDnsLookup::ResolverError;
++            reply->errorString = tr("IPv6 DNS servers not supported");
++            return;
++        }
++    }
++    else {
++        dnsServer = getDnsServers();
++    }
++
++    /*
++    ** Create UDP socket
++    */
++    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
++    if (sockfd < 0) {
++        reply->error = QDnsLookup::ResolverError;
++        reply->errorString = tr("Failed to create socket: %1").arg(QString::fromLocal8Bit(strerror(errno)));
++        return;
++    }
++
++    /*
++    ** Set socket timeout
++    */
++    struct timeval tv;
++    tv.tv_sec = DNS_TIMEOUT_SEC;
++    tv.tv_usec = 0;
++    setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
++
++    /*
++    ** Setup DNS server address
++    */
++    struct sockaddr_in serverAddr;
++    std::memset(&serverAddr, 0, sizeof(serverAddr));
++    serverAddr.sin_family = AF_INET;
++    serverAddr.sin_port = htons(DNS_PORT);
++    if (inet_pton(AF_INET, dnsServer.toLatin1().constData(), &serverAddr.sin_addr) <= 0) {
++        close(sockfd);
++        reply->error = QDnsLookup::ResolverError;
++        reply->errorString = tr("Invalid DNS server address");
++        return;
++    }
++
++    /*
++    ** Build DNS query
++    */
++    QByteArray queryPacket = buildDNSQuery(requestName, static_cast<quint16>(requestType));
++
++    /*
++    ** Retry loop for DNS query
++    */
++    ssize_t recvBytes = -1;
++    unsigned char responseBuffer[MAX_DNS_PACKET_SIZE];
++    int savedErrno = 0;
++
++    for (int attempt = 0; attempt <= DNS_MAX_RETRIES; attempt++) {
++        /*
++        ** Send query
++        */
++        ssize_t sentBytes = sendto(sockfd, queryPacket.constData(), queryPacket.size(), 0,
++                                  reinterpret_cast<struct sockaddr*>(&serverAddr), sizeof(serverAddr));
++        if (sentBytes < 0) {
++            savedErrno = errno;
++            continue;  /* Retry on send failure */
++        }
++
++        /*
++        ** Receive response
++        */
++        struct sockaddr_in fromAddr;
++        socklen_t fromLen = sizeof(fromAddr);
++
++        recvBytes = recvfrom(sockfd, responseBuffer, sizeof(responseBuffer), 0,
++                            reinterpret_cast<struct sockaddr*>(&fromAddr), &fromLen);
++        savedErrno = errno;
++
++        if (recvBytes >= 0) {
++            /*
++            ** Successfully received a response
++            */
++            break;
++        }
++
++        /*
++        ** Check if we should retry
++        */
++        if (savedErrno != EAGAIN && savedErrno != EWOULDBLOCK) {
++            /*
++            ** Non-timeout error, don't retry
++            */
++            break;
++        }
++    }
++
++    close(sockfd);
++
++    if (recvBytes < 0) {
++        if (savedErrno == EAGAIN || savedErrno == EWOULDBLOCK) {
++            reply->error = QDnsLookup::ResolverError;
++            reply->errorString = tr("DNS query timeout");
++        } else {
++            reply->error = QDnsLookup::ResolverError;
++            reply->errorString = tr("Failed to send/receive DNS query: %1").arg(QString::fromLocal8Bit(strerror(savedErrno)));
++        }
++        return;
++    }
++
++    /*
++    ** Parse response
++    */
++    QByteArray response(reinterpret_cast<const char*>(responseBuffer), recvBytes);
++    QList<ParsedDNSRecord> parsedRecords;
++    if (!parseDNSResponse(response, &reply->error, &reply->errorString, &parsedRecords)) {
++        /*
++        ** Error already set in parseDNSResponse
++        */
++        return;
++    }
++
++    /*
++    ** Convert parsed records to Qt DNS record objects
++    */
++    for (const auto &parsed : std::as_const(parsedRecords)) {
++        if (parsed.type == QDnsLookup::A && parsed.rdata.size() == 4) {
++            const unsigned char *data = reinterpret_cast<const unsigned char*>(parsed.rdata.constData());
++            /*
++            ** DNS response contains IPv4 address in network byte order (big-endian)
++            ** Combine bytes into host byte order for QHostAddress constructor
++            */
++            const quint32 addr = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
++            QDnsHostAddressRecord record;
++            record.d->name = parsed.name;
++            record.d->timeToLive = parsed.ttl;
++            record.d->value = QHostAddress(addr);
++            reply->hostAddressRecords.append(record);
++        } else if (parsed.type == QDnsLookup::AAAA && parsed.rdata.size() == 16) {
++            QDnsHostAddressRecord record;
++            record.d->name = parsed.name;
++            record.d->timeToLive = parsed.ttl;
++            record.d->value = QHostAddress(reinterpret_cast<const unsigned char*>(parsed.rdata.constData()));
++            reply->hostAddressRecords.append(record);
++        } else if (parsed.type == QDnsLookup::CNAME) {
++            QDnsDomainNameRecord record;
++            record.d->name = parsed.name;
++            record.d->timeToLive = parsed.ttl;
++            record.d->value = parsed.stringValue;
++            reply->canonicalNameRecords.append(record);
++        } else if (parsed.type == QDnsLookup::NS) {
++            QDnsDomainNameRecord record;
++            record.d->name = parsed.name;
++            record.d->timeToLive = parsed.ttl;
++            record.d->value = parsed.stringValue;
++            reply->nameServerRecords.append(record);
++        } else if (parsed.type == QDnsLookup::PTR) {
++            QDnsDomainNameRecord record;
++            record.d->name = parsed.name;
++            record.d->timeToLive = parsed.ttl;
++            record.d->value = parsed.stringValue;
++            reply->pointerRecords.append(record);
++        } else if (parsed.type == QDnsLookup::MX) {
++            QDnsMailExchangeRecord record;
++            record.d->name = parsed.name;
++            record.d->timeToLive = parsed.ttl;
++            record.d->preference = parsed.preference;
++            record.d->exchange = parsed.stringValue;
++            reply->mailExchangeRecords.append(record);
++        } else if (parsed.type == QDnsLookup::SRV) {
++            QDnsServiceRecord record;
++            record.d->name = parsed.name;
++            record.d->timeToLive = parsed.ttl;
++            record.d->priority = parsed.priority;
++            record.d->weight = parsed.weight;
++            record.d->port = parsed.port;
++            record.d->target = parsed.stringValue;
++            reply->serviceRecords.append(record);
++        } else if (parsed.type == QDnsLookup::TXT) {
++            QDnsTextRecord record;
++            record.d->name = parsed.name;
++            record.d->timeToLive = parsed.ttl;
++            record.d->values = parsed.txtValues;
++            reply->textRecords.append(record);
++        }
++    }
++
++    /*
++    ** Success
++    */
++    reply->error = QDnsLookup::NoError;
++    reply->errorString.clear();
 +}
 +
 +QT_END_NAMESPACE
@@ -15202,10 +15726,10 @@ index 00000000000..a5bd3cd24d3
 +HEADERS += $$PWD/qohwindowfunctions.h
 diff --git a/src/platformheaders/ohfunctions/qohwindowfunctions.h b/src/platformheaders/ohfunctions/qohwindowfunctions.h
 new file mode 100644
-index 00000000000..c2852394f1a
+index 00000000000..23568b6540b
 --- /dev/null
 +++ b/src/platformheaders/ohfunctions/qohwindowfunctions.h
-@@ -0,0 +1,45 @@
+@@ -0,0 +1,59 @@
 +#ifndef QOHWINDOWFUNCTIONS_H
 +#define QOHWINDOWFUNCTIONS_H
 +
@@ -15238,13 +15762,27 @@ index 00000000000..c2852394f1a
 +    };
 +
 +    typedef void (*SetNativeNodeRenderFit)(QWindow *window, QOhWindowFunctions::NativeNodeRenderFit fit);
++    typedef void (*SetNativeNodeBackgroundColor)(QWindow *window, const QColor &color);
++
 +    static const QByteArray setNativeNodeRenderFitIdentifier() { return QByteArrayLiteral("WindowwSetNativeNodeRenderFit"); }
++    static const QByteArray setNativeNodeRenderBackgroundColorIdentifier() {
++        return QByteArrayLiteral("WindowwSetNativeNodeBackgroundColor");
++    }
 +
 +    static void setNativeNodeRenderFit(QWindow *window, NativeNodeRenderFit fit)
 +    {
-+        SetNativeNodeRenderFit func = reinterpret_cast<SetNativeNodeRenderFit>(QGuiApplication::platformFunction(setNativeNodeRenderFitIdentifier()));
++        QFunctionPointer funcPointer = QGuiApplication::platformFunction(setNativeNodeRenderFitIdentifier());
++        SetNativeNodeRenderFit func = reinterpret_cast<SetNativeNodeRenderFit>(funcPointer);
 +        if (func)
 +            func(window, fit);
++    }
++
++    static void setNativeNodeBackgroundColor(QWindow *window, const QColor &color)
++    {
++        QFunctionPointer funcPointer = QGuiApplication::platformFunction(setNativeNodeRenderBackgroundColorIdentifier());
++        SetNativeNodeBackgroundColor func = reinterpret_cast<SetNativeNodeBackgroundColor>(funcPointer);
++        if (func)
++            func(window, color);
 +    }
 +};
 +
@@ -25635,10 +26173,10 @@ index 00000000000..4f5de4d45cb
 +#endif // QOHDISPLAYMANAGER_H
 diff --git a/src/plugins/platforms/openharmony/qohdrag.cpp b/src/plugins/platforms/openharmony/qohdrag.cpp
 new file mode 100644
-index 00000000000..c38e8f29e74
+index 00000000000..a49215cd98b
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohdrag.cpp
-@@ -0,0 +1,385 @@
+@@ -0,0 +1,409 @@
 +#include "qohdrag.h"
 +#include "qohmain.h"
 +#include "qohdisplay.h"
@@ -25661,6 +26199,8 @@ index 00000000000..c38e8f29e74
 +#include <QtGui/qpainter.h>
 +#include <multimedia/image_framework/image/pixelmap_native.h>
 +#include <QAtomicPointer>
++#include <future>
++#include <chrono>
 +QT_BEGIN_NAMESPACE
 +
 +Q_LOGGING_CATEGORY(ohDnd, "qt.openharmony.dnd")
@@ -25735,22 +26275,30 @@ index 00000000000..c38e8f29e74
 +    auto actions = dragEvent.actions();
 +    auto nodePoint = dragEvent.touchPoint();
 +
-+    QPlatformDragQtResponse dragResponse(false, Qt::IgnoreAction, QRect());
++    using namespace std::chrono;
++    auto promise = std::make_shared<std::promise<QPlatformDragQtResponse>>();
++    auto future = promise->get_future();
 +    QPointer<QWindow> guard = window();
-+    QSharedPointer<QEventLoop> loop(new QEventLoop);
-+    QtOh::runOnQtMainThread([this, loop, actions, nodePoint, guard, &dragResponse]{
-+        if (!QOhWindowNode::nodeDestroyed(m_node) && !guard.isNull())
-+            dragResponse = QWindowSystemInterface::handleDrag(guard.data(), dropData(), QHighDpi::fromNativeLocalPosition(nodePoint, guard.data()), actions);
 +
-+        if (!loop.isNull() && loop->isRunning())
-+            QMetaObject::invokeMethod(loop.data(), "quit", Qt::QueuedConnection);
++    QtOh::runOnQtMainThread([this, promise, actions, nodePoint, guard]() mutable {
++        QPlatformDragQtResponse response(false, Qt::IgnoreAction, QRect());
++        if (!QOhWindowNode::nodeDestroyed(m_node) && !guard.isNull()) {
++            auto data = dropData();
++            if (data) {
++                response = QWindowSystemInterface::handleDrag(guard.data(), data, QHighDpi::fromNativeLocalPosition(nodePoint, guard.data()), actions);
++            }
++        }
++        promise->set_value(response);
 +    });
-+    if (QtOh::wait(loop.data(), 500)) {
-+        // timeout
-+        dragEvent.failed();
++
++    auto status = future.wait_for(milliseconds(50));
++    if (status == std::future_status::ready) {
++        auto response = future.get();
++        dragEvent.setSuggestedDropOperation(response.acceptedAction());
++        dragEvent.setResult(response.isAccepted());
 +    } else {
-+        dragEvent.setSuggestedDropOperation(dragResponse.acceptedAction());
-+        dragEvent.setResult(dragResponse.isAccepted());
++        // 超时，使用默认行为
++        dragEvent.failed();
 +    }
 +}
 +
@@ -25763,24 +26311,34 @@ index 00000000000..c38e8f29e74
 +    QOhDragEvent dragEvent(drag);
 +    auto actions = dragEvent.actions();
 +    auto data = dropData();
++    if (!data) {
++        dragEvent.failed();
++        return;
++    }
 +    data->clear();
 +    dragEvent.acquireDatas(data);
 +    auto nodePoint = dragEvent.touchPoint();
 +
-+    QPlatformDropQtResponse dropResponse(false, Qt::IgnoreAction);
++    // 使用 std::future/promise 替代 QEventLoop
++    using namespace std::chrono;
++    auto promise = std::make_shared<std::promise<QPlatformDropQtResponse>>();
++    auto future = promise->get_future();
 +    QPointer<QWindow> guard = window();
-+    QSharedPointer<QEventLoop> loop(new QEventLoop);
-+    QtOh::runOnQtMainThread([this, data, nodePoint, actions, guard, loop, &dropResponse]{
-+        if (!QOhWindowNode::nodeDestroyed(m_node) && !guard.isNull())
-+            dropResponse = QWindowSystemInterface::handleDrop(guard.data(), data, QHighDpi::fromNativeLocalPosition(nodePoint, guard.data()), actions);
-+        if (!loop.isNull() && loop->isRunning())
-+            QMetaObject::invokeMethod(loop.data(), "quit", Qt::QueuedConnection);
++
++    QtOh::runOnQtMainThread([this, promise, data, nodePoint, actions, guard]() mutable {
++        QPlatformDropQtResponse response(false, Qt::IgnoreAction);
++        if (!QOhWindowNode::nodeDestroyed(m_node) && !guard.isNull()) {
++            response = QWindowSystemInterface::handleDrop(guard.data(), data, QHighDpi::fromNativeLocalPosition(nodePoint, guard.data()), actions);
++        }
++        promise->set_value(response);
 +    });
 +
-+    if (QtOh::wait(loop.data(), 500)) {
-+        dragEvent.failed();
++    // 等待结果，超时50ms
++    auto status = future.wait_for(milliseconds(50));
++    if (status == std::future_status::ready) {
++        dragEvent.setResult(future.get().isAccepted());
 +    } else {
-+        dragEvent.setResult(dropResponse.isAccepted());
++        dragEvent.failed();
 +    }
 +}
 +
@@ -25791,35 +26349,39 @@ index 00000000000..c38e8f29e74
 +        return;
 +
 +    QOhDragEvent dragEvent(drag);
-+
 +    auto types = dragEvent.types();
 +    auto actions = dragEvent.actions();
 +    auto nodePoint = dragEvent.touchPoint();
 +
-+    QPlatformDragQtResponse dragResponse(false, Qt::IgnoreAction, QRect());
++    // 使用 std::future/promise 替代 QEventLoop
++    using namespace std::chrono;
++    auto promise = std::make_shared<std::promise<QPlatformDragQtResponse>>();
++    auto future = promise->get_future();
 +    QPointer<QWindow> guard = window();
-+    QSharedPointer<QEventLoop> loop(new QEventLoop);
-+    QtOh::runOnQtMainThread([this, actions, nodePoint,
-+                            &dragResponse, types, guard, loop]{
++
++    QtOh::runOnQtMainThread([this, promise, actions, nodePoint, types, guard]() mutable {
++        QPlatformDragQtResponse response(false, Qt::IgnoreAction, QRect());
 +        if (!QOhWindowNode::nodeDestroyed(m_node) && !guard.isNull()) {
 +            auto data = dropData();
-+            data->clear();
-+            for (int i = 0; i < types.count(); ++i) {
-+                data->setData(types.at(i), QByteArray());
++            if (data) {
++                data->clear();
++                for (int i = 0; i < types.count(); ++i) {
++                    data->setData(types.at(i), QByteArray());
++                }
++                response = QWindowSystemInterface::handleDrag(guard.data(), data, QHighDpi::fromNativeLocalPosition(nodePoint, guard.data()), actions);
 +            }
-+            dragResponse = QWindowSystemInterface::handleDrag(guard.data(), data, QHighDpi::fromNativeLocalPosition(nodePoint, guard.data()),
-+                                                              actions);
 +        }
-+        if (!loop.isNull() && loop->isRunning())
-+            QMetaObject::invokeMethod(loop.data(), "quit", Qt::QueuedConnection);
++        promise->set_value(response);
 +    });
 +
-+
-+    if (QtOh::wait(loop.data(), 500)) {
-+        dragEvent.failed();
++    // 等待结果，超时50ms
++    auto status = future.wait_for(milliseconds(50));
++    if (status == std::future_status::ready) {
++        auto response = future.get();
++        dragEvent.setSuggestedDropOperation(response.acceptedAction());
++        dragEvent.setResult(response.isAccepted());
 +    } else {
-+        dragEvent.setSuggestedDropOperation(dragResponse.acceptedAction());
-+        dragEvent.setResult(dragResponse.isAccepted());
++        dragEvent.failed();
 +    }
 +}
 +
@@ -29863,7 +30425,7 @@ index 00000000000..1e5ed10f93f
 +#endif // QOHNATIVEVSYNC_H
 diff --git a/src/plugins/platforms/openharmony/qohnativewindow.cpp b/src/plugins/platforms/openharmony/qohnativewindow.cpp
 new file mode 100644
-index 00000000000..7a1db3a3bbd
+index 00000000000..811f3a20ebe
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohnativewindow.cpp
 @@ -0,0 +1,1118 @@
@@ -29991,7 +30553,7 @@ index 00000000000..7a1db3a3bbd
 +        option.Set("title", window->windowTitle().toStdString());
 +        option.Set("isModal", window->isModal());
 +        option.Set("decorEnabled", window->hasFrame());
-+        if (QtOh::apiVersion() >= 14) {
++        if (QtOh::apiVersion() >= 14 && window->isModal()) {
 +            Qt::WindowModality m = window->modality();
 +            if (Qt::WindowModal == m) {
 +                option.Set("modalityType", Napi::Number::New(env(), WINDOW_MODALITY));
@@ -31258,10 +31820,10 @@ index 00000000000..e5945daebc1
 +#endif // QOHNATIVEWINDOW_H
 diff --git a/src/plugins/platforms/openharmony/qohnativewindowmanager.cpp b/src/plugins/platforms/openharmony/qohnativewindowmanager.cpp
 new file mode 100644
-index 00000000000..db5a95b29a8
+index 00000000000..c548339d2f3
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohnativewindowmanager.cpp
-@@ -0,0 +1,408 @@
+@@ -0,0 +1,425 @@
 +#include "qdebug.h"
 +#include "qohmain.h"
 +#include "qohnativewindow.h"
@@ -31386,7 +31948,11 @@ index 00000000000..db5a95b29a8
 +    if (m_windows.isEmpty())
 +        return nullptr;
 +    QJsAbility *ability = m_windows.first()->ability();
++    if (ability == nullptr)
++        return nullptr;
 +    QJsContext *context = ability->context();
++    if (context == nullptr)
++        return nullptr;
 +    return context->resourceManager();
 +}
 +
@@ -31395,7 +31961,11 @@ index 00000000000..db5a95b29a8
 +    if (m_windows.isEmpty())
 +        return Napi::Value();
 +    QJsAbility *ability = m_windows.first()->ability();
++    if (ability == nullptr)
++        return Napi::Value();
 +    QJsContext *context = ability->context();
++    if (context == nullptr)
++        return Napi::Value();
 +    return context->get("resourceManager");
 +}
 +
@@ -31403,7 +31973,8 @@ index 00000000000..db5a95b29a8
 +{
 +    if (m_windows.isEmpty())
 +        return nullptr;
-+    QJsContext *result = m_windows.last()->ability()->context();
++    QJsAbility *lastAbility = m_windows.last()->ability();
++    QJsContext *result = lastAbility ? lastAbility->context() : nullptr;
 +    if (window == nullptr) {
 +        return result;
 +    }
@@ -31413,7 +31984,12 @@ index 00000000000..db5a95b29a8
 +    QOhNativeWindow *nativeWindow = node->ownerWindow();
 +    if (nativeWindow == nullptr)
 +        return result;
-+    result =  nativeWindow->ability()->context();
++    QJsAbility *nativeAbility = nativeWindow->ability();
++    if (nativeAbility == nullptr)
++        return result;
++    QJsContext *nativeContext = nativeAbility->context();
++    if (nativeContext != nullptr)
++        result = nativeContext;
 +    return result;
 +}
 +
@@ -31496,6 +32072,9 @@ index 00000000000..db5a95b29a8
 +        QString name = platformWindow->windowName();
 +        m_topWindowPromise = std::make_shared<std::promise<QOhNativeWindow *>>();
 +        auto feature = m_topWindowPromise->get_future();
++        if(m_windows.isEmpty()) {
++            return nullptr;
++        }
 +        QJsAbility *ability = m_windows.first()->ability();
 +        if (ability == nullptr) {
 +            qWarning() << "Not find valid ability to create top window";
@@ -31748,10 +32327,10 @@ index 00000000000..30a041bc363
 +#endif // QOHNATIVEWINDOWMANAGER_H
 diff --git a/src/plugins/platforms/openharmony/qohnormalwindow.cpp b/src/plugins/platforms/openharmony/qohnormalwindow.cpp
 new file mode 100644
-index 00000000000..977f65de13b
+index 00000000000..0a81c37250f
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohnormalwindow.cpp
-@@ -0,0 +1,863 @@
+@@ -0,0 +1,864 @@
 +#include <QTimer>
 +#include <QCloseEvent>
 +#include <QGuiApplication>
@@ -31958,7 +32537,7 @@ index 00000000000..977f65de13b
 +    if (m_isSplashWindow && m_parentNativeWindow) {
 +        /* 限制启动窗口大小 */
 +        QSize miniSize = m_parentNativeWindow->geometry().size();
-+        QSize maxSize = QSize(0xFFF, 0xFFF);
++        QSize maxSize = QSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX);
 +        auto displayId = m_parentNativeWindow->displayId();
 +        auto platformScreen = QOhDisplayManager::instance()->platformScreenOrNull(displayId);
 +        if (platformScreen) {
@@ -31993,7 +32572,8 @@ index 00000000000..977f65de13b
 +            QtOh::WindowStatusType::SPLIT_SCREEN == status) {
 +            call("recover");
 +        }
-+        Napi::Promise result = call("resize", { Napi::Number::New(env(), MAX(1, jsRect.width())), Napi::Number::New(env(), MAX(1, jsRect.height())) }).As<Napi::Promise>();
++
++        Napi::Promise result = call("resize", { QNapi::create(MAX(1, jsRect.width())), QNapi::create(MAX(1, jsRect.height())) }).As<Napi::Promise>();
 +        QJsPromise promise(result);
 +        promise.onThen([this, jsRect, p](const Napi::CallbackInfo &info) {
 +            Q_UNUSED(info)
@@ -32018,7 +32598,7 @@ index 00000000000..977f65de13b
 +                }
 +                auto optional = Napi::Object::New(env());
 +                optional.Set("displayId", Napi::Number::New(env(), displayId));
-+                call("moveWindowToGlobal", { Napi::Number::New(env(), x), Napi::Number::New(env(), y), optional });
++                call("moveWindowToGlobal", { QNapi::create(x), QNapi::create(y), optional });
 +                p->set_value(true);
 +            } else {
 +                call("moveWindowTo", { Napi::Number::New(env(), jsRect.x()), Napi::Number::New(env(), jsRect.y()) });
@@ -34098,10 +34678,10 @@ index 00000000000..d05ebd0257a
 +#endif // QOHPLATFORMCURSOR_H
 diff --git a/src/plugins/platforms/openharmony/qohplatformdialoghelpers.cpp b/src/plugins/platforms/openharmony/qohplatformdialoghelpers.cpp
 new file mode 100644
-index 00000000000..68fc7402ca4
+index 00000000000..fa6abf2f17e
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatformdialoghelpers.cpp
-@@ -0,0 +1,739 @@
+@@ -0,0 +1,780 @@
 +#include <QDebug>
 +#include <QTimer>
 +#include <QRegExp>
@@ -34121,6 +34701,7 @@ index 00000000000..68fc7402ca4
 +#include <private/qopenharmony_p.h>
 +#include <private/qjspromise_p.h>
 +#include "qjscontext.h"
++#include "qohmain.h"
 +#include "qohnativewindowmanager.h"
 +#include "qohplatformdialoghelpers.h"
 +
@@ -34489,6 +35070,7 @@ index 00000000000..68fc7402ca4
 +
 +void QOhNativeFileDialog::setMode(QFileDialogOptions::FileMode mode, QFileDialogOptions::AcceptMode acceptMode, QFileDialogOptions::FileDialogOptions options)
 +{
++    Q_UNUSED(options)
 +    m_open = acceptMode == QFileDialogOptions::AcceptOpen;
 +    m_mode = qtMode2OhMode(mode);
 +    m_maxNumber = selectMaxSelectNumber(mode);
@@ -34497,7 +35079,7 @@ index 00000000000..68fc7402ca4
 +void QOhNativeFileDialog::setDirectory(const QUrl &directory)
 +{
 +    Q_UNUSED(directory)
-+    Q_UNIMPLEMENTED();
++    // Q_UNIMPLEMENTED();
 +}
 +
 +void QOhNativeFileDialog::setNameFilters(const QStringList &f)
@@ -34509,7 +35091,7 @@ index 00000000000..68fc7402ca4
 +{
 +    QString ohFilter = qt_make_filter_for_openharmony(filter);
 +    Q_UNUSED(ohFilter)
-+    Q_UNIMPLEMENTED();
++    // Q_UNIMPLEMENTED();
 +}
 +
 +void QOhNativeFileDialog::selectFile(const QString &fileName)
@@ -34532,6 +35114,7 @@ index 00000000000..68fc7402ca4
 +        open(parent);
 +    else
 +        save(parent);
++
 +    m_eventLoop.exec();
 +}
 +
@@ -34784,6 +35367,7 @@ index 00000000000..68fc7402ca4
 +template<class BaseClass>
 +void QOhDialogHelperBase<BaseClass>::exec()
 +{
++    stopTimer();
 +    if (QOhNativeDialogBase *nd = nativeDialog()) {
 +        nd->exec(m_parent);
 +        m_nativeDialog.clear();
@@ -34797,8 +35381,21 @@ index 00000000000..68fc7402ca4
 +    const bool modal = (windowModality != Qt::NonModal);
 +    Q_UNUSED(modal);
 +    m_parent = parent;
++
++    qCDebug(openharmonyQPA) << __FUNCTION__ << "modal=" << modal
++                          << " modal supported? " << supportsNonModalDialog(parent)
++                          << "native=" << m_nativeDialog.data();
++    if (!modal && !supportsNonModalDialog(parent))
++        return false; // Was it changed in-between?
++
 +    if (!ensureNativeDialog())
 +        return false;
++
++    if (modal) {
++        m_timerId = this->startTimer(0);
++    } else {
++        startDialog();
++    }
 +    return true;
 +}
 +
@@ -34819,12 +35416,36 @@ index 00000000000..68fc7402ca4
 +    return m_nativeDialog.data();
 +}
 +
++template<class BaseClass>
++void QOhDialogHelperBase<BaseClass>::timerEvent(QTimerEvent *)
++{
++    startDialog();
++}
++
 +template <class BaseClass>
 +QOhNativeDialogBase *QOhDialogHelperBase<BaseClass>::ensureNativeDialog()
 +{
 +    if (m_nativeDialog.isNull() || m_nativeDialog->executed())
 +        m_nativeDialog = QOhNativeDialogBasePtr(createNativeDialog());
 +    return m_nativeDialog.data();
++}
++
++template<class BaseClass>
++void QOhDialogHelperBase<BaseClass>::startDialog()
++{
++    Q_ASSERT(!m_nativeDialog.isNull());
++
++    stopTimer();
++    m_nativeDialog->exec(m_parent);
++}
++
++template<class BaseClass>
++void QOhDialogHelperBase<BaseClass>::stopTimer()
++{
++    if (m_timerId) {
++        this->killTimer(m_timerId);
++        m_timerId = 0;
++    }
 +}
 +
 +QPlatformDialogHelper *QOhPlatformDialogHelpers::createHelper(QPlatformTheme::DialogType type)
@@ -34843,15 +35464,16 @@ index 00000000000..68fc7402ca4
 +#include "qohplatformdialoghelpers.moc"
 diff --git a/src/plugins/platforms/openharmony/qohplatformdialoghelpers.h b/src/plugins/platforms/openharmony/qohplatformdialoghelpers.h
 new file mode 100644
-index 00000000000..f30c1c25648
+index 00000000000..25fb9836e30
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatformdialoghelpers.h
-@@ -0,0 +1,40 @@
+@@ -0,0 +1,47 @@
 +#ifndef QOHPLATFORMDIALOGHELPERS_H
 +#define QOHPLATFORMDIALOGHELPERS_H
 +
 +#include <qpa/qplatformdialoghelper.h>
 +#include <qpa/qplatformtheme.h>
++#include <QPointer>
 +
 +QT_BEGIN_NAMESPACE
 +
@@ -34869,16 +35491,22 @@ index 00000000000..f30c1c25648
 +              QWindow *parent) override;
 +    void hide() override;
 +
++    virtual bool supportsNonModalDialog(const QWindow * /* parent */ = nullptr) const { return false; }
 +protected:
 +    QOhDialogHelperBase() = default;
 +    QOhNativeDialogBase *nativeDialog() const;
 +    inline bool hasNativeDialog() const { return m_nativeDialog; }
++    void timerEvent(QTimerEvent *) override;
 +
 +private:
 +    virtual QOhNativeDialogBase *createNativeDialog() = 0;
 +    inline QOhNativeDialogBase *ensureNativeDialog();
++    inline void startDialog();
++    inline void stopTimer();
++
 +    QOhNativeDialogBasePtr m_nativeDialog;
 +    QPointer<QWindow> m_parent;
++    int m_timerId = 0;
 +};
 +
 +namespace QOhPlatformDialogHelpers {
@@ -35641,10 +36269,10 @@ index 00000000000..38e39e757f7
 +#endif // QOHPLATFORMINPUTCONTEXT_H
 diff --git a/src/plugins/platforms/openharmony/qohplatformintegration.cpp b/src/plugins/platforms/openharmony/qohplatformintegration.cpp
 new file mode 100644
-index 00000000000..784dbb65a42
+index 00000000000..2298efef10c
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatformintegration.cpp
-@@ -0,0 +1,320 @@
+@@ -0,0 +1,317 @@
 +#include <QThread>
 +#include <QMetaObject>
 +#include <QOpenGLContext>
@@ -35896,9 +36524,6 @@ index 00000000000..784dbb65a42
 +Qt::WindowState QOhPlatformIntegration::defaultWindowState(Qt::WindowFlags flags) const
 +{
 +    // Don't maximize dialogs on OpenHarmony
-+    if (flags & Qt::Dialog & ~Qt::Window) {
-+        return Qt::WindowNoState;
-+    }
 +    if (flags & Qt::Dialog & ~Qt::Window) {
 +        return Qt::WindowNoState;
 +    }
@@ -36283,10 +36908,10 @@ index 00000000000..56ccb8234f5
 +#endif // QOHPLATFORMMENU_H
 diff --git a/src/plugins/platforms/openharmony/qohplatformnativeinterface.cpp b/src/plugins/platforms/openharmony/qohplatformnativeinterface.cpp
 new file mode 100644
-index 00000000000..6d02a2b3319
+index 00000000000..18c7b82ecdb
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatformnativeinterface.cpp
-@@ -0,0 +1,162 @@
+@@ -0,0 +1,172 @@
 +#include <QtCore/qhash.h>
 +#include <QtPlatformHeaders/qohwindowfunctions.h>
 +
@@ -36365,13 +36990,23 @@ index 00000000000..6d02a2b3319
 +        static_cast<QOhPlatformWindow *>(handle)->setNativeNodeRenderFit(fit);
 +    else
 +        window->setProperty(QOhWindowFunctions::setNativeNodeRenderFitIdentifier(), fit);
++}
 +
++static void setNativeNodeBackgroundColor(QWindow *window, const QColor &color)
++{
++    if (QPlatformWindow *handle = window->handle())
++        static_cast<QOhPlatformWindow *>(handle)->setNativeNodeBackgroundColor(color);
++    else
++        window->setProperty(QOhWindowFunctions::setNativeNodeRenderBackgroundColorIdentifier(), color);
 +}
 +
 +QFunctionPointer QOhPlatformNativeInterface::platformFunction(const QByteArray &function) const
 +{
 +    if (function == QOhWindowFunctions::setNativeNodeRenderFitIdentifier())
 +        return QFunctionPointer(setNativeNodeRenderFit);
++
++    if (function == QOhWindowFunctions::setNativeNodeRenderBackgroundColorIdentifier())
++        return QFunctionPointer(setNativeNodeBackgroundColor);
 +
 +    return nullptr;
 +}
@@ -36616,10 +37251,10 @@ index 00000000000..a30d5eb836d
 +#endif // QOPENHARMONYPLATFORMOPENGLCONTEXT_H
 diff --git a/src/plugins/platforms/openharmony/qohplatformopenglwindow.cpp b/src/plugins/platforms/openharmony/qohplatformopenglwindow.cpp
 new file mode 100644
-index 00000000000..bede70da816
+index 00000000000..5f2e703c18d
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatformopenglwindow.cpp
-@@ -0,0 +1,920 @@
+@@ -0,0 +1,941 @@
 +#include "qohplatformopenglwindow.h"
 +#include "qohxcomponent.h"
 +#include "qohnativewindow.h"
@@ -36888,6 +37523,7 @@ index 00000000000..bede70da816
 +    // 设置nativewindow的尺寸
 +    if (kind != QOhPlatformOpenGLWindow::Kind::SplashWindow) {
 +        m_nativeWindow->setGeometry(rect);
++        m_setGeometryList.append(rect);
 +    }
 +}
 +
@@ -37237,7 +37873,19 @@ index 00000000000..bede70da816
 +
 +void QOhPlatformOpenGLWindow::setNativeGeometry(const QRect &rect)
 +{
-+    m_rect = rect;
++    if (!m_setGeometryList.isEmpty()) {
++        int index = m_setGeometryList.indexOf(rect);
++
++        if (index >= 0) {
++            m_setGeometryList.erase(m_setGeometryList.begin(), m_setGeometryList.begin() + index + 1);
++        } else {
++            m_setGeometryList.clear();
++        }
++    }
++
++    if (m_setGeometryList.isEmpty()) {
++        m_rect = rect;
++    }
 +}
 +
 +int32_t QOhPlatformOpenGLWindow::nativeWindowId() const
@@ -37388,6 +38036,15 @@ index 00000000000..bede70da816
 +    }
 +}
 +
++void QOhPlatformOpenGLWindow::updateNodeBackgroundColor()
++{
++    if (m_node && window()) {
++        auto var = window()->property(QOhWindowFunctions::setNativeNodeRenderBackgroundColorIdentifier().constData());
++        if (!var.isNull())
++            m_node->setBackgroundColor(var.value<QColor>());
++    }
++}
++
 +void QOhPlatformOpenGLWindow::createNativeWindowNode(WId nativeHandle)
 +{
 +    QOhPlatformWindow::createNativeWindowNode(nativeHandle);
@@ -37418,15 +38075,12 @@ index 00000000000..bede70da816
 +    if (QSurface::OpenGLSurface != qWindow->surfaceType()) {
 +        QVariant var = qWindow->property("_q_background");
 +        QBrush brush = var.value<QBrush>();
-+        QColor bgColor;
-+        if (Qt::NoBrush == brush.style()) {
-+            bgColor = isTransparent ? Qt::transparent : Qt::white;
-+        } else {
-+            bgColor = qbrush_color(brush);
-+        }
++        QColor bgColor = qbrush_color(brush);
 +
-+        node->setBackgroundColor(bgColor);
-+    } else {
++        /* 只设置透明色，否则影响opengl绘制 */
++        if (!isTransparent && bgColor.alpha())
++            return;
++
 +        node->setBackgroundColor(Qt::transparent);
 +    }
 +}
@@ -37468,6 +38122,8 @@ index 00000000000..bede70da816
 +            updateXComponentBackground();
 +        } else if (propertyEvent->propertyName() == QOhWindowFunctions::setNativeNodeRenderFitIdentifier()) {
 +            updateNodeRenderFit();
++        } else if (propertyEvent->propertyName() == QOhWindowFunctions::setNativeNodeRenderBackgroundColorIdentifier()) {
++            updateNodeBackgroundColor();
 +        }
 +
 +    }
@@ -37542,10 +38198,10 @@ index 00000000000..bede70da816
 +QT_END_NAMESPACE
 diff --git a/src/plugins/platforms/openharmony/qohplatformopenglwindow.h b/src/plugins/platforms/openharmony/qohplatformopenglwindow.h
 new file mode 100644
-index 00000000000..42b9a9a5f7b
+index 00000000000..400fe98cb3e
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatformopenglwindow.h
-@@ -0,0 +1,99 @@
+@@ -0,0 +1,101 @@
 +#ifndef QOHPLATFORMOPENGLWINDOW_H
 +#define QOHPLATFORMOPENGLWINDOW_H
 +
@@ -37620,6 +38276,7 @@ index 00000000000..42b9a9a5f7b
 +    void hideNativeWindow();
 +    void destroyNativeWindow();
 +    void updateNodeRenderFit();
++    void updateNodeBackgroundColor();
 +    void createNativeWindowNode(WId nativeHandle = 0) override;
 +    void updateXComponentBackground();
 +    void updateUnderMouseWindow();
@@ -37641,6 +38298,7 @@ index 00000000000..42b9a9a5f7b
 +    mutable Kind m_volatileWindowKind = Kind::InValid;
 +    bool m_windowIsHidden = true;
 +    bool m_minimized = false;
++    QList<QRect> m_setGeometryList;
 +};
 +
 +QT_END_NAMESPACE
@@ -37678,10 +38336,10 @@ index 00000000000..81589a3bb86
 +
 diff --git a/src/plugins/platforms/openharmony/qohplatformscreen.cpp b/src/plugins/platforms/openharmony/qohplatformscreen.cpp
 new file mode 100644
-index 00000000000..6d8b14940c5
+index 00000000000..71a3b7567f3
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatformscreen.cpp
-@@ -0,0 +1,431 @@
+@@ -0,0 +1,486 @@
 +#include <QTime>
 +#include <QStaticText>
 +#include <qpa/qwindowsysteminterface.h>
@@ -37988,12 +38646,67 @@ index 00000000000..6d8b14940c5
 +void QOhPlatformScreen::reportAllWindowGeometry()
 +{
 +    auto allWindows = QOhWindowContext::allWindows();
-+    for (auto *window : allWindows) {
++    QRect screenGeo = geometry();
++    QRect availableGeo = availableGeometry();
++
++    for (auto *window : qAsConst(allWindows)) {
 +        if (QOhPlatformOpenGLWindow *w = dynamic_cast<QOhPlatformOpenGLWindow*>(window);
 +            window->isTopLevelWindow() && w && w->nativeWindow()) {
 +            /* 修改系统显示大小后最小化的窗口也需要处理geomtry变化，否则显示内容异常 */
 +            if (w->screen() != this/* || Qt::WindowMinimized & w->windowStates()*/)
 +                continue;
++
++            w->propagateSizeHints();
++            if (QtOh::apiVersion() > 20) {
++
++                QRect rect = w->geometry();
++                QRect actualRect(rect);
++                QSize miniSize = w->windowMinimumSize();
++                QSize maxSize = w->windowMaximumSize();
++
++                // 将 maxSize 限制在屏幕可用区域内
++                maxSize = maxSize.boundedTo(availableGeo.size());
++
++                // 根据窗口状态处理
++                Qt::WindowStates states = w->window()->windowState();
++                if (states & Qt::WindowMaximized) {
++                    actualRect = availableGeo;
++                } else if (states & Qt::WindowFullScreen) {
++                    actualRect = screenGeo;
++                } else {
++                    // 普通窗口：检查是否超出屏幕边界
++                    actualRect.setSize(QSize(qBound(miniSize.width(), rect.width(), maxSize.width()),
++                                             qBound(miniSize.height(), rect.height(), maxSize.height())));
++
++                    // 检查窗口位置是否超出屏幕边界，如果超出则调整
++                    if (actualRect.right() > availableGeo.right()) {
++                        actualRect.moveRight(availableGeo.right());
++                    }
++                    if (actualRect.bottom() > availableGeo.bottom()) {
++                        actualRect.moveBottom(availableGeo.bottom());
++                    }
++                    if (actualRect.left() < availableGeo.left()) {
++                        actualRect.moveLeft(availableGeo.left());
++                    }
++                    if (actualRect.top() < availableGeo.top()) {
++                        actualRect.moveTop(availableGeo.top());
++                    }
++
++                    // 如果调整后仍然超出，则需要缩小窗口
++                    if (actualRect.width() > availableGeo.width()) {
++                        actualRect.setWidth(availableGeo.width());
++                    }
++                    if (actualRect.height() > availableGeo.height()) {
++                        actualRect.setHeight(availableGeo.height());
++                    }
++                }
++
++                if (actualRect != rect) {
++                    w->setGeometry(actualRect);
++                    continue;  // 修复：使用 continue 而不是 return，确保处理所有窗口
++                }
++            }
++
 +            w->nativeWindow()->reportWindowGeometry();
 +        }
 +    }
@@ -38356,10 +39069,10 @@ index 00000000000..a363f3c4538
 +#endif
 diff --git a/src/plugins/platforms/openharmony/qohplatformtheme.cpp b/src/plugins/platforms/openharmony/qohplatformtheme.cpp
 new file mode 100644
-index 00000000000..52e60396e9b
+index 00000000000..38cf2ce219f
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatformtheme.cpp
-@@ -0,0 +1,1483 @@
+@@ -0,0 +1,1482 @@
 +#include <qcolor.h>
 +#include <qpalette.h>
 +#include <QCoreApplication>
@@ -39799,14 +40512,13 @@ index 00000000000..52e60396e9b
 +                if (auto handle = dynamic_cast<QOhPlatformOpenGLWindow*>(window->handle())) {
 +                    QVariant var = window->property("_q_background");
 +                    QBrush brush = var.value<QBrush>();
++                    QColor bgColor = qbrush_color(brush);
 +
-+                    /* NOTE 窗口没有设置过XComponent背景色才应用主题色 */
-+                    if (Qt::NoBrush == brush.style()) {
-+                        const QColor &cr = m_themes.value(ColorMode(colorMode))->palette(Palette::SystemPalette)->color(QPalette::Window);
-+                        handle->nativeWindowNode()->setBackgroundColor(cr);
-+                    } else {
-+                        handle->nativeWindowNode()->setBackgroundColor(qbrush_color(brush));
-+                    }
++                    /* NOTE 只设置透明色，否则影响opengl绘制 */
++                    if (Qt::NoBrush == brush.style() || bgColor.alpha())
++                        return;
++
++                    handle->nativeWindowNode()->setBackgroundColor(Qt::transparent);
 +                }
 +            }
 +            QWindowSystemInterface::handleThemeChange(window);
@@ -39993,10 +40705,10 @@ index 00000000000..8825d0608ac
 +#endif // QOHPLATFORMVULKANINSTANCE_H
 diff --git a/src/plugins/platforms/openharmony/qohplatformwindow.cpp b/src/plugins/platforms/openharmony/qohplatformwindow.cpp
 new file mode 100644
-index 00000000000..baf9ce07bbf
+index 00000000000..61dd10ac435
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatformwindow.cpp
-@@ -0,0 +1,413 @@
+@@ -0,0 +1,419 @@
 +#include <QTimer>
 +#include <QMetaObject>
 +#include <qguiapplication.h>
@@ -40110,7 +40822,7 @@ index 00000000000..baf9ce07bbf
 +
 +bool QOhPlatformWindow::isModal() const
 +{
-+    return window()->isModal();
++    return window()->isModal() && window()->type() != Qt::Popup;
 +}
 +
 +bool QOhPlatformWindow::showWithoutActive() const
@@ -40303,6 +41015,12 @@ index 00000000000..baf9ce07bbf
 +        m_node->setRenderFit(ArkUI_RenderFit(fit));
 +}
 +
++void QOhPlatformWindow::setNativeNodeBackgroundColor(const QColor &color)
++{
++    if (m_node)
++        m_node->setBackgroundColor(color);
++}
++
 +void QOhPlatformWindow::createNativeWindowNode(WId nativeHandle)
 +{
 +    if (nativeHandle) {
@@ -40412,10 +41130,10 @@ index 00000000000..baf9ce07bbf
 +QT_END_NAMESPACE
 diff --git a/src/plugins/platforms/openharmony/qohplatformwindow.h b/src/plugins/platforms/openharmony/qohplatformwindow.h
 new file mode 100644
-index 00000000000..2564b19ee31
+index 00000000000..0ff6980f4d7
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatformwindow.h
-@@ -0,0 +1,90 @@
+@@ -0,0 +1,91 @@
 +#ifndef QOHPLATFORMWINDOW_H
 +#define QOHPLATFORMWINDOW_H
 +#include <qrect.h>
@@ -40489,6 +41207,7 @@ index 00000000000..2564b19ee31
 +    void fireExpose(const QRegion &region = QRegion());
 +    QOhWindowNode *nativeWindowNode() const;
 +    void setNativeNodeRenderFit(QOhWindowFunctions::NativeNodeRenderFit fit);
++    void setNativeNodeBackgroundColor(const QColor &color);
 +
 +protected:
 +    virtual void createNativeWindowNode(WId nativeHandle = 0);
@@ -40508,7 +41227,7 @@ index 00000000000..2564b19ee31
 +#endif // QOHPLATFORMWINDOW_H
 diff --git a/src/plugins/platforms/openharmony/qohsystemtrayicon.cpp b/src/plugins/platforms/openharmony/qohsystemtrayicon.cpp
 new file mode 100644
-index 00000000000..44b0cf70a10
+index 00000000000..d947dde49f6
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohsystemtrayicon.cpp
 @@ -0,0 +1,571 @@
@@ -41057,7 +41776,7 @@ index 00000000000..44b0cf70a10
 +        return;
 +
 +    lastCall = QDateTime::currentMSecsSinceEpoch();
-+    QtOh::runOnJsUIThreadAndWait([this, ohMenu]{
++    QtOh::runOnJsUIThreadAndWait([this, ohMenu] {
 +        Napi::Array menus = createOhMenu(ohMenu);
 +
 +        QJsContext *context = qNativeWindowManager->context();
@@ -46087,7 +46806,7 @@ index 00000000000..7fb7894975f
 +#endif // QOPENHARMONYPRINTENGINE_P_H
 diff --git a/src/plugins/printsupport/openharmony/qopenharmonyprintersupport.cpp b/src/plugins/printsupport/openharmony/qopenharmonyprintersupport.cpp
 new file mode 100644
-index 00000000000..62ff7ac26eb
+index 00000000000..17b6a7e4a26
 --- /dev/null
 +++ b/src/plugins/printsupport/openharmony/qopenharmonyprintersupport.cpp
 @@ -0,0 +1,323 @@
@@ -46315,7 +47034,7 @@ index 00000000000..62ff7ac26eb
 +
 +void QOpenHarmonyPrinterSupport::detectOHPrinter()
 +{
-+    Print_StringList printerIdList;
++    Print_StringList printerIdList = {0};
 +    int ret = OH_Print_QueryPrinterList(&printerIdList);
 +
 +    if (PRINT_ERROR_NONE != ret) {
