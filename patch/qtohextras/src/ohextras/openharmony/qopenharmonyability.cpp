@@ -165,16 +165,15 @@ int getSubProcessPid(const QString &processIdent)
         qWarning() << Q_FUNC_INFO << "getSubProcessPid get uiability failed.";
         return -1;
     }
-
-    if (jsUiAbility->object().Has("getSubProcessPid")) {
-        return QtOh::runOnJsUIThreadWithResult([processIdent, jsUiAbility] {
-            return jsUiAbility->call("getSubProcessPid", {Napi::String::New(QtOh::uiEnv(), processIdent.toStdString())})
-                    .As<Napi::Number>().Int32Value();
-        });
-    } else {
-        qWarning() << "UIEntryAbility have not getSubProcessPid func";
-        return -1;
-    }
+    return QtOh::runOnJsUIThreadWithResult([processIdent, jsUiAbility] {
+        if (jsUiAbility->object().Has("getSubProcessPid")) {
+            return jsUiAbility->call<int>("getSubProcessPid",
+                                          {Napi::String::New(QtOh::uiEnv(), processIdent.toStdString())});
+        } else {
+            qWarning() << "UIEntryAbility have not getSubProcessPid func";
+            return -1;
+        }
+    });
 }
 
 bool getSubProcessAliveState(const QString &processIdent)
@@ -185,17 +184,15 @@ bool getSubProcessAliveState(const QString &processIdent)
         return false;
     }
 
-    if (jsUiAbility->object().Has("getSubProcessAliveState")) {
-        return QtOh::runOnJsUIThreadWithResult([processIdent, jsUiAbility] {
-            return jsUiAbility
-                    ->call("getSubProcessAliveState",
-                           { Napi::String::New(QtOh::uiEnv(), processIdent.toStdString()) })
-                    .As<Napi::Boolean>();
-        });
-    } else {
-        qWarning() << "UIEntryAbility have not getSubProcessAliveState func";
-        return false;
-    }
+    return QtOh::runOnJsUIThreadWithResult([processIdent, jsUiAbility] {
+        if (jsUiAbility->object().Has("getSubProcessAliveState")) {
+            return jsUiAbility->call<bool>("getSubProcessAliveState",
+                                           {Napi::String::New(QtOh::uiEnv(), processIdent.toStdString())});
+        } else {
+            qWarning() << "UIEntryAbility have not getSubProcessAliveState func";
+            return false;
+        }
+    });
 }
 
 void killSubProcess(const QString &processIdent)
@@ -206,14 +203,14 @@ void killSubProcess(const QString &processIdent)
         return;
     }
 
-    if (jsUiAbility->object().Has("killSubProcess")) {
-        QtOh::runOnJsUIThreadNoWait([processIdent, jsUiAbility] {
+    QtOh::runOnJsUIThreadNoWait([processIdent, jsUiAbility] {
+        if (jsUiAbility->object().Has("killSubProcess")) {
             jsUiAbility->call("killSubProcess",
                               { Napi::String::New(QtOh::uiEnv(), processIdent.toStdString()) });
-        });
-    } else {
-        qWarning() << "UIEntryAbility have not killSubProcess func";
-    }
+        } else {
+            qWarning() << "UIEntryAbility have not killSubProcess func";
+        }
+    });
 }
 
 QAbilityResultReceiver::QAbilityResultReceiver() {}
