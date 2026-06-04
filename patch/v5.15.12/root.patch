@@ -1,1546 +1,522 @@
-diff --git a/src/openharmony/native/QtSensors/JsSensor.ts b/src/openharmony/native/QtSensors/JsSensor.ts
-new file mode 100644
-index 00000000..c4084769
---- /dev/null
-+++ b/src/openharmony/native/QtSensors/JsSensor.ts
-@@ -0,0 +1,106 @@
-+import sensor from '@ohos.sensor';
-+import JsDataStore from '../QtCore/JsDataStore'
-+
-+export default class JsSensor {
-+  private pointerId = 0;
-+
-+  public constructor(id) {
-+    this.pointerId = id;
-+  }
-+
-+  /* Hz转ns,周期为1 */
-+  private hertz2ns(rate: Number) {
-+    /* f=1/T （其中f是指赫兹,T是指以秒为单位的时间）*/
-+    let ns = (1 / Number(rate)) * 1000000000;
-+    return ns;
-+  }
-+
-+  /* ns转Hz,周期为1 */
-+  private ns2hertz(ns: Number) {
-+    /* f=1/T （其中f是指赫兹,T是指以秒为单位的时间）*/
-+    let hz = 1 / (Number(ns) / 1000000000);
-+    return hz;
-+  }
-+
-+  stop(type: sensor.SensorId) {
-+    try {
-+      sensor.off(Number(type));
-+    } catch (error) {
-+      console.error(`Failed to invoke off. Code: ${error.code}, message: ${error.message}`);
-+    }
-+  }
-+
-+  /* 开始订阅传感器数据 */
-+  async start(type: sensor.SensorId, rate: Number) {
-+    try {
-+      this.stop(type);
-+      let ns = this.hertz2ns(rate);
-+      let max = await this.maxSamplePeriod(type);
-+      let min = await this.minSamplePeriod(type);
-+      let iv = Math.max(Math.min(max, ns), min);
-+
-+      sensor.on(Number(type), (data) => {
-+        JsDataStore.getQtNativeModule("QtSensors").DataAcception(this.pointerId, JSON.stringify(data));
-+      }, { interval: iv });
-+    } catch (error) {
-+      console.error(`Failed to invoke on. Code: ${error.code}, message: ${error.message}`);
-+    }
-+  }
-+
-+  /* 获取指定传感器信息 */
-+  async description(type: sensor.SensorId) {
-+    try {
-+      let info = await sensor.getSingleSensor(type);
-+      let des = JSON.stringify(info);
-+      console.info('Succeeded in getting sensor: ' + des);
-+      return des;
-+    } catch (e) {
-+      console.error(`Failed to get singleSensor . Code: ${e.code}, message: ${e.message}`);
-+    }
-+  }
-+
-+  async sensorName(type: sensor.SensorId) {
-+    let s = await sensor.getSingleSensor(type);
-+    return s.sensorName;
-+  }
-+
-+  async vendorName(type: sensor.SensorId) {
-+    let s = await sensor.getSingleSensor(type);
-+    return s.vendorName;
-+  }
-+
-+  async firmwareVersion(type: sensor.SensorId) {
-+    let s = await sensor.getSingleSensor(type);
-+    return s.firmwareVersion;
-+  }
-+
-+  async hardwareVersion(type: sensor.SensorId) {
-+    let s = await sensor.getSingleSensor(type);
-+    return s.hardwareVersion;
-+  }
-+
-+  async maxRange(type: sensor.SensorId) {
-+    let s = await sensor.getSingleSensor(type);
-+    return s.maxRange;
-+  }
-+
-+  async minSamplePeriod(type: sensor.SensorId) {
-+    let s = await sensor.getSingleSensor(type);
-+    return this.ns2hertz(s.minSamplePeriod);
-+  }
-+
-+  async maxSamplePeriod(type: sensor.SensorId) {
-+    let s = await sensor.getSingleSensor(type);
-+    return this.ns2hertz(s.minSamplePeriod);
-+  }
-+
-+  async precision(type: sensor.SensorId) {
-+    let s = await sensor.getSingleSensor(type);
-+    return s.precision;
-+  }
-+
-+  async power(type: sensor.SensorId) {
-+    let s = await sensor.getSingleSensor(type);
-+    return s.minSamplePeriod;
-+  }
-+}
-diff --git a/src/openharmony/native/QtSensors/JsSensorManager.ts b/src/openharmony/native/QtSensors/JsSensorManager.ts
-new file mode 100644
-index 00000000..51919095
---- /dev/null
-+++ b/src/openharmony/native/QtSensors/JsSensorManager.ts
-@@ -0,0 +1,18 @@
-+import sensor from '@ohos.sensor';
-+
-+export default class JsSensorManager {
-+
-+  /* 获取所有传感器类型Id */
-+  async sensorIds() {
-+    let s: Array<String> = new Array();
-+    try {
-+      let sr = await sensor.getSensorList();
-+      for (let data of sr) {
-+        s.push(String(data.sensorId));
-+      }
-+    } catch (e) {
-+      console.error(`Failed to get sensorList. Code: ${e.code}, message: ${e.message}`);
-+    }
-+    return s;
-+  }
-+}
+diff --git a/.gitignore b/.gitignore
+index 9b8015da..c8f4c823 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -2,3 +2,17 @@ Makefile
+ .qmake.cache
+ .qmake.super
+ *.pro.user*
++.vscode
++.qmake.stash
++config.cache
++config.log
++config.opt
++config.status.bat
++config.summary
++*/config.tests/*
++*.o
++*.obj
++*.moc
++moc_*.cpp
++*-debug/
++*-release/
 \ No newline at end of file
-diff --git a/src/openharmony/native/QtSensors/JsSensorsModule.ts b/src/openharmony/native/QtSensors/JsSensorsModule.ts
+diff --git a/.gitlab-ci.yml b/.gitlab-ci.yml
 new file mode 100644
-index 00000000..8e328f10
+index 00000000..805db031
 --- /dev/null
-+++ b/src/openharmony/native/QtSensors/JsSensorsModule.ts
-@@ -0,0 +1,26 @@
-+import { JsQtModule, ObjectBuilder } from '../QtCore/JsQtModule';
-+import JsDataStore from '../QtCore/JsDataStore';
-+import JsSensor from './JsSensor';
-+import JsSensorManager from './JsSensorManager';
++++ b/.gitlab-ci.yml
+@@ -0,0 +1,182 @@
++stages:
++  - HarmonyOS-17
++  - HarmonyOS-16
++  - HarmonyOS-15
++  - HarmonyOS-14
++  - HarmonyOS-13
++  - OpenHarmony-15
 +
-+class JsNfcModule extends JsQtModule {
 +
-+  public constructor() {
-+    super()
-+    this.moduleJsObjects.set("JsSensor", new ObjectBuilder<[number]>((id: number) =>{
-+      return new JsSensor(id);
-+    }));
-+    this.moduleJsObjects.set("JsSensorManager", new ObjectBuilder<[]>(() =>{
-+      return new JsSensorManager();
-+    }));
-+    this.loadQtModule();
-+  }
++variables:
++  GIT_SUBMODULE_STRATEGY: recursive
 +
-+  async loadQtModule(): Promise<void> {
-+    let module = await import ("libplugins_sensors_qtsensors_openharmony.so");
-+    let QtSensors = module.default;
-+    JsDataStore.addQtNativeModule("QtSensors", QtSensors);
-+  }
-+}
++###################### Qt5.15.12 ######################
 +
-+export default new JsNfcModule;
++Qt5_15_12-OHOS17 for Windows:
++  stage: HarmonyOS-17
++  variables:
++    BUILD_TYPE: profile
++    OHOS_ARCH: arm64-v8a
++    SELECT_OHOS_API: 17
++  script:
++    - .\issbuild\harmonyos\windows_build.bat
++  tags:
++    - Windows_x86_64_Shared_Runner
++  only:
++    - 5.15.12-ohos-next
++  
++Qt5_15_12-OHOS16 for Windows:
++  stage: HarmonyOS-16
++  variables:
++    BUILD_TYPE: profile
++    OHOS_ARCH: arm64-v8a
++    SELECT_OHOS_API: 16
++  script:
++    - .\issbuild\harmonyos\windows_build.bat
++  tags:
++    - Windows_x86_64_Shared_Runner
++  only:
++    - 5.15.12-ohos-next
++
++Qt5_15_12-OHOS15 for Windows:
++  stage: HarmonyOS-15
++  variables:
++    BUILD_TYPE: profile
++    OHOS_ARCH: arm64-v8a
++    SELECT_OHOS_API: 15
++  script:
++    - .\issbuild\harmonyos\windows_build.bat
++  tags:
++    - Windows_x86_64_Shared_Runner
++  only:
++    - 5.15.12-ohos-next
++
++.Qt5_15_12-OHOS14 for Windows:
++  stage: HarmonyOS-14
++  variables:
++    BUILD_TYPE: profile
++    OHOS_ARCH: arm64-v8a
++    SELECT_OHOS_API: 14
++  script:
++    - .\issbuild\harmonyos\windows_build.bat
++  tags:
++    - Windows_x86_64_Shared_Runner
++  only:
++    - 5.15.12-ohos-next
++
++Qt5_15_12-OHOS17 for Linux:
++  stage: HarmonyOS-17
++  variables:
++    BUILD_TYPE: profile
++    OHOS_ARCH: arm64-v8a
++  script:
++    - chmod +x ./issbuild/harmonyos/*
++    - ./issbuild/harmonyos/linux_build.sh
++  tags:
++    - Linux_x86_64_Shared_Runner
++  image:
++    name: liyaosong/ohos-sdk:17
++  only:
++    - 5.15.12-ohos-next
++
++Qt5_15_12-OHOS16 for Linux:
++  stage: HarmonyOS-16
++  variables:
++    BUILD_TYPE: profile
++    OHOS_ARCH: arm64-v8a
++  script:
++    - chmod +x ./issbuild/harmonyos/*
++    - ./issbuild/harmonyos/linux_build.sh
++  tags:
++    - Linux_x86_64_Shared_Runner
++  image:
++    name: liyaosong/ohos-sdk:16
++  only:
++    - 5.15.12-ohos-next
++
++Qt5_15_12-OHOS15 for Linux:
++  stage: HarmonyOS-15
++  variables:
++    BUILD_TYPE: profile
++    OHOS_ARCH: arm64-v8a
++  script:
++    - chmod +x ./issbuild/harmonyos/*
++    - ./issbuild/harmonyos/linux_build.sh
++  tags:
++    - Linux_x86_64_Shared_Runner
++  image:
++    name: liyaosong/ohos-sdk:15
++  only:
++    - 5.15.12-ohos-next
++
++.Qt5_15_12-OHOS14 for Linux:
++  stage: HarmonyOS-14
++  variables:
++    BUILD_TYPE: profile
++    OHOS_ARCH: arm64-v8a
++  script:
++    - chmod +x ./issbuild/harmonyos/*
++    - ./issbuild/harmonyos/linux_build.sh
++  tags:
++    - Linux_x86_64_Shared_Runner
++  image:
++    name: liyaosong/ohos-sdk:14
++  only:
++    - 5.15.12-ohos-next
++  
++######################## OpenHarmony-15 ######################
++Qt5_15_12-OpenHarmony15 for Windows:
++  stage: OpenHarmony-15
++  variables:
++    BUILD_TYPE: profile
++    OHOS_ARCH: arm64-v8a
++    SELECT_OHOS_API: 15
++  script:
++    - .\issbuild\openharmony\windows_build.bat
++  tags:
++    - Windows_x86_64_Shared_Runner
++  only:
++    - 5.15.12-openharmony
++
++Qt5_15_12-OpenHarmony15-arm32 for Windows:
++  stage: OpenHarmony-15
++  variables:
++    BUILD_TYPE: profile
++    OHOS_ARCH: armeabi-v7a
++    SELECT_OHOS_API: 15
++  script:
++    - .\issbuild\openharmony\windows_build.bat
++  tags:
++    - Windows_x86_64_Shared_Runner
++  only:
++    - 5.15.12-openharmony
++
++.Qt5_15_12-OpenHarmony15 for Linux:
++  stage: OpenHarmony-15
++  variables:
++    BUILD_TYPE: profile
++    OHOS_ARCH: arm64-v8a
++  script:
++    - chmod +x ./issbuild/openharmony/*
++    - ./issbuild/openharmony/linux_build.sh
++  tags:
++    - Linux_x86_64_Shared_Runner
++  image:
++    name: liyaosong/ohos-sdk:15
++  only:
++    - 5.15.12-openharmony
++
++.Qt5_15_12-OpenHarmony15-arm32 for Linux:
++  stage: OpenHarmony-15
++  variables:
++    BUILD_TYPE: profile
++    OHOS_ARCH: armeabi-v7a
++  script:
++    - chmod +x ./issbuild/openharmony/*
++    - ./issbuild/openharmony/linux_build.sh
++  tags:
++    - Linux_x86_64_Shared_Runner
++  image:
++    name: liyaosong/ohos-sdk:15
++  only:
++    - 5.15.12-openharmony
 \ No newline at end of file
-diff --git a/src/openharmony/openharmony.pro b/src/openharmony/openharmony.pro
-new file mode 100644
-index 00000000..3fdb3db8
+diff --git a/.gitmodules b/.gitmodules
+index 45223365..424dc9f0 100644
+--- a/.gitmodules
++++ b/.gitmodules
+@@ -1,7 +1,7 @@
+ [submodule "qtbase"]
+ 	path = qtbase
+ 	url = ../qtbase.git
+-	branch = 5.15
++	branch = 5.15.12-ohos-next
+ 	status = essential
+ [submodule "qtsvg"]
+ 	depends = qtbase
+@@ -14,7 +14,7 @@
+ 	recommends = qtsvg
+ 	path = qtdeclarative
+ 	url = ../qtdeclarative.git
+-	branch = 5.15
++	branch = 5.15.12-ohos-next
+ 	status = essential
+ [submodule "qtactiveqt"]
+ 	depends = qtbase
+@@ -27,21 +27,21 @@
+ 	recommends = qttools
+ 	path = qtscript
+ 	url = ../qtscript.git
+-	branch = 5.15
++	branch = 5.15.12-ohos-next
+ 	status = deprecated
+ [submodule "qtmultimedia"]
+ 	depends = qtbase
+ 	recommends = qtdeclarative
+ 	path = qtmultimedia
+ 	url = ../qtmultimedia.git
+-	branch = 5.15
++	branch = 5.15.12-ohos-next
+ 	status = essential
+ [submodule "qttools"]
+ 	depends = qtbase
+ 	recommends = qtdeclarative qtactiveqt
+ 	path = qttools
+ 	url = ../qttools.git
+-	branch = 5.15
++	branch = 5.15.12-ohos-next
+ 	status = essential
+ [submodule "qtxmlpatterns"]
+ 	depends = qtbase
+@@ -75,7 +75,7 @@
+ 	depends = qtbase
+ 	path = qtqa
+ 	url = ../qtqa.git
+-	branch = master
++	branch = dev
+ 	status = essential
+ 	priority = 50
+ [submodule "qtlocation"]
+@@ -83,14 +83,14 @@
+ 	recommends = qtdeclarative qtquickcontrols qtquickcontrols2 qtserialport
+ 	path = qtlocation
+ 	url = ../qtlocation.git
+-	branch = 5.15
++	branch = 5.15.12-ohos-next
+ 	status = addon
+ [submodule "qtsensors"]
+ 	depends = qtbase
+ 	recommends = qtdeclarative
+ 	path = qtsensors
+ 	url = ../qtsensors.git
+-	branch = 5.15
++	branch = 5.15.12-ohos-next
+ 	status = addon
+ [submodule "qtsystems"]
+ 	depends = qtbase
+@@ -123,7 +123,7 @@
+ 	recommends = qtdeclarative qtandroidextras
+ 	path = qtconnectivity
+ 	url = ../qtconnectivity.git
+-	branch = 5.15
++	branch = 5.15.12-ohos-next
+ 	status = addon
+ [submodule "qtwayland"]
+ 	depends = qtbase
+@@ -137,7 +137,7 @@
+ 	recommends = qtdeclarative qtimageformats qtgamepad
+ 	path = qt3d
+ 	url = ../qt3d.git
+-	branch = 5.15
++	branch = 5.15.12-ohos-next
+ 	status = addon
+ [submodule "qtimageformats"]
+ 	depends = qtbase
+@@ -156,7 +156,7 @@
+ 	recommends = qtgraphicaleffects
+ 	path = qtquickcontrols
+ 	url = ../qtquickcontrols.git
+-	branch = 5.15
++	branch = 5.15.12-ohos-next
+ 	status = addon
+ [submodule "qtserialbus"]
+ 	depends = qtbase
+@@ -215,7 +215,7 @@
+ 	recommends = qtquickcontrols qtquickcontrols2 qtlocation qtwebchannel qttools
+ 	path = qtwebengine
+ 	url = ../qtwebengine.git
+-	branch = 5.15
++	branch = 5.15.12-ohos-next
+ 	status = addon
+ 	priority = 10
+ [submodule "qtcanvas3d"]
+@@ -229,7 +229,7 @@
+ 	recommends = qtwebengine
+ 	path = qtwebview
+ 	url = ../qtwebview.git
+-	branch = 5.15
++	branch = 5.15.12-ohos-next
+ 	status = addon
+ [submodule "qtquickcontrols2"]
+ 	depends = qtgraphicaleffects
+@@ -250,7 +250,7 @@
+ 	recommends = qtdeclarative qtmultimedia
+ 	path = qtcharts
+ 	url = ../qtcharts.git
+-	branch = 5.15
++	branch = 5.15.12-ohos-next
+ 	status = addon
+ [submodule "qtdatavis3d"]
+ 	depends = qtbase
+@@ -315,7 +315,7 @@
+ [submodule "qtquicktimeline"]
+ 	depends = qtbase qtdeclarative
+ 	path = qtquicktimeline
+-	url = ../qtquicktimeline
++	url = ../qtquicktimeline.git
+ 	branch = 5.15
+ 	status = addon
+ [submodule "qtquick3d"]
+@@ -324,3 +324,19 @@
+ 	url = ../qtquick3d.git
+ 	branch = 5.15
+ 	status = addon
++[submodule "issbuild"]
++	path = issbuild
++	url = ../issbuild.git
++	status = addon
++	branch = main
++[submodule "qtohextras"]
++	depends = qtbase
++	path = qtohextras
++	url = ../qtohextras.git
++	status = addon
++	branch = 5.15.12-ohos-next
++[submodule "qtpdf"]
++	depends = qtbase
++	path = qtpdf
++	url = ../qtpdf.git
++	branch = dev
+diff --git a/issbuild b/issbuild
+new file mode 160000
+index 00000000..9f70b473
 --- /dev/null
-+++ b/src/openharmony/openharmony.pro
-@@ -0,0 +1,11 @@
-+TEMPLATE = aux
-+
-+CONFIG -= qt
-+
-+templates.files += $$files($$PWD/native/QtSensors/*.ts, true)
-+templates.path = $$[QT_INSTALL_PREFIX]/openharmony/qtsensors
-+templates.base = $$PWD
-+
-+INSTALLS += templates
-+
-+OTHER_FILES += $$templates.files
-diff --git a/src/plugins/sensors/openharmony/main.cpp b/src/plugins/sensors/openharmony/main.cpp
-new file mode 100644
-index 00000000..b6507cde
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/main.cpp
-@@ -0,0 +1,143 @@
-+#include <QDebug>
-+#include <QObject>
-+#include <qcompass.h>
-+#include <QJsonObject>
-+#include <qgyroscope.h>
-+#include <QJsonDocument>
-+#include <QJsonParseError>
-+#include <qmagnetometer.h>
-+#include <qsensorplugin.h>
-+#include <qsensorbackend.h>
-+#include <qsensormanager.h>
-+#include <qaccelerometer.h>
-+#include <qrotationsensor.h>
-+#include <qdistancesensor.h>
-+#include <qhumiditysensor.h>
-+#include <qpressuresensor.h>
-+#include <qproximitysensor.h>
-+#include <qorientationsensor.h>
-+#include <qambientlightsensor.h>
-+#include <qambienttemperaturesensor.h>
-+
-+#include "sensormanager.h"
-+#include "sensorbackend.h"
-+#include <napi/native_api.h>
-+#include "openharmonylight.h"
-+#include "openharmonyrotation.h"
-+#include "openharmonyhumidity.h"
-+#include "openharmonypressure.h"
-+#include "openharmonyproximity.h"
-+#include "openharmonygyroscope.h"
-+#include "openharmonytemperature.h"
-+#include "openharmonymagnetometer.h"
-+#include "openharmonyaccelerometer.h"
-+#include "QtCore/qopenharmonydefines.h"
-+
-+namespace {
-+const char OPenHarmonyCompassId[] = "openharmony.synthetic.compass";
-+}
-+
-+class OPenHarmonySensorPlugin : public QObject, public QSensorPluginInterface,
-+                                public QSensorBackendFactory
-+{
-+    Q_OBJECT
-+    Q_PLUGIN_METADATA(IID "com.qt-project.Qt.QSensorPluginInterface/1.0" FILE "plugin.json")
-+    Q_INTERFACES(QSensorPluginInterface)
-+
-+public:
-+    void registerSensors() override
-+    {
-+        bool accelerometer = false;
-+        bool magnetometer = false;
-+        const QList<int> &ids = SensorManager::instance()->sensorIds();        
-+        for (int sensor : qAsConst(ids)) {                
-+            switch (sensor) {
-+            case E_BAROMETER:
-+                QSensorManager::registerBackend(QPressureSensor::type, QByteArray::number(sensor), this);
-+                break;
-+            case E_ACCELEROMETER:
-+                m_accelerationModes |= OPenHarmonyAccelerometer::Accelerometer;
-+                QSensorManager::registerBackend(QAccelerometer::type, QByteArray::number(sensor), this);
-+                accelerometer = true;
-+                break;
-+            case E_LINEAR_ACCELEROMETER:
-+                m_accelerationModes |= OPenHarmonyAccelerometer::LinearAcceleration;
-+                //QSensorManager::registerBackend(QAccelerometer::type, QByteArray::number(sensor), this);
-+                break;
-+            case E_GRAVITY:
-+                m_accelerationModes |= OPenHarmonyAccelerometer::Gravity;
-+                //QSensorManager::registerBackend(QAccelerometer::type, QByteArray::number(sensor), this);
-+                break;
-+            case E_HUMIDITY:
-+                QSensorManager::registerBackend(QHumiditySensor::type, QByteArray::number(sensor), this);
-+                break;
-+            case E_PROXIMITY:
-+                QSensorManager::registerBackend(QProximitySensor::type, QByteArray::number(sensor), this);
-+                break;
-+            case E_GYROSCOPE:
-+                QSensorManager::registerBackend(QGyroscope::type, QByteArray::number(sensor), this);
-+                break;
-+            case E_ORIENTATION:
-+                /*FIXME 通过加速度传感器实现? */
-+                //QSensorManager::registerBackend(QOrientationSensor::type, QByteArray::number(sensor), this);
-+                break;
-+            case E_ROTATION_VECTOR:
-+                QSensorManager::registerBackend(QRotationSensor::type, QByteArray::number(sensor), this);
-+                break;
-+            case E_AMBIENT_LIGHT:
-+                QSensorManager::registerBackend(QAmbientLightSensor::type, QByteArray::number(sensor), this);
-+                break;
-+            case E_MAGNETIC_FIELD:
-+                QSensorManager::registerBackend(QMagnetometer::type, QByteArray::number(sensor), this);
-+                magnetometer = true;
-+                break;
-+            case E_AMBIENT_TEMPERATURE:
-+                QSensorManager::registerBackend(QAmbientTemperatureSensor::type, QByteArray::number(sensor), this);
-+                break;
-+            default:
-+                break;
-+            }
-+        }
-+#if 0
-+        /* NOTE 现在的js回调机制不支持
-+         * 罗盘通过加速度和磁场传感器组合实现
-+         */
-+        if (accelerometer && magnetometer)
-+            QSensorManager::registerBackend(QCompass::type, OPenHarmonyCompassId, this);
-+#endif
-+    }
-+
-+    QSensorBackend *createBackend(QSensor *sensor) override
-+    {        
-+        /* TODO QCompass */
-+        int id = sensor->identifier().toInt();
-+        switch (id) {
-+        case E_BAROMETER:        
-+            return new OPenHarmonyPressure(id, sensor);
-+        case E_ACCELEROMETER:
-+            return new OPenHarmonyAccelerometer(m_accelerationModes, sensor);
-+        case E_GYROSCOPE:                    
-+            return new OPenHarmonyGyroscope(id, sensor);
-+        case E_PROXIMITY:        
-+            return new OPenHarmonyProximity(id, sensor);
-+        case E_AMBIENT_LIGHT:
-+            return new OPenHarmonyLight(id, sensor);
-+        case E_MAGNETIC_FIELD:
-+            return new OPenHarmonyMagnetometer(id, sensor);
-+        case E_HUMIDITY:
-+            return new OPenHarmonyHumidity(id, sensor);
-+        case E_ROTATION_VECTOR:
-+            return new OPenHarmonyRotation(id, sensor);
-+        case E_AMBIENT_TEMPERATURE:
-+            return new OPenHarmonyTemperature(id, sensor);
-+        default:
-+            break;
-+        }
-+        return Q_NULLPTR;
-+    }
-+
-+private:
-+    int m_accelerationModes = 0;
-+};
-+
-+#include "main.moc"
-diff --git a/src/plugins/sensors/openharmony/openharmony.pro b/src/plugins/sensors/openharmony/openharmony.pro
-new file mode 100644
-index 00000000..c6478994
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/openharmony.pro
-@@ -0,0 +1,38 @@
-+TARGET = qtsensors_openharmony
-+QT = core-private sensors
-+
-+LIBS += -lohsensor
-+
-+OTHER_FILES = plugin.json
-+
-+SOURCES += \
-+    main.cpp \
-+    openharmonyaccelerometer.cpp \
-+    openharmonygyroscope.cpp \
-+    openharmonyhumidity.cpp \
-+    openharmonylight.cpp \
-+    openharmonymagnetometer.cpp \
-+    openharmonypressure.cpp \
-+    openharmonyproximity.cpp \
-+    openharmonyrotation.cpp \
-+    openharmonytemperature.cpp \
-+    sensormanager.cpp
-+
-+
-+PLUGIN_TYPE = sensors
-+PLUGIN_CLASS_NAME = OPenHarmonySensorPlugin
-+load(qt_plugin)
-+
-+HEADERS += \
-+    openharmonyaccelerometer.h \
-+    openharmonygyroscope.h \
-+    openharmonyhumidity.h \
-+    openharmonylight.h \
-+    openharmonymagnetometer.h \
-+    openharmonypressure.h \
-+    openharmonyproximity.h \
-+    openharmonyrotation.h \
-+    openharmonytemperature.h \
-+    sensorbackend.h \
-+    sensormanager.h
-+
-diff --git a/src/plugins/sensors/openharmony/openharmonyaccelerometer.cpp b/src/plugins/sensors/openharmony/openharmonyaccelerometer.cpp
-new file mode 100644
-index 00000000..84ad1e53
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/openharmonyaccelerometer.cpp
-@@ -0,0 +1,71 @@
-+#include <QDebug>
-+#include <QJsonValue>
-+#include <QJsonObject>
-+
-+#include "openharmonyaccelerometer.h"
-+
-+OPenHarmonyAccelerometer::OPenHarmonyAccelerometer(int accelerationModes, QSensor *sensor, QObject *parent)
-+    : SensorBackend<QAccelerometerReading>(E_ACCELEROMETER, sensor, parent)
-+      , m_accelerationModes(accelerationModes)
-+{
-+    auto accelerometer = qobject_cast<QAccelerometer *>(sensor);
-+    if (accelerometer) {
-+        connect(accelerometer, &QAccelerometer::accelerationModeChanged,
-+                this, &OPenHarmonyAccelerometer::applyAccelerationMode);
-+        applyAccelerationMode(accelerometer->accelerationMode());
-+    }
-+}
-+
-+bool OPenHarmonyAccelerometer::isFeatureSupported(QSensor::Feature feature) const
-+{
-+    return (feature == QSensor::AccelerationMode) ? m_accelerationModes == AllModes : SensorBackend<QAccelerometerReading>::isFeatureSupported(feature);
-+}
-+
-+void OPenHarmonyAccelerometer::dataReceived(const QJsonObject &json)
-+{
-+    double x = json.value("x").toDouble();
-+    double y = json.value("y").toDouble();
-+    double z = json.value("z").toDouble();
-+
-+    if (sensor()->skipDuplicates() && qFuzzyCompare(m_reader.x(), x) &&
-+        qFuzzyCompare(m_reader.y(), y) &&
-+        qFuzzyCompare(m_reader.z(), z)) {
-+        return;
-+    }
-+
-+    double timestamp = json.value("timestamp").toDouble();
-+    m_reader.setTimestamp(quint64(timestamp));
-+    m_reader.setX(x);
-+    m_reader.setY(y);
-+    m_reader.setZ(z);
-+
-+    newReadingAvailable();
-+}
-+
-+void OPenHarmonyAccelerometer::applyAccelerationMode(QAccelerometer::AccelerationMode accelerationMode)
-+{
-+    switch (accelerationMode) {
-+    case QAccelerometer::Gravity:
-+        if (!(m_accelerationModes & Gravity)) {
-+            qWarning() << "Gravity sensor missing";
-+            return;
-+        }
-+        setSensorType(E_GRAVITY);
-+        break;
-+    case QAccelerometer::User:
-+        if (!(m_accelerationModes & LinearAcceleration)) {
-+            qWarning() << "Linear acceleration sensor missing";
-+            return;
-+        }
-+        setSensorType(E_LINEAR_ACCELEROMETER);
-+        break;
-+    case QAccelerometer::Combined:
-+        if (!(m_accelerationModes & Accelerometer)) {
-+            qWarning() << "Accelerometer sensor missing";
-+            return;
-+        }
-+        setSensorType(E_ACCELEROMETER);
-+        break;
-+    }
-+}
-+
-diff --git a/src/plugins/sensors/openharmony/openharmonyaccelerometer.h b/src/plugins/sensors/openharmony/openharmonyaccelerometer.h
-new file mode 100644
-index 00000000..a610d25b
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/openharmonyaccelerometer.h
-@@ -0,0 +1,32 @@
-+#ifndef OPENHARMONYACCELEROMETER_H
-+#define OPENHARMONYACCELEROMETER_H
-+
-+#include <qaccelerometer.h>
-+
-+#include "sensorbackend.h"
-+
-+class OPenHarmonyAccelerometer : public SensorBackend<QAccelerometerReading>
-+{
-+    Q_OBJECT
-+
-+public:
-+    enum AccelerationModes {
-+        Accelerometer = 1,
-+        Gravity = 2,
-+        LinearAcceleration = 4,
-+        AllModes = (Accelerometer | Gravity | LinearAcceleration)
-+    };
-+    OPenHarmonyAccelerometer(int accelerationModes, QSensor *sensor, QObject *parent = nullptr);
-+    bool isFeatureSupported(QSensor::Feature feature) const override;
-+
-+protected Q_SLOTS:
-+    void dataReceived(const QJsonObject &json) override;
-+
-+private:
-+    void applyAccelerationMode(QAccelerometer::AccelerationMode accelerationMode);
-+
-+private:
-+    int m_accelerationModes;
-+};
-+
-+#endif // OPENHARMONYACCELEROMETER_H
-diff --git a/src/plugins/sensors/openharmony/openharmonygyroscope.cpp b/src/plugins/sensors/openharmony/openharmonygyroscope.cpp
-new file mode 100644
-index 00000000..349b7e2f
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/openharmonygyroscope.cpp
-@@ -0,0 +1,33 @@
-+#include <qmath.h>
-+#include <QJsonValue>
-+#include <QJsonObject>
-+
-+#include "openharmonygyroscope.h"
-+
-+OPenHarmonyGyroscope::OPenHarmonyGyroscope(int type, QSensor *sensor, QObject *parent)
-+: SensorBackend<QGyroscopeReading>(type, sensor, parent)
-+{
-+
-+}
-+
-+void OPenHarmonyGyroscope::dataReceived(const QJsonObject &json)
-+{
-+    double x = qRadiansToDegrees(json.value("x").toDouble());
-+    double y = qRadiansToDegrees(json.value("y").toDouble());
-+    double z = qRadiansToDegrees(json.value("z").toDouble());
-+    double timestamp = json.value("timestamp").toDouble();
-+
-+    if (sensor()->skipDuplicates() && qFuzzyCompare(m_reader.x(), x) &&
-+        qFuzzyCompare(m_reader.y(), y) &&
-+        qFuzzyCompare(m_reader.z(), z)) {
-+        return;
-+    }
-+
-+    m_reader.setTimestamp(quint64(timestamp));
-+    m_reader.setX(x);
-+    m_reader.setY(y);
-+    m_reader.setZ(z);
-+
-+    newReadingAvailable();
-+}
-+
-diff --git a/src/plugins/sensors/openharmony/openharmonygyroscope.h b/src/plugins/sensors/openharmony/openharmonygyroscope.h
-new file mode 100644
-index 00000000..ff3e6d2a
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/openharmonygyroscope.h
-@@ -0,0 +1,18 @@
-+#ifndef OPENHARMONYGYROSCOPE_H
-+#define OPENHARMONYGYROSCOPE_H
-+
-+#include <qgyroscope.h>
-+
-+#include "sensorbackend.h"
-+
-+class OPenHarmonyGyroscope : public SensorBackend<QGyroscopeReading>
-+{
-+    Q_OBJECT
-+public:
-+    OPenHarmonyGyroscope(int type, QSensor *sensor, QObject *parent = nullptr);
-+
-+protected Q_SLOTS:
-+    void dataReceived(const QJsonObject &json) override;
-+};
-+
-+#endif // OPENHARMONYGYROSCOPE_H
-diff --git a/src/plugins/sensors/openharmony/openharmonyhumidity.cpp b/src/plugins/sensors/openharmony/openharmonyhumidity.cpp
-new file mode 100644
-index 00000000..e17df8cf
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/openharmonyhumidity.cpp
-@@ -0,0 +1,25 @@
-+#include <QJsonValue>
-+#include <QJsonObject>
-+
-+#include "openharmonyhumidity.h"
-+
-+OPenHarmonyHumidity::OPenHarmonyHumidity(int type, QSensor *sensor, QObject *parent)
-+    : SensorBackend<QHumidityReading>(type, sensor, parent)
-+{
-+
-+}
-+
-+void OPenHarmonyHumidity::dataReceived(const QJsonObject &json)
-+{
-+    qreal humidity = json.value("humidity").toDouble();
-+
-+    if (sensor()->skipDuplicates() && qFuzzyCompare(humidity, m_reader.relativeHumidity()))
-+        return;
-+
-+    double timestamp = json.value("timestamp").toDouble();
-+    m_reader.setTimestamp(quint64(timestamp));
-+    m_reader.setAbsoluteHumidity(0.f);
-+    m_reader.setRelativeHumidity(humidity);
-+    newReadingAvailable();
-+}
-+
-diff --git a/src/plugins/sensors/openharmony/openharmonyhumidity.h b/src/plugins/sensors/openharmony/openharmonyhumidity.h
-new file mode 100644
-index 00000000..adbf4c9b
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/openharmonyhumidity.h
-@@ -0,0 +1,18 @@
-+#ifndef OPENHARMONYHUMIDITY_H
-+#define OPENHARMONYHUMIDITY_H
-+
-+#include <qhumiditysensor.h>
-+
-+#include "sensorbackend.h"
-+
-+class OPenHarmonyHumidity : public SensorBackend<QHumidityReading>
-+{
-+    Q_OBJECT
-+public:
-+    OPenHarmonyHumidity(int type, QSensor *sensor, QObject *parent = nullptr);
-+
-+protected Q_SLOTS:
-+    void dataReceived(const QJsonObject &json) override;
-+};
-+
-+#endif // OPENHARMONYHUMIDITY_H
-diff --git a/src/plugins/sensors/openharmony/openharmonylight.cpp b/src/plugins/sensors/openharmony/openharmonylight.cpp
-new file mode 100644
-index 00000000..7274df7c
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/openharmonylight.cpp
-@@ -0,0 +1,23 @@
-+#include <QJsonValue>
-+#include <QJsonObject>
-+
-+#include "openharmonylight.h"
-+
-+OPenHarmonyLight::OPenHarmonyLight(int type, QSensor *sensor, QObject *parent)
-+    : SensorBackend<QLightReading>(type, sensor, parent)
-+{
-+
-+}
-+
-+void OPenHarmonyLight::dataReceived(const QJsonObject &json)
-+{
-+    double intensity = json.value("intensity").toDouble();
-+
-+    if (sensor()->skipDuplicates() && qFuzzyCompare(m_reader.lux(), intensity))
-+        return;
-+
-+    double timestamp = json.value("timestamp").toDouble();
-+    m_reader.setTimestamp(quint64(timestamp));
-+    m_reader.setLux(qreal(intensity));
-+    newReadingAvailable();
-+}
-diff --git a/src/plugins/sensors/openharmony/openharmonylight.h b/src/plugins/sensors/openharmony/openharmonylight.h
-new file mode 100644
-index 00000000..f8039a92
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/openharmonylight.h
-@@ -0,0 +1,18 @@
-+#ifndef OPENHARMONYLIGHT_H
-+#define OPENHARMONYLIGHT_H
-+
-+#include <qlightsensor.h>
-+
-+#include "sensorbackend.h"
-+
-+class OPenHarmonyLight : public SensorBackend<QLightReading>
-+{
-+    Q_OBJECT
-+public:
-+    OPenHarmonyLight(int type, QSensor *sensor, QObject *parent = nullptr);
-+
-+protected Q_SLOTS:
-+    void dataReceived(const QJsonObject &json) override;
-+};
-+
-+#endif // OPENHARMONYLIGHT_H
-diff --git a/src/plugins/sensors/openharmony/openharmonymagnetometer.cpp b/src/plugins/sensors/openharmony/openharmonymagnetometer.cpp
-new file mode 100644
-index 00000000..34e34b21
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/openharmonymagnetometer.cpp
-@@ -0,0 +1,32 @@
-+#include <QJsonValue>
-+#include <QJsonObject>
-+#include "openharmonymagnetometer.h"
-+
-+OPenHarmonyMagnetometer::OPenHarmonyMagnetometer(int type, QSensor *sensor, QObject *parent)
-+    : SensorBackend<QMagnetometerReading>(type, sensor, parent)
-+{
-+
-+}
-+
-+void OPenHarmonyMagnetometer::dataReceived(const QJsonObject &json)
-+{
-+    double x = json.value("x").toDouble();
-+    double y = json.value("y").toDouble();
-+    double z = json.value("z").toDouble();
-+
-+    if (sensor()->skipDuplicates() && qFuzzyCompare(m_accuracy, m_reader.calibrationLevel()) &&
-+        qFuzzyCompare(x, m_reader.x()) &&
-+        qFuzzyCompare(y, m_reader.y()) &&
-+        qFuzzyCompare(z, m_reader.z())) {
-+        return;
-+    }
-+
-+    m_reader.setCalibrationLevel(m_accuracy);
-+    double timestamp = json.value("timestamp").toDouble();
-+    m_reader.setTimestamp(quint64(timestamp));
-+    m_reader.setX(x);
-+    m_reader.setY(y);
-+    m_reader.setZ(z);
-+    newReadingAvailable();
-+}
-+
-diff --git a/src/plugins/sensors/openharmony/openharmonymagnetometer.h b/src/plugins/sensors/openharmony/openharmonymagnetometer.h
-new file mode 100644
-index 00000000..c3662243
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/openharmonymagnetometer.h
-@@ -0,0 +1,18 @@
-+#ifndef OPENHARMONYMAGNETOMETER_H
-+#define OPENHARMONYMAGNETOMETER_H
-+
-+#include <qmagnetometer.h>
-+
-+#include "sensorbackend.h"
-+
-+class OPenHarmonyMagnetometer : public SensorBackend<QMagnetometerReading>
-+{
-+    Q_OBJECT
-+public:
-+    OPenHarmonyMagnetometer(int type, QSensor *sensor, QObject *parent = nullptr);
-+
-+protected Q_SLOTS:
-+    void dataReceived(const QJsonObject &json) override;
-+};
-+
-+#endif // OPENHARMONYMAGNETOMETER_H
-diff --git a/src/plugins/sensors/openharmony/openharmonypressure.cpp b/src/plugins/sensors/openharmony/openharmonypressure.cpp
-new file mode 100644
-index 00000000..c7d5d3d3
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/openharmonypressure.cpp
-@@ -0,0 +1,22 @@
-+#include <QJsonObject>
-+#include <QJsonValue>
-+
-+#include "openharmonypressure.h"
-+
-+OPenHarmonyPressure::OPenHarmonyPressure(int type, QSensor *sensor, QObject *parent)
-+    : SensorBackend<QPressureReading>(type, sensor, parent)
-+{
-+
-+}
-+
-+void OPenHarmonyPressure::dataReceived(const QJsonObject &json)
-+{
-+    auto pressurePa = json.value("pressure").toDouble();
-+    if (sensor()->skipDuplicates() && qFuzzyCompare(pressurePa, m_reader.pressure()))
-+        return;
-+
-+    double timestamp = json.value("timestamp").toDouble();
-+    m_reader.setTimestamp(quint64(timestamp));
-+    m_reader.setPressure(pressurePa);
-+    newReadingAvailable();
-+}
-diff --git a/src/plugins/sensors/openharmony/openharmonypressure.h b/src/plugins/sensors/openharmony/openharmonypressure.h
-new file mode 100644
-index 00000000..8c2db8aa
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/openharmonypressure.h
-@@ -0,0 +1,18 @@
-+#ifndef OPENHARMONYPRESSURE_H
-+#define OPENHARMONYPRESSURE_H
-+
-+#include <qpressuresensor.h>
-+
-+#include "sensorbackend.h"
-+
-+class OPenHarmonyPressure : public SensorBackend<QPressureReading>
-+{
-+    Q_OBJECT
-+public:
-+    OPenHarmonyPressure(int type, QSensor *sensor, QObject *parent = nullptr);
-+
-+protected Q_SLOTS:
-+    void dataReceived(const QJsonObject &json) override;
-+};
-+
-+#endif // OPENHARMONYPRESSURE_H
-diff --git a/src/plugins/sensors/openharmony/openharmonyproximity.cpp b/src/plugins/sensors/openharmony/openharmonyproximity.cpp
-new file mode 100644
-index 00000000..e96a0b24
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/openharmonyproximity.cpp
-@@ -0,0 +1,28 @@
-+#include <QJsonValue>
-+#include <QJsonObject>
-+
-+#include "openharmonyproximity.h"
-+
-+OPenHarmonyProximity::OPenHarmonyProximity(int type, QSensor *sensor, QObject *parent)
-+    : SensorBackend<QProximityReading>(type, sensor, parent)
-+{
-+    m_maximumRange = m_jsSensor->maxRange(m_type);
-+
-+           // if we can't get the range, we arbitrarily define anything closer than 10 cm as "close"
-+    if (m_maximumRange <= 0)
-+        m_maximumRange = 10.0;
-+}
-+
-+void OPenHarmonyProximity::dataReceived(const QJsonObject &json)
-+{
-+    qreal distance = json.value("distance").toDouble();
-+    bool close = distance < m_maximumRange;
-+    if (sensor()->skipDuplicates() && close == m_reader.close())
-+        return;
-+
-+    double timestamp = json.value("timestamp").toDouble();
-+    m_reader.setTimestamp(quint64(timestamp));
-+    m_reader.setClose(close);
-+    newReadingAvailable();
-+}
-+
-diff --git a/src/plugins/sensors/openharmony/openharmonyproximity.h b/src/plugins/sensors/openharmony/openharmonyproximity.h
-new file mode 100644
-index 00000000..f1ef02f2
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/openharmonyproximity.h
-@@ -0,0 +1,21 @@
-+#ifndef OPENHARMONYPROXIMITY_H
-+#define OPENHARMONYPROXIMITY_H
-+
-+#include <qproximitysensor.h>
-+
-+#include "sensorbackend.h"
-+
-+class OPenHarmonyProximity : public SensorBackend<QProximityReading>
-+{
-+    Q_OBJECT
-+public:
-+    OPenHarmonyProximity(int type, QSensor *sensor, QObject *parent = nullptr);
-+
-+protected Q_SLOTS:
-+    void dataReceived(const QJsonObject &json) override;
-+
-+private:
-+    qreal m_maximumRange;
-+};
-+
-+#endif // OPENHARMONYPROXIMITY_H
-diff --git a/src/plugins/sensors/openharmony/openharmonyrotation.cpp b/src/plugins/sensors/openharmony/openharmonyrotation.cpp
-new file mode 100644
-index 00000000..a4d70e6f
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/openharmonyrotation.cpp
-@@ -0,0 +1,29 @@
-+#include <QtMath>
-+#include <QJsonValue>
-+#include <QJsonObject>
-+
-+#include "openharmonyrotation.h"
-+
-+OPenHarmonyRotation::OPenHarmonyRotation(int type, QSensor *sensor, QObject *parent)
-+    : SensorBackend<QRotationReading>(type, sensor, parent)
-+{
-+
-+}
-+
-+void OPenHarmonyRotation::dataReceived(const QJsonObject &json)
-+{
-+    qreal rz = -qRadiansToDegrees(json.value("x").toDouble()); //corresponds to x
-+    qreal rx = -qRadiansToDegrees(json.value("y").toDouble()); //corresponds to y
-+    qreal ry =  qRadiansToDegrees(json.value("z").toDouble()); //corresponds to z
-+    if (sensor()->skipDuplicates() && qFuzzyCompare(m_reader.x(), rx) &&
-+        qFuzzyCompare(m_reader.y(), ry) &&
-+        qFuzzyCompare(m_reader.z(), rz)) {
-+        return;
-+    }
-+
-+    double timestamp = json.value("timestamp").toDouble();
-+    m_reader.setTimestamp(quint64(timestamp));
-+    m_reader.setFromEuler(rx, ry, rz);
-+    newReadingAvailable();
-+}
-+
-diff --git a/src/plugins/sensors/openharmony/openharmonyrotation.h b/src/plugins/sensors/openharmony/openharmonyrotation.h
-new file mode 100644
-index 00000000..03243797
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/openharmonyrotation.h
-@@ -0,0 +1,18 @@
-+#ifndef OPENHARMONYROTATION_H
-+#define OPENHARMONYROTATION_H
-+
-+#include <qrotationsensor.h>
-+
-+#include "sensorbackend.h"
-+
-+class OPenHarmonyRotation : public SensorBackend<QRotationReading>
-+{
-+    Q_OBJECT
-+public:
-+    OPenHarmonyRotation(int type, QSensor *sensor, QObject *parent = nullptr);
-+
-+protected Q_SLOTS:
-+    void dataReceived(const QJsonObject &json) override;
-+};
-+
-+#endif // OPENHARMONYROTATION_H
-diff --git a/src/plugins/sensors/openharmony/openharmonytemperature.cpp b/src/plugins/sensors/openharmony/openharmonytemperature.cpp
-new file mode 100644
-index 00000000..a3865b03
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/openharmonytemperature.cpp
-@@ -0,0 +1,23 @@
-+#include <QJsonValue>
-+#include <QJsonObject>
-+
-+#include "openharmonytemperature.h"
-+
-+OPenHarmonyTemperature::OPenHarmonyTemperature(int type, QSensor *sensor, QObject *parent)
-+    : SensorBackend<QAmbientTemperatureReading>(type, sensor, parent)
-+{
-+
-+}
-+
-+void OPenHarmonyTemperature::dataReceived(const QJsonObject &json)
-+{
-+    qreal temperature = json.value("temperature").toDouble();
-+    if (sensor()->skipDuplicates() && qFuzzyCompare(m_reader.temperature(), temperature))
-+        return;
-+
-+    double timestamp = json.value("timestamp").toDouble();
-+    m_reader.setTimestamp(quint64(timestamp));
-+    m_reader.setTemperature(temperature); // in  degree Celsius
-+    newReadingAvailable();
-+}
-+
-diff --git a/src/plugins/sensors/openharmony/openharmonytemperature.h b/src/plugins/sensors/openharmony/openharmonytemperature.h
-new file mode 100644
-index 00000000..cc881f20
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/openharmonytemperature.h
-@@ -0,0 +1,18 @@
-+#ifndef OPENHARMONYTEMPERATURE_H
-+#define OPENHARMONYTEMPERATURE_H
-+
-+#include <qambienttemperaturesensor.h>
-+
-+#include "sensorbackend.h"
-+
-+class OPenHarmonyTemperature : public SensorBackend<QAmbientTemperatureReading>
-+{
-+    Q_OBJECT
-+public:
-+    OPenHarmonyTemperature(int type, QSensor *sensor, QObject *parent = nullptr);
-+
-+protected Q_SLOTS:
-+    void dataReceived(const QJsonObject &json) override;
-+};
-+
-+#endif // OPENHARMONYTEMPERATURE_H
-diff --git a/src/plugins/sensors/openharmony/plugin.json b/src/plugins/sensors/openharmony/plugin.json
-new file mode 100644
-index 00000000..ff40b670
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/plugin.json
++++ b/issbuild
 @@ -0,0 +1 @@
-+{ "Keys": [ "openharmony" ] }
-diff --git a/src/plugins/sensors/openharmony/sensorbackend.h b/src/plugins/sensors/openharmony/sensorbackend.h
-new file mode 100644
-index 00000000..aa0907df
++Subproject commit 9f70b473e2c9017162c74bf21820ac628b3ff9b3
+diff --git a/qt3d b/qt3d
+index e1b1a0d2..aa759fc2 160000
+--- a/qt3d
++++ b/qt3d
+@@ -1 +1 @@
+-Subproject commit e1b1a0d2970fd384bd52c734a72536d8452ad070
++Subproject commit aa759fc27a5e61e04587d7f8dc93ef634e7e83de
+diff --git a/qtbase b/qtbase
+index e4391422..b8c23542 160000
+--- a/qtbase
++++ b/qtbase
+@@ -1 +1 @@
+-Subproject commit e4391422574aa9aa89fece74f16c07c609cbbae2
++Subproject commit b8c23542da37e7d8fe4eb25853fb493f75dc2aef
+diff --git a/qtcanvas3d b/qtcanvas3d
+index 1319e096..433633fb 160000
+--- a/qtcanvas3d
++++ b/qtcanvas3d
+@@ -1 +1 @@
+-Subproject commit 1319e0965f6008f44f9216a7bb76e106a1710767
++Subproject commit 433633fb7285087724d39249060ca10c1dfea9a1
+diff --git a/qtconnectivity b/qtconnectivity
+index 45604bed..59fa755f 160000
+--- a/qtconnectivity
++++ b/qtconnectivity
+@@ -1 +1 @@
+-Subproject commit 45604bedf6d3b022fc9758eeb4cefab0f9f2dea5
++Subproject commit 59fa755f6a5c074d2f07c2e15675c39b8024d3db
+diff --git a/qtdeclarative b/qtdeclarative
+index 105e6105..e34575bd 160000
+--- a/qtdeclarative
++++ b/qtdeclarative
+@@ -1 +1 @@
+-Subproject commit 105e610548a62d943301153afb337a49f14e9e25
++Subproject commit e34575bd46a415395dcf8ae8d8b606210bd29e9b
+diff --git a/qtdoc b/qtdoc
+index 39b27247..4945de6d 160000
+--- a/qtdoc
++++ b/qtdoc
+@@ -1 +1 @@
+-Subproject commit 39b272474cbaca77563e58218172e9d7d59129cf
++Subproject commit 4945de6d0974150b1d81e81401252e8fd302ae24
+diff --git a/qtdocgallery b/qtdocgallery
+index e36e6f0a..8cbbeb06 160000
+--- a/qtdocgallery
++++ b/qtdocgallery
+@@ -1 +1 @@
+-Subproject commit e36e6f0abd45c2794c70c31eb10c5263e7e7a29a
++Subproject commit 8cbbeb060188191b833863f23bc513909a9a4d0a
+diff --git a/qtfeedback b/qtfeedback
+index 9ac8d8c2..a14bd0bb 160000
+--- a/qtfeedback
++++ b/qtfeedback
+@@ -1 +1 @@
+-Subproject commit 9ac8d8c272fc93416016e094fc6b97226a400082
++Subproject commit a14bd0bb1373cde86e09e3619fb9dc70f34c71f2
+diff --git a/qtlocation b/qtlocation
+index b6d96559..2286094b 160000
+--- a/qtlocation
++++ b/qtlocation
+@@ -1 +1 @@
+-Subproject commit b6d96559cb9f5e0d79936c89887ea924b2c3514a
++Subproject commit 2286094b4076bbc3a5d3ba9be248c7f48c426513
+diff --git a/qtmultimedia b/qtmultimedia
+index 5197ff9e..28d9708d 160000
+--- a/qtmultimedia
++++ b/qtmultimedia
+@@ -1 +1 @@
+-Subproject commit 5197ff9e91cabd90700cf0d36fb5e9e5793d7097
++Subproject commit 28d9708daa5a02710d3117b6a2e68a3c6930e50e
+diff --git a/qtohextras b/qtohextras
+new file mode 160000
+index 00000000..fd79fbf1
 --- /dev/null
-+++ b/src/plugins/sensors/openharmony/sensorbackend.h
-@@ -0,0 +1,91 @@
-+#ifndef SENSORBACKEND_H
-+#define SENSORBACKEND_H
-+
-+#include <QUuid>
-+#include <QSensorBackend>
-+
-+#include "sensormanager.h"
-+
-+class SensorBackendBase : public QSensorBackend
-+{
-+public:
-+    SensorBackendBase(QSensor *sensor, QObject *parent = nullptr)
-+        : QSensorBackend(sensor, parent)
-+          , m_jsSensor(Q_NULLPTR)
-+    {
-+        QString tempUuid = QUuid::createUuid().toString();
-+        tempUuid.chop(1); //remove trailing '}'
-+        tempUuid.remove(0,1); //remove first '{'
-+
-+        m_jsSensor = SensorManager::instance()->createJsSensor(tempUuid, this);
-+    }
-+
-+public Q_SLOTS:
-+    virtual void dataReceived(const QJsonObject &json) = 0;
-+
-+protected:
-+    QSharedPointer<JsSensor> m_jsSensor;
-+};
-+
-+template <typename T>
-+class SensorBackend : public SensorBackendBase
-+{    
-+public:
-+    explicit SensorBackend(int type, QSensor *sensor, QObject *parent = nullptr) : m_type(0)
-+          , SensorBackendBase{ sensor, parent }
-+    {
-+        setReading<T>(&m_reader);
-+        setSensorType(type);
-+        m_accuracy = m_jsSensor->precision(type);
-+        addDataRate(m_jsSensor->minSamplePeriod(type),
-+                    m_jsSensor->maxSamplePeriod(type));
-+        addOutputRange(0, m_jsSensor->maxRange(type), m_accuracy);
-+    }
-+
-+    ~SensorBackend() override
-+    {
-+        stop();
-+    }
-+
-+    void setSensorType(int type)
-+    {
-+        m_type = type;
-+        bool started = m_started;
-+        if (started)
-+            stop();
-+
-+        setDescription(m_jsSensor->description(type));
-+        if (started)
-+            start();
-+    }
-+
-+    virtual void start() override
-+    {
-+        m_jsSensor->start(m_type, sensor()->dataRate());
-+        m_started = true;
-+    }
-+
-+    virtual void stop() override
-+    {
-+        m_jsSensor->stop(m_type);
-+        m_started = false;
-+    }
-+
-+    bool isFeatureSupported(QSensor::Feature feature) const override
-+    {
-+        switch (feature) {
-+        case QSensor::SkipDuplicates:
-+            return true;
-+        default:
-+            return false;
-+        }
-+    }
-+
-+protected:
-+    T m_reader;
-+    int m_type;
-+    qreal m_accuracy = 0.0f;
-+    bool m_started = false;
-+};
-+
-+#endif // SENSORBACKEND_H
-diff --git a/src/plugins/sensors/openharmony/sensormanager.cpp b/src/plugins/sensors/openharmony/sensormanager.cpp
-new file mode 100644
-index 00000000..71e6cfee
++++ b/qtohextras
+@@ -0,0 +1 @@
++Subproject commit fd79fbf13775fe275893332548d24b503cb79fcd
+diff --git a/qtpdf b/qtpdf
+new file mode 160000
+index 00000000..0e361f5b
 --- /dev/null
-+++ b/src/plugins/sensors/openharmony/sensormanager.cpp
-@@ -0,0 +1,306 @@
-+#include <QJsonDocument>
-+#include <QJsonParseError>
-+#include <QJsonObject>
-+
-+#include <sstream>
-+#include <iomanip>
-+#include <cctype>
-+#include <cmath>
-+
-+#include "sensormanager.h"
-+#include "sensors/oh_sensor.h"
-+#include <private/qopenharmony_p.h>
-+
-+JsSensor::JsSensor(const QString &uuid, SensorBackendBase *backend)
-+    :QJsModule("@ohos.sensor")
-+      , m_uuid(uuid)
-+      , m_backend(backend)
-+{
-+}
-+
-+JsSensor::~JsSensor()
-+{
-+    delete m_backend;
-+    m_backend = nullptr;
-+}
-+
-+
-+static int hertz2ns(int rate) {
-+    if (rate == 0)
-+        return 0;
-+    return static_cast<int>(1.0 / rate * 1000000000);
-+}
-+
-+static qreal ns2hertz(qreal ns) {
-+    if (std::fabs(ns) < 1e-10 || ns < 0)
-+        return 0.0;
-+    return 1e9 / ns;
-+}
-+
-+Napi::Object JsSensor::getSingleSensor(int id) const
-+{
-+    return QtOh::runOnJsUIThreadWithResult([&, this](){
-+        return call("getSingleSensorSync", {Napi::Number::New(env(), id)}).As<Napi::Object>();
-+    });
-+}
-+
-+qreal JsSensor::power(int id) const
-+{
-+    Napi::Object sensor = getSingleSensor(id);
-+    return QtOh::runOnJsUIThreadWithResult([&](){
-+        return sensor.Get("power").ToNumber().DoubleValue();
-+    });
-+}
-+
-+QString JsSensor::name(int id) const
-+{
-+    Napi::Object sensor = getSingleSensor(id);
-+    return QtOh::runOnJsUIThreadWithResult([&](){
-+        return QString::fromStdString(sensor.Get("sensorName").ToString());
-+    });
-+}
-+
-+qreal JsSensor::maxRange(int id) const
-+{
-+    Napi::Object sensor = getSingleSensor(id);
-+    return QtOh::runOnJsUIThreadWithResult([&](){
-+        return sensor.Get("maxRange").ToNumber().DoubleValue();
-+    });
-+}
-+
-+qreal JsSensor::precision(int id) const
-+{
-+    Napi::Object sensor = getSingleSensor(id);
-+    return QtOh::runOnJsUIThreadWithResult([&](){
-+        return sensor.Get("precision").ToNumber().DoubleValue();
-+    });
-+}
-+
-+QString JsSensor::vendorName(int id) const
-+{
-+    Napi::Object sensor = getSingleSensor(id);
-+    return QtOh::runOnJsUIThreadWithResult([&](){
-+        return QString::fromStdString(sensor.Get("vendorName").ToString());
-+    });
-+}
-+
-+QString JsSensor::description(int id) const
-+{
-+    Napi::Object sensor = getSingleSensor(id);
-+    return QtOh::runOnJsUIThreadWithResult([&](){
-+        return QString::fromStdString(sensor.Get("description").ToString());
-+    });
-+}
-+
-+qreal JsSensor::minSamplePeriod(int id) const
-+{
-+    Napi::Object sensor = getSingleSensor(id);
-+    return QtOh::runOnJsUIThreadWithResult([&](){
-+        return ns2hertz(sensor.Get("minSamplePeriod").ToNumber().DoubleValue());
-+    });
-+}
-+
-+qreal JsSensor::maxSamplePeriod(int id) const
-+{
-+    Napi::Object sensor = getSingleSensor(id);
-+    return QtOh::runOnJsUIThreadWithResult([&](){
-+        return ns2hertz(sensor.Get("maxSamplePeriod").ToNumber().DoubleValue());
-+    });
-+}
-+
-+QString JsSensor::firmwareVersion(int id) const
-+{
-+    Napi::Object sensor = getSingleSensor(id);
-+    return QtOh::runOnJsUIThreadWithResult([&](){
-+        return QString::fromStdString(sensor.Get("firmwareVersion").ToString());
-+    });
-+}
-+
-+void JsSensor::stop(int id)
-+{
-+    QtOh::runOnJsUIThreadNoWait([&, this](){
-+        call("off", {Napi::Number::New(env(), id)});
-+    });
-+}
-+
-+static void escape_json_string(const std::string& input, std::ostringstream& output) {
-+    for (char c : input) {
-+        switch (c) {
-+        case '"': output << "\\\""; break;
-+        case '\\': output << "\\\\"; break;
-+        case '/': output << "\\/"; break;
-+        case '\b': output << "\\b"; break;
-+        case '\f': output << "\\f"; break;
-+        case '\n': output << "\\n"; break;
-+        case '\r': output << "\\r"; break;
-+        case '\t': output << "\\t"; break;
-+        default:
-+            if (static_cast<unsigned char>(c) < 0x20 || c == 0x7F) {
-+                output << "\\u00"
-+                       << std::hex << std::setw(2) << std::setfill('0')
-+                       << static_cast<int>(static_cast<unsigned char>(c));
-+            } else {
-+                output << c;
-+            }
-+        }
-+    }
-+}
-+
-+static  void serialize_napi_value(const Napi::Value& val, std::ostringstream& output) {
-+    Napi::Env env = val.Env();
-+
-+    if (val.IsString()) {
-+        output << '"';
-+        escape_json_string(val.As<Napi::String>().Utf8Value(), output);
-+        output << '"';
-+    }
-+    else if (val.IsNumber()) {
-+        double num = val.As<Napi::Number>().DoubleValue();
-+        if (num == static_cast<int64_t>(num) &&
-+            (num > 9007199254740991 || num < -9007199254740991)) {
-+            output << '"' << static_cast<int64_t>(num) << '"';
-+        } else {
-+            output << num;
-+        }
-+    }
-+    else if (val.IsBoolean()) {
-+        output << (val.As<Napi::Boolean>() ? "true" : "false");
-+    }
-+    else if (val.IsNull() || val.IsUndefined()) {
-+        output << "null";
-+    }
-+    else if (val.IsArray()) {
-+        Napi::Array arr = val.As<Napi::Array>();
-+        output << '[';
-+        for (uint32_t i = 0; i < arr.Length(); i++) {
-+            if (i > 0) output << ',';
-+            serialize_napi_value(arr[i], output);
-+        }
-+        output << ']';
-+    }
-+    else if (val.IsObject()) {
-+        if (val.IsBuffer()) {
-+            output << "\"<Buffer>";
-+            output << val.As<Napi::Buffer<char>>().Length();
-+            output << " bytes>\"";
-+        }else {
-+            Napi::Object obj = val.As<Napi::Object>();
-+            output << '{';
-+
-+            Napi::Array keys = obj.GetPropertyNames();
-+            bool first = true;
-+
-+            for (uint32_t i = 0; i < keys.Length(); i++) {
-+                Napi::Value key = keys[i];
-+                if (!key.IsString()) continue;
-+
-+                std::string keyStr = key.As<Napi::String>().Utf8Value();
-+                Napi::Value value = obj.Get(key);
-+
-+                // 跳过undefined值
-+                if (value.IsUndefined()) continue;
-+
-+                if (!first) output << ',';
-+                first = false;
-+
-+                output << '"';
-+                escape_json_string(keyStr, output);
-+                output << "\":";
-+                serialize_napi_value(value, output);
-+            }
-+            output << '}';
-+        }
-+    }
-+    else if (val.IsFunction()) {
-+        output << "\"<Function>\"";
-+    }
-+    else if (val.IsPromise()) {
-+        output << "\"<Promise>\"";
-+    }
-+    else {
-+        output << "\"<UnsupportedType>\"";
-+    }
-+}
-+
-+static QByteArray convertNapiObjectToQByteArray(const Napi::Object& obj) {
-+    std::ostringstream jsonStream;
-+    jsonStream << std::boolalpha;
-+
-+    serialize_napi_value(obj, jsonStream);
-+
-+    std::string jsonStr = jsonStream.str();
-+    return QByteArray(jsonStr.c_str(), jsonStr.size());
-+}
-+
-+void JsSensor::start(int id, int rate)
-+{
-+    stop(id);
-+    QtOh::runOnJsUIThreadNoWait([&, this](){
-+        Napi::Function callback = Napi::Function::New(env(), [this](const Napi::CallbackInfo& info) {
-+            Napi::Object responseData = info[0].As<Napi::Object>();
-+            QByteArray jsonData = convertNapiObjectToQByteArray(responseData);
-+            if(m_backend){
-+                QJsonParseError err;
-+                const QJsonDocument &doc = QJsonDocument::fromJson(jsonData, &err);
-+                if (QJsonParseError::NoError == err.error){
-+                    QMetaObject::invokeMethod((QObject *)m_backend, "dataReceived", Qt::QueuedConnection, Q_ARG(QJsonObject, doc.object()));
-+                }
-+            }
-+        });
-+        call("on", {Napi::Number::New(env(), id), callback, Napi::Number::New(env(), hertz2ns(rate))});
-+    });
-+}
-+
-+QString JsSensor::hardwareVersion(int id) const
-+{
-+    Napi::Object sensor = getSingleSensor(id);
-+    return QString::fromStdString(sensor.Get("hardwareVersion").ToString());
-+}
-+
-+SensorManager::SensorManager()
-+{
-+}
-+
-+QList<int> SensorManager::sensorIds() const
-+{
-+    QList<int> ns;
-+    uint32_t count = 0;
-+    int32_t ret = OH_Sensor_GetInfos(nullptr, &count);
-+    if (ret != SENSOR_SUCCESS) {
-+        return ns;
-+    }
-+    ns.reserve(count);
-+
-+    Sensor_Info **sensors = OH_Sensor_CreateInfos(count);
-+    if (sensors == nullptr) {
-+        return ns;
-+    }
-+    ret = OH_Sensor_GetInfos(sensors, &count);
-+    if (ret != SENSOR_SUCCESS) {
-+        return ns;
-+    }
-+
-+    for (uint32_t i = 0; i < count; ++i) {
-+        Sensor_Type sensorType;
-+        ret = OH_SensorInfo_GetType(sensors[i], &sensorType);
-+        if (ret != SENSOR_SUCCESS) {
-+            return ns;
-+        }
-+        ns.append((int)sensorType);
-+    }
-+
-+    OH_Sensor_DestroyInfos(sensors, count);
-+    return ns;
-+}
-+
-+QSharedPointer<SensorManager> &SensorManager::instance()
-+{
-+    static QSharedPointer<SensorManager> s{ new SensorManager() };
-+    return s;
-+}
-+
-+QSharedPointer<JsSensor> SensorManager::createJsSensor(const QString &uuid, SensorBackendBase *backend)
-+{
-+    JsSensor *s = new JsSensor(uuid, backend);
-+    return QSharedPointer<JsSensor>(s);
-+}
-diff --git a/src/plugins/sensors/openharmony/sensormanager.h b/src/plugins/sensors/openharmony/sensormanager.h
-new file mode 100644
-index 00000000..e90d777f
---- /dev/null
-+++ b/src/plugins/sensors/openharmony/sensormanager.h
-@@ -0,0 +1,68 @@
-+#ifndef SENSORMANAGER_H
-+#define SENSORMANAGER_H
-+
-+#include <QSharedPointer>
-+#include <QJsModule>
-+
-+/* NOTE 鸿蒙和Qt传感器匹配的项
-+ * Qt对前端传感器模块进行了封装
-+ * 鸿蒙提供的传感器模块接口不是
-+ * 完全匹配,需要转换
-+ */
-+enum {
-+    E_GRAVITY = 257,        /* 重力传感器<--->QAccelerometer */
-+    E_HUMIDITY = 13,        /* 湿度传感器<--->QHumiditySensor */
-+    E_BAROMETER = 8,        /* 气压传感器<--->QPressureSensor */
-+    E_GYROSCOPE = 2,        /* 陀螺仪传感器<--->QGyroscope */
-+    E_PROXIMITY = 12,       /* 接近光传感器<--->QDistanceSensor */
-+    E_ORIENTATION = 256,    /* 方向传感器<--->QOrientationSensor */
-+    E_ACCELEROMETER = 1,    /* 加速度传感器<--->QAccelerometer */
-+    E_AMBIENT_LIGHT = 5,    /* 环境光传感器<--->QAmbientLightSensor */
-+    E_MAGNETIC_FIELD = 6,   /* 磁场传感器<--->QMagnetometer */
-+    E_ROTATION_VECTOR = 259, /* 旋转矢量传感器<--->QRotationSensor */
-+    E_AMBIENT_TEMPERATURE = 260,  /* 环境温度传感器<--->QAmbientTemperatureSensor */
-+    E_LINEAR_ACCELEROMETER = 258, /* 线性加速度传感器<--->QAccelerometer */
-+};
-+
-+class SensorBackendBase;
-+
-+class JsSensor : public QJsModule
-+{
-+    QString m_uuid;
-+
-+    friend class SensorManager;
-+public:
-+    JsSensor(const QString &uuid, SensorBackendBase *backend);
-+    ~JsSensor();
-+
-+    qreal power(int id) const;
-+    QString name(int id) const;
-+    qreal maxRange(int id) const;
-+    qreal precision(int id) const;
-+    QString vendorName(int id) const;
-+    QString description(int id) const;
-+    qreal minSamplePeriod(int id) const;
-+    qreal maxSamplePeriod(int id) const;
-+    QString firmwareVersion(int id) const;
-+    QString hardwareVersion(int id) const;
-+
-+    void stop(int id);
-+    void start(int id, int rate);
-+
-+private:
-+    Napi::Object getSingleSensor(int id) const;
-+
-+    SensorBackendBase *m_backend;
-+};
-+
-+class SensorManager
-+{
-+    SensorManager();
-+
-+public:
-+    QList<int> sensorIds() const;
-+    static QSharedPointer<SensorManager> &instance();
-+    QSharedPointer<JsSensor> createJsSensor(const QString &uuid, SensorBackendBase *backend);
-+};
-+
-+#endif // SENSORMANAGER_H
-diff --git a/src/plugins/sensors/sensors.pro b/src/plugins/sensors/sensors.pro
-index 7fce2071..8037ffc4 100644
---- a/src/plugins/sensors/sensors.pro
-+++ b/src/plugins/sensors/sensors.pro
-@@ -5,6 +5,10 @@ android {
-     isEmpty(SENSORS_PLUGINS): SENSORS_PLUGINS = android generic
- }
- 
-+openharmony {
-+    isEmpty(SENSORS_PLUGINS): SENSORS_PLUGINS = openharmony generic
-+}
-+
- qtConfig(sensorfw) {
-     isEmpty(SENSORS_PLUGINS): SENSORS_PLUGINS = sensorfw generic
- }
-@@ -39,6 +43,7 @@ isEmpty(SENSORS_PLUGINS)|contains(SENSORS_PLUGINS, simulator):qtHaveModule(simul
- isEmpty(SENSORS_PLUGINS)|contains(SENSORS_PLUGINS, linux):linux:SUBDIRS += linux
- isEmpty(SENSORS_PLUGINS)|contains(SENSORS_PLUGINS, iio-sensor-proxy):linux:qtHaveModule(dbus):SUBDIRS += iio-sensor-proxy
- isEmpty(SENSORS_PLUGINS)|contains(SENSORS_PLUGINS, android):android:SUBDIRS += android
-+isEmpty(SENSORS_PLUGINS)|contains(SENSORS_PLUGINS, openharmony):openharmony:SUBDIRS += openharmony
- isEmpty(SENSORS_PLUGINS)|contains(SENSORS_PLUGINS, sensorfw):sensorfw:SUBDIRS += sensorfw
- isEmpty(SENSORS_PLUGINS)|contains(SENSORS_PLUGINS, sensortag):linux:SUBDIRS += sensortag
- isEmpty(SENSORS_PLUGINS)|contains(SENSORS_PLUGINS, ios):darwin:SUBDIRS += ios
-diff --git a/src/sensors/qsensormanager.cpp b/src/sensors/qsensormanager.cpp
-index 425a87b9..287c0fbb 100644
---- a/src/sensors/qsensormanager.cpp
-+++ b/src/sensors/qsensormanager.cpp
-@@ -53,7 +53,10 @@ QT_BEGIN_NAMESPACE
- typedef QHash<QByteArray,QSensorBackendFactory*> FactoryForIdentifierMap;
- typedef QHash<QByteArray,FactoryForIdentifierMap> BackendIdentifiersForTypeMap;
- 
--static QLoggingCategory sensorsCategory("qt.sensors");
-+#ifndef Q_OS_OPENHARMONY
-+ 	static QLoggingCategory sensorsCategory("qt.sensors");
-+#endif
-+
- 
- class QSensorManagerPrivate : public QObject
- {
-@@ -101,14 +104,14 @@ public:
-         if (config.isEmpty()) return; // QStandardPaths is broken?
-         config += QLatin1String("/QtProject/Sensors.conf");
- #endif
--        qCDebug(sensorsCategory) << "Loading config from" << config;
-+        qDebug() << "Loading config from" << config;
-         if (!QFile::exists(config)) {
--            qCDebug(sensorsCategory) << "There is no config file" << config;
-+            qDebug() << "There is no config file" << config;
-             return;
-         }
-         QFile cfgfile(config);
-         if (!cfgfile.open(QFile::ReadOnly)) {
--            qCWarning(sensorsCategory) << "Can't open config file" << config;
-+            qWarning() << "Can't open config file" << config;
-             return;
-         }
- 
-@@ -176,9 +179,9 @@ Q_GLOBAL_STATIC(QSensorManagerPrivate, sensorManagerPrivate)
- 
- static void initPlugin(QObject *o, bool warnOnFail = true)
- {
--    qCDebug(sensorsCategory) << "Init plugin" << o;
-+    qDebug() << "Init plugin" << o;
-     if (!o) {
--        qCWarning(sensorsCategory) << "Null plugin" << o;
-+        qWarning() << "Null plugin" << o;
-         return;
-     }
- 
-@@ -186,7 +189,7 @@ static void initPlugin(QObject *o, bool warnOnFail = true)
-     if (!d) return; // hardly likely but just in case...
- 
-     if (d->seenPlugins.contains(o)) {
--        qCDebug(sensorsCategory) << "Plugin is seen" << o;
-+        qDebug() << "Plugin is seen" << o;
-         return;
-     }
- 
-@@ -197,11 +200,11 @@ static void initPlugin(QObject *o, bool warnOnFail = true)
-     QSensorPluginInterface *plugin = qobject_cast<QSensorPluginInterface*>(o);
- 
-     if (plugin) {
--        qCDebug(sensorsCategory) << "Register sensors for " << plugin;
-+        qDebug() << "Register sensors for " << plugin;
-         d->seenPlugins.insert(o);
-         plugin->registerSensors();
-     } else if (warnOnFail) {
--        qCWarning(sensorsCategory) << "Can't cast to plugin" << o;
-+        qWarning() << "Can't cast to plugin" << o;
-     }
- }
- 
-diff --git a/src/src.pro b/src/src.pro
-index b3aa7ba0..2984f20c 100644
---- a/src/src.pro
-+++ b/src/src.pro
-@@ -16,3 +16,6 @@ plugins.subdir = plugins
- plugins.target = sub-plugins
- plugins.depends = sensors
- 
-+#SUBDIRS += openharmony
-+#openharmony.subdir = openharmony
-+#openharmony.target = sub-openharmony
++++ b/qtpdf
+@@ -0,0 +1 @@
++Subproject commit 0e361f5b9ea8183c6456d63b1a2e0acb06a61ba1
+diff --git a/qtpim b/qtpim
+index 02efef5e..713bb697 160000
+--- a/qtpim
++++ b/qtpim
+@@ -1 +1 @@
+-Subproject commit 02efef5ee63bf2407526f81fd6b68f5a59ac1de3
++Subproject commit 713bb697fa24f6d6d4e2521ee3db2de237ea6f05
+diff --git a/qtqa b/qtqa
+index 36da1912..95c1c931 160000
+--- a/qtqa
++++ b/qtqa
+@@ -1 +1 @@
+-Subproject commit 36da1912a90c0e3a91f59f96c984a7e43ab982b7
++Subproject commit 95c1c931d8d8f52e15786b033142cac08c0369df
+diff --git a/qtquickcontrols b/qtquickcontrols
+index 1ca96219..7c490a6d 160000
+--- a/qtquickcontrols
++++ b/qtquickcontrols
+@@ -1 +1 @@
+-Subproject commit 1ca962198a703f591efc7c8f7540fc4120746a00
++Subproject commit 7c490a6d4bdc1ae2ad691b09c6a10a736f34ec20
+diff --git a/qtrepotools b/qtrepotools
+index ee34618d..40490ad0 160000
+--- a/qtrepotools
++++ b/qtrepotools
+@@ -1 +1 @@
+-Subproject commit ee34618d9f94e0cb6f678140e6cd2916308531b5
++Subproject commit 40490ad02475c6a550f74b6f53aecb2443114cab
+diff --git a/qtscript b/qtscript
+index 5be95f96..a7eb0fae 160000
+--- a/qtscript
++++ b/qtscript
+@@ -1 +1 @@
+-Subproject commit 5be95f966aabc5170f0aacfd4b0a46217241bfd6
++Subproject commit a7eb0faeafda29c4c1b7841d4adf72aec2d7397d
+diff --git a/qtsensors b/qtsensors
+index 3011b16d..66e96da4 160000
+--- a/qtsensors
++++ b/qtsensors
+@@ -1 +1 @@
+-Subproject commit 3011b16d63cadbb473b6aa3a535b9f0e33170c09
++Subproject commit 66e96da4de7e7ece32fa52c957d6f85c8e66e418
+diff --git a/qtsystems b/qtsystems
+index 434af789..81e08ee5 160000
+--- a/qtsystems
++++ b/qtsystems
+@@ -1 +1 @@
+-Subproject commit 434af789f0d56ca7a521ca2d9ec8cf3b1057fd37
++Subproject commit 81e08ee508d0a49c588705cc9c47568b09a258db
+diff --git a/qtwebengine b/qtwebengine
+index f328054d..4ea03a0a 160000
+--- a/qtwebengine
++++ b/qtwebengine
+@@ -1 +1 @@
+-Subproject commit f328054d2eafc073b98a0246b2d644ee09c99d9c
++Subproject commit 4ea03a0affbfd6ff36a7defd391b7ca139d18c8e
+diff --git a/qtwebview b/qtwebview
+index 53fa4470..50444904 160000
+--- a/qtwebview
++++ b/qtwebview
+@@ -1 +1 @@
+-Subproject commit 53fa44709992faae54e4f5c8a128cea7b6f0cbd5
++Subproject commit 50444904795bb927d20974049277e9862ee8e506
