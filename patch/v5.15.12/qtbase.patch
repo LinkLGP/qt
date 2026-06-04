@@ -17573,12 +17573,6 @@ index 00000000000..750d950bd65
 +QT_END_NAMESPACE
 +
 +#endif // QOHDRAGEVENT_H
-diff --git a/src/plugins/platforms/openharmony/dialog.h b/src/plugins/platforms/openharmony/dialog.h
-new file mode 100644
-index 00000000000..e69de29bb2d
-diff --git a/src/plugins/platforms/openharmony/dialog.ui b/src/plugins/platforms/openharmony/dialog.ui
-new file mode 100644
-index 00000000000..e69de29bb2d
 diff --git a/src/plugins/platforms/openharmony/inputmethod/inputmethod.pri b/src/plugins/platforms/openharmony/inputmethod/inputmethod.pri
 new file mode 100644
 index 00000000000..f0d79c79a36
