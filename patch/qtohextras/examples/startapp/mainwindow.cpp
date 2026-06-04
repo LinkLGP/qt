@@ -96,5 +96,8 @@ void MainWindow::onPushButtonOkClicked()
         }
         want.parameters.insert(key, v);
     }
-    QOpenHarmonyAbility::start(want);
+    bool result = QOpenHarmonyAbility::start(want);
+    if (!result) {
+        qWarning() << "open app failed";
+    }
 }

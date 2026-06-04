@@ -282,29 +282,10 @@ void QOhWidgetHelper::removeStartingWindow()
         return;
     }
     auto windowStage = d->windowStage();
-    if (windowStage == nullptr) {
-        qCWarning(widgethelper) << "get window stage failed.";
+    if (windowStage == nullptr)
         return;
-    }
 
-    QtOh::runOnJsUIThreadNoWait([windowStage] {
-        Napi::Promise p = windowStage->call(QLatin1String("removeStartingWindow")).As<Napi::Promise>();
-        QJsPromise promise(p);
-        promise.onThen([](const Napi::CallbackInfo &info) {
-                    Q_UNUSED(info);
-                    qCInfo(widgethelper) << "Succeeded in removing starting window.";
-                }).onCatch([](const Napi::CallbackInfo &info) {
-                    Napi::Object error = info[0].As<Napi::Object>();
-                    if (!error.IsNull()) {
-                        Napi::Number code = error.Get("code").ToNumber();
-                        Napi::String message = error.Get("message").ToString();
-                        qCCritical(widgethelper)
-                            << QString("Failed to remove starting window. Cause code: %1, message: %2")
-                                    .arg(code.Int64Value())
-                                    .arg(QString::fromStdString(message));
-                    }
-                });
-    });
+    QtOh::runOnJsUIThreadNoWait([windowStage] { windowStage->call(QLatin1String("removeStartingWindow")); });
 }
 
 QRect QOhWidgetHelper::titleButtonRect() const

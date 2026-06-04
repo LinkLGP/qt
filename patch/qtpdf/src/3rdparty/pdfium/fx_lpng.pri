@@ -28,16 +28,15 @@ $$SOURCE_DIR/libpng16/pngwrite.c \
 $$SOURCE_DIR/libpng16/pngwtran.c \
 $$SOURCE_DIR/libpng16/pngwutil.c
 
-openharmony {
-    equals(QT_ARCH, arm) | equals(QT_ARCH, arm64)  {
-        SOURCES += \
-          $$SOURCE_DIR/libpng16/arm/arm_init.c \
-          $$SOURCE_DIR/libpng16/arm/filter_neon_intrinsics.c
-        DEFINES += PNG_ARM_NEON_OPT=2 PNG_ARM_NEON_IMPLEMENTATION=1
-    } else {
-        SOURCES += \
-          $$SOURCE_DIR/libpng16/contrib/intel/filter_sse2_intrinsics.c \
-          $$SOURCE_DIR/libpng16/contrib/intel/intel_init.c
-        DEFINES += PNG_INTEL_SSE_OPT=1
-    }
+openharmony: contains(OHOS_ARCH, arm64-v8a):{
+    SOURCES += \
+      $$SOURCE_DIR/libpng16/arm/arm_init.c \
+      $$SOURCE_DIR/libpng16/arm/filter_neon_intrinsics.c
+    DEFINES += PNG_ARM_NEON_OPT=2 PNG_ARM_NEON_IMPLEMENTATION=1
 }
+# openharmony: contains(OHOS_ARCH, x86-64){
+#   SOURCES += \
+#     $$SOURCE_DIR/libpng16/contrib/intel/intel_init.c \
+#     $$SOURCE_DIR/libpng16/contrib/intel/filter_sse2_intrinsics.c
+#     DEFINES += PNG_INTEL_SSE_OPT=2 PNG_INTEL_SSE_IMPLEMENTATION=1
+# }

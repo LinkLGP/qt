@@ -37,11 +37,12 @@
 #ifndef QPDFDOCUMENT_H
 #define QPDFDOCUMENT_H
 
-#include "qtpdfglobal.h"
+#include <QtPdf/qtpdfglobal.h>
 
-#include <QImage>
-#include <QObject>
-#include <QPdfDocumentRenderOptions>
+#include <QtCore/qobject.h>
+#include <QtGui/qimage.h>
+#include <QtPdf/qpdfdocumentrenderoptions.h>
+#include <QtPdf/qpdfselection.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,6 +70,7 @@ public:
     enum DocumentError {
         NoError,
         UnknownError,
+        DataNotYetAvailableError,
         FileNotFoundError,
         InvalidFileFormatError,
         IncorrectPasswordError,
@@ -111,6 +113,10 @@ public:
 
     QImage render(int page, QSize imageSize, QPdfDocumentRenderOptions options = QPdfDocumentRenderOptions());
 
+    Q_INVOKABLE QPdfSelection getSelection(int page, QPointF start, QPointF end);
+    Q_INVOKABLE QPdfSelection getSelectionAtIndex(int page, int startIndex, int maxLength);
+    Q_INVOKABLE QPdfSelection getAllText(int page);
+
 Q_SIGNALS:
     void passwordChanged();
     void passwordRequired();
@@ -119,6 +125,10 @@ Q_SIGNALS:
 
 private:
     friend class QPdfBookmarkModelPrivate;
+    friend class QPdfLinkModelPrivate;
+    friend class QPdfSearchModel;
+    friend class QPdfSearchModelPrivate;
+    friend class QQuickPdfSelection;
 
     Q_PRIVATE_SLOT(d, void _q_tryLoadingWithSizeFromContentHeader())
     Q_PRIVATE_SLOT(d, void _q_copyFromSequentialSourceDevice())

@@ -101,7 +101,7 @@ index 382d8b30b..51ecdcdec 100644
              QMetaObject::invokeMethod(q, "_q_error", Qt::QueuedConnection,
                                        Q_ARG(int, QMediaPlayer::ResourceError),
 diff --git a/src/multimediawidgets/qpaintervideosurface.cpp b/src/multimediawidgets/qpaintervideosurface.cpp
-index 5fe76d869..444a32d49 100644
+index 5fe76d869..36a881504 100644
 --- a/src/multimediawidgets/qpaintervideosurface.cpp
 +++ b/src/multimediawidgets/qpaintervideosurface.cpp
 @@ -142,6 +142,7 @@ bool QVideoSurfaceGenericPainter::isFormatSupported(const QVideoSurfaceFormat &f
@@ -112,15 +112,39 @@ index 5fe76d869..444a32d49 100644
      m_imageFormat = QVideoFrame::imageFormatFromPixelFormat(format.pixelFormat());
      // Do not render into ARGB32 images using QPainter.
      // Using QImage::Format_ARGB32_Premultiplied is significantly faster.
-@@ -196,7 +197,6 @@ QAbstractVideoSurface::Error QVideoSurfaceGenericPainter::paint(
+@@ -152,6 +153,13 @@ QAbstractVideoSurface::Error QVideoSurfaceGenericPainter::start(const QVideoSurf
+     m_scanLineDirection = format.scanLineDirection();
+     m_mirrored = format.property("mirrored").toBool();
+ 
++#ifdef Q_OS_OPENHARMONY
++    if(format.pixelFormat() == QVideoFrame::Format_NV21)
++    {
++        return QAbstractVideoSurface::NoError;
++    }
++#endif
++
+     const QAbstractVideoBuffer::HandleType t = format.handleType();
+     if (t == QAbstractVideoBuffer::NoHandle) {
+         bool ok = m_imageFormat != QImage::Format_Invalid && !m_imageSize.isEmpty();
+@@ -190,13 +198,16 @@ QAbstractVideoSurface::Error QVideoSurfaceGenericPainter::paint(
+     if (m_frame.handleType() == QAbstractVideoBuffer::QPixmapHandle) {
+         painter->drawPixmap(target, m_frame.handle().value<QPixmap>(), source);
+     } else if (m_frame.map(QAbstractVideoBuffer::ReadOnly)) {
++#ifdef Q_OS_OPENHARMONY
++        QImage image = m_frame.image();
++#else
+         QImage image(
+                 m_frame.bits(),
+                 m_imageSize.width(),
                  m_imageSize.height(),
                  m_frame.bytesPerLine(),
                  m_imageFormat);
 -
++#endif
          const QTransform oldTransform = painter->transform();
          QTransform transform = oldTransform;
          QRectF targetRect = target;
-@@ -216,8 +216,6 @@ QAbstractVideoSurface::Error QVideoSurfaceGenericPainter::paint(
+@@ -216,8 +227,6 @@ QAbstractVideoSurface::Error QVideoSurfaceGenericPainter::paint(
          painter->setTransform(oldTransform);
  
          m_frame.unmap();
@@ -1347,7 +1371,7 @@ index 000000000..7f6bbc598
 +#endif // QOPENHARMONYAUDIOMANAGER_H
 diff --git a/src/plugins/ohaudiodevice/qopenharmonyaudiooutput.cpp b/src/plugins/ohaudiodevice/qopenharmonyaudiooutput.cpp
 new file mode 100644
-index 000000000..104e9f94a
+index 000000000..dfd134f81
 --- /dev/null
 +++ b/src/plugins/ohaudiodevice/qopenharmonyaudiooutput.cpp
 @@ -0,0 +1,420 @@
@@ -1408,7 +1432,6 @@ index 000000000..104e9f94a
 +void QOpenharmonyAudioOutput::writeBuffer(void *buffer, int length)
 +{
 +    period_size = length;
-+    buffer_size = length;
 +    int readLen = 0;
 +    memset(buffer, 0, length);
 +    if(pullMode)
@@ -1445,7 +1468,8 @@ index 000000000..104e9f94a
 +
 +        mutex.unlock();
 +    }
-+
++    
++    buffer_size = selfBytes.size();
 +    totalBytes += readLen;
 +
 +    qint64 processedMsecs = processedUSecs() / 1000;
@@ -1657,7 +1681,7 @@ index 000000000..104e9f94a
 +
 +int QOpenharmonyAudioOutput::bytesFree() const
 +{
-+    return buffer_size;
++    return selfBytes.size();
 +}
 +
 +int QOpenharmonyAudioOutput::periodSize() const
@@ -2420,7 +2444,7 @@ index 000000000..7fe92cce3
 +#endif // QOHCAMERACONTROL_H
 diff --git a/src/plugins/openharmony/src/mediacapture/qohcameraimagecapturecontrol.cpp b/src/plugins/openharmony/src/mediacapture/qohcameraimagecapturecontrol.cpp
 new file mode 100644
-index 000000000..b3830a0ba
+index 000000000..54f08b7b9
 --- /dev/null
 +++ b/src/plugins/openharmony/src/mediacapture/qohcameraimagecapturecontrol.cpp
 @@ -0,0 +1,40 @@
@@ -2442,7 +2466,7 @@ index 000000000..b3830a0ba
 +
 +bool QOhCameraImageCaptureControl::isReadyForCapture() const
 +{
-+    return m_session->isReadyForCapture();
++    return true;
 +}
 +
 +QCameraImageCapture::DriveMode QOhCameraImageCaptureControl::driveMode() const
@@ -2659,13 +2683,12 @@ index 000000000..1b4b1470f
 +#endif // QOHCAMERARENDERCONTROL_H
 diff --git a/src/plugins/openharmony/src/mediacapture/qohcamerasession.cpp b/src/plugins/openharmony/src/mediacapture/qohcamerasession.cpp
 new file mode 100644
-index 000000000..55628bd7b
+index 000000000..d2ae63e76
 --- /dev/null
 +++ b/src/plugins/openharmony/src/mediacapture/qohcamerasession.cpp
-@@ -0,0 +1,1112 @@
+@@ -0,0 +1,1041 @@
 +#include "qohcamerasession.h"
 +#include "ohmultimediautils.h"
-+#include "../player/qohnativevideobuffer.h"
 +#include <qelapsedtimer.h>
 +#include <qfile.h>
 +
@@ -2700,6 +2723,7 @@ index 000000000..55628bd7b
 +}
 +
 +QVideoFrame imageNativeToVideoFrame(OH_ImageNative *image, Camera_Format fromat) {
++    // 获取图像的宽和高
 +    Image_Size imgSize;
 +    Image_ErrorCode errCode = OH_ImageNative_GetImageSize(image, &imgSize);
 +    if (errCode != IMAGE_SUCCESS) {
@@ -2707,87 +2731,67 @@ index 000000000..55628bd7b
 +        return QVideoFrame();
 +    }
 +
++           // 获取组件类型的数量（假设组件列表的第一个元素是有效的）
 +    size_t componentTypeSize = 0;
-+    OH_ImageNative_GetComponentTypes(image, nullptr, &componentTypeSize);
-+    if (componentTypeSize == 0) {
-+        qWarning() << "Failed to get image component type size";
-+        return QVideoFrame();
-+    }
 +    uint32_t* components = new uint32_t[componentTypeSize];
 +    errCode = OH_ImageNative_GetComponentTypes(image, &components, &componentTypeSize);
-+    if (errCode != IMAGE_SUCCESS) {
++    if (errCode != IMAGE_SUCCESS || componentTypeSize == 0) {
 +        qWarning() << "Failed to get image component types, error code:" << errCode;
-+        delete[] components;
 +        return QVideoFrame();
 +    }
 +
++           // 读取 OH_ImageNative 的第一个组件所对应的缓冲区对象。
 +    OH_NativeBuffer* nativeBuffer = nullptr;
 +    errCode = OH_ImageNative_GetByteBuffer(image, components[0], &nativeBuffer);
 +    if (errCode != IMAGE_SUCCESS) {
 +        qWarning() << "Failed to get image byte buffer, error code:" << errCode;
-+        delete[] components;
++        delete [] components;
 +        return QVideoFrame();
 +    }
 +
++           // 读取 OH_ImageNative 的第一个组件所对应的缓冲区大小。
 +    size_t nativeBufferSize = 0;
 +    errCode = OH_ImageNative_GetBufferSize(image, components[0], &nativeBufferSize);
 +    if (errCode != IMAGE_SUCCESS) {
 +        qWarning() << "Failed to get buffer size, error code:" << errCode;
-+        delete[] components;
++        delete [] components;
 +        return QVideoFrame();
 +    }
 +
++           // 读取 OH_ImageNative 的第一个组件所对应的像素行宽。
 +    int32_t rowStride = 0;
 +    errCode = OH_ImageNative_GetRowStride(image, components[0], &rowStride);
 +    if (errCode != IMAGE_SUCCESS) {
-+        qWarning() << "Failed to get row stride, error code:" << errCode;
 +        delete[] components;
++        qWarning() << "Failed to get row stride, error code:" << errCode;
 +        return QVideoFrame();
 +    }
-+    delete[] components;
 +
++           // 使用 nativeBuffer 数据构造 QVideoFrame
 +    void* srcVir = nullptr;
 +    OH_NativeBuffer_Map(nativeBuffer, &srcVir);
 +    uint8_t* srcBuffer = static_cast<uint8_t*>(srcVir);
 +
 +    QVideoFrame result;
-+    switch (fromat) {
-+    case CAMERA_FORMAT_YUV_420_SP: {
-+        OH_NativeBuffer_Config config{};
-+        OH_NativeBuffer_GetConfig(nativeBuffer, &config);
-+        const int dataSize = config.stride * config.height * 3 / 2;
-+        uchar *dataCopy = new uchar[dataSize];
-+        memcpy(dataCopy, srcBuffer, dataSize);
-+        OH_NativeBuffer_Unmap(nativeBuffer);
-+        auto *videoBuffer = new QOhNativeVideoBuffer(dataCopy, dataSize, config, config.stride);
-+        QVideoFrame nv21Frame(videoBuffer, QSize(imgSize.width, imgSize.height), QVideoFrame::Format_NV21);
-+        QImage argb = nv21Frame.image();
-+        if (!argb.isNull())
-+            result = QVideoFrame(argb);
-+        return result;
-+    }
-+    case CAMERA_FORMAT_JPEG: {
-+        uchar *dataCopy = new uchar[nativeBufferSize];
-+        memcpy(dataCopy, srcBuffer, nativeBufferSize);
-+        OH_NativeBuffer_Unmap(nativeBuffer);
-+        QImage img;
-+        img.loadFromData(dataCopy, static_cast<int>(nativeBufferSize), "JPEG");
-+        delete[] dataCopy;
-+        if (!img.isNull())
-+            result = QVideoFrame(img);
-+        return result;
-+    }
-+    case CAMERA_FORMAT_RGBA_8888:
-+        result = QVideoFrame(nativeBufferSize, QSize(imgSize.width, imgSize.height),
-+                             rowStride, QVideoFrame::Format_RGB32);
++    switch(fromat){
++    case CAMERA_FORMAT_YUV_420_SP:
++        result = QVideoFrame(nativeBufferSize, QSize(imgSize.width, imgSize.height)\
++                                     , rowStride, QVideoFrame::Format_NV21);
 +        if (result.map(QAbstractVideoBuffer::WriteOnly)) {
 +            memcpy(result.bits(), srcBuffer, result.mappedBytes());
-+            result.unmap();
 +        }
++        result.unmap();
 +        break;
-+    default:
-+        break;
++    case CAMERA_FORMAT_RGBA_8888:
++        result = QVideoFrame(nativeBufferSize, QSize(imgSize.width, imgSize.height)\
++                                     , rowStride, QVideoFrame::Format_RGB32);
++        if (result.map(QAbstractVideoBuffer::WriteOnly)) {
++            memcpy(result.bits(), srcBuffer, result.mappedBytes());
++        }
++        result.unmap();
++    default:break;
 +    }
++    // 释放buffer,保证bufferQueue正常轮转
 +    OH_NativeBuffer_Unmap(nativeBuffer);
 +    return result;
 +}
@@ -2795,7 +2799,6 @@ index 000000000..55628bd7b
 +QOhCameraSession::QOhCameraSession(QObject *parent) : QObject{ parent }
 +    , m_state(QCamera::UnloadedState)
 +    , m_savedState(-1)
-+    , m_status(QCamera::UnloadedStatus)
 +    , m_captureMode(QCamera::CaptureStillImage)
 +    , m_captureCanceled(false)
 +    , m_lastImageCaptureId(0)
@@ -2945,24 +2948,6 @@ index 000000000..55628bd7b
 +    if (succeeded) {
 +        m_state = state;
 +        emit stateChanged(m_state);
-+
-+        QCamera::Status newStatus;
-+        switch (state) {
-+        case QCamera::ActiveState:
-+            newStatus = QCamera::ActiveStatus;
-+            break;
-+        case QCamera::LoadedState:
-+            newStatus = QCamera::LoadedStatus;
-+            break;
-+        case QCamera::UnloadedState:
-+        default:
-+            newStatus = QCamera::UnloadedStatus;
-+            break;
-+        }
-+        if (m_status != newStatus) {
-+            m_status = newStatus;
-+            emit statusChanged(m_status);
-+        }
 +    }
 +}
 +
@@ -3079,13 +3064,10 @@ index 000000000..55628bd7b
 +        if (!file.open(QIODevice::WriteOnly)) {
 +            const QString errorMessage = tr("Could not open destination file: %1").arg(actualFileName);
 +            emit imageCaptureError(id, QCameraImageCapture::ResourceError, errorMessage);
-+            return;
 +        }
 +
 +        if (!image.save(&file, "JPG")) {
 +            emit imageCaptureError(id, QCameraImageCapture::OutOfSpaceError, file.errorString());
-+            file.close();
-+            return;
 +        }
 +
 +        file.close();
@@ -3145,22 +3127,12 @@ index 000000000..55628bd7b
 +
 +    if (m_captureImageDriveMode == QCameraImageCapture::SingleImageCapture) {
 +
-+        if (!photoOutput_) {
-+            emit imageCaptureError(m_lastImageCaptureId, QCameraImageCapture::NotReadyError,
-+                                   tr("Photo output not ready"));
-+            return m_lastImageCaptureId;
-+        }
-+
 +        m_currentImageCaptureId = m_lastImageCaptureId;
 +        m_currentImageCaptureFileName = fileName;
-+
-+        emit imageExposed(m_currentImageCaptureId);
 +
 +        Camera_ErrorCode ret = OH_PhotoOutput_Capture(photoOutput_);
 +        if (ret != CAMERA_OK) {
 +            qWarning() << "OH_PhotoOutput_Capture failed." << ret;
-+            emit imageCaptureError(m_currentImageCaptureId, QCameraImageCapture::ResourceError,
-+                                   tr("Capture request failed"));
 +        }
 +    } else {
 +        //: Drive mode is the camera's shutter mode, for example single shot, continuos exposure, etc.
@@ -3259,11 +3231,6 @@ index 000000000..55628bd7b
 +{
 +    Q_UNUSED(photoOutput)
 +    if (!m_captureCanceled) {
-+        if (!photoProfile_) {
-+            qWarning() << "onPhotoCallback: photoProfile_ is null";
-+            return;
-+        }
-+
 +        OH_ImageNative* imageNative;
 +        Camera_ErrorCode errCode = OH_PhotoNative_GetMainImage(photo, &imageNative);
 +        if (errCode != CAMERA_OK) {
@@ -3271,10 +3238,6 @@ index 000000000..55628bd7b
 +            return;
 +        }
 +        QVideoFrame frame = imageNativeToVideoFrame(imageNative, photoProfile_->format);
-+
-+        if (frame.isValid()) {
-+            emit imageCaptured(m_currentImageCaptureId, frame.image());
-+        }
 +
 +        QtConcurrent::run(this, &QOhCameraSession::processCapturedImage,
 +                          m_currentImageCaptureId,
@@ -3681,12 +3644,10 @@ index 000000000..55628bd7b
 +
 +bool QOhCameraSession::unload()
 +{
-+    if(captureSession_ && (previewOutput_ || cameraInput_ || photoOutput_)){
++    if(captureSession_ && (previewOutput_ || cameraInput_)){
 +        OH_CaptureSession_BeginConfig(captureSession_);
 +        if(previewOutput_)
 +            OH_CaptureSession_RemovePreviewOutput(captureSession_, previewOutput_);
-+        if(photoOutput_)
-+            OH_CaptureSession_RemovePhotoOutput(captureSession_, photoOutput_);
 +        if(cameraInput_)
 +            OH_CaptureSession_RemoveInput(captureSession_, cameraInput_);
 +        OH_CaptureSession_CommitConfig(captureSession_);
@@ -3702,7 +3663,6 @@ index 000000000..55628bd7b
 +    photoProfile_ = nullptr;
 +    if (photoOutput_) {
 +        OH_PhotoOutput_Release(photoOutput_);
-+        photoOutput_ = nullptr;
 +    }
 +
 +    if (cameraInput_) {
@@ -3744,25 +3704,18 @@ index 000000000..55628bd7b
 +    // }
 +
 +    QVideoSurfaceFormat fomat(QSize(profile_->size.width,profile_->size.height),
-+                              QVideoFrame::Format_ARGB32,
++                              m_actualViewfinderSettings.pixelFormat(),
 +                              QAbstractVideoBuffer::NoHandle);
-+    const bool isFront = (m_deviceIndex >= 0
-+                          && (uint32_t)m_deviceIndex < g_camerasCount
-+                          && g_cameras[m_deviceIndex].cameraPosition == CAMERA_POSITION_FRONT);
-+    fomat.setProperty("mirrored", isFront);
++    fomat.setProperty("mirrored", m_actualViewfinderSettings.mirrored());
 +
 +    if (m_surface)
 +        m_surface->start(fomat);
-+
-+    setReadyForCapture(true);
 +
 +    return true;
 +}
 +
 +bool QOhCameraSession::stopPreview()
 +{
-+    setReadyForCapture(false);
-+
 +    if(captureSession_)
 +    {
 +        // OH_PreviewOutput_Stop(previewOutput_);
@@ -4661,11 +4614,11 @@ index 000000000..a9f367fec
 +#endif // QOHCAPTURESESSION_H
 diff --git a/src/plugins/openharmony/src/mediacapture/qohcontainercontrol.cpp b/src/plugins/openharmony/src/mediacapture/qohcontainercontrol.cpp
 new file mode 100644
-index 000000000..c02d4908f
+index 000000000..cb6a11778
 --- /dev/null
 +++ b/src/plugins/openharmony/src/mediacapture/qohcontainercontrol.cpp
 @@ -0,0 +1,43 @@
-+#include "qohcapturesession.h"
++#include "QOhCaptureSession.h"
 +#include "qohcontainercontrol.h"
 +#include <QDebug>
 +
@@ -5171,10 +5124,10 @@ index 000000000..5c0f28152
 +}
 diff --git a/src/plugins/openharmony/src/player/player.pri b/src/plugins/openharmony/src/player/player.pri
 new file mode 100644
-index 000000000..217b474c5
+index 000000000..034876985
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/player.pri
-@@ -0,0 +1,33 @@
+@@ -0,0 +1,29 @@
 +INCLUDEPATH += $$PWD
 +
 +qtHaveModule(widgets): QT += widgets
@@ -5188,7 +5141,6 @@ index 000000000..217b474c5
 +    $$PWD/qohplayercontrol.h \
 +    $$PWD/qohplayerservice.h \
 +    $$PWD/qohvideorenderercontrol.h \
-+    $$PWD/qohnativevideobuffer.h \
 +    $$PWD/qohaudiorolecontrol.h \
 +    $$PWD/qohcustomaudiorolecontrol.h \
 +    $$PWD/qohwindowcontrol.h
@@ -5201,12 +5153,9 @@ index 000000000..217b474c5
 +    $$PWD/qohplayercontrol.cpp \
 +    $$PWD/qohplayerservice.cpp \
 +    $$PWD/qohvideorenderercontrol.cpp \
-+    $$PWD/qohnativevideobuffer.cpp \
 +    $$PWD/qohaudiorolecontrol.cpp \
 +    $$PWD/qohcustomaudiorolecontrol.cpp \
 +    $$PWD/qohwindowcontrol.cpp
-+
-+LIBS += -lnative_image -lnative_buffer -lnative_window
 +
 diff --git a/src/plugins/openharmony/src/player/private/qohcodekit_p.h b/src/plugins/openharmony/src/player/private/qohcodekit_p.h
 new file mode 100644
@@ -6350,127 +6299,12 @@ index 000000000..86ec12b30
 +QT_END_NAMESPACE
 +
 +#endif // QOHDEMUXER_H
-diff --git a/src/plugins/openharmony/src/player/qohnativevideobuffer.cpp b/src/plugins/openharmony/src/player/qohnativevideobuffer.cpp
-new file mode 100644
-index 000000000..45311366c
---- /dev/null
-+++ b/src/plugins/openharmony/src/player/qohnativevideobuffer.cpp
-@@ -0,0 +1,68 @@
-+#include <QDebug>
-+#include <unistd.h>
-+#include <native_buffer/buffer_common.h>
-+
-+#include "qohnativevideobuffer.h"
-+
-+QT_BEGIN_NAMESPACE
-+
-+QOhNativeVideoBuffer::QOhNativeVideoBuffer(uchar *dataCopy,
-+                                           int dataSize,
-+                                           const OH_NativeBuffer_Config &config,
-+                                           int strideBytes)
-+    : QAbstractVideoBuffer(QAbstractVideoBuffer::NoHandle)
-+    , m_dataCopy(dataCopy)
-+    , m_dataSize(dataSize)
-+    , m_strideBytes(strideBytes > 0 ? strideBytes : config.stride)
-+    , m_config(config)
-+    , m_mapMode(NotMapped)
-+{
-+    
-+}
-+
-+QOhNativeVideoBuffer::~QOhNativeVideoBuffer()
-+{
-+    /* 确保已经 unmap */
-+    if (m_mapMode != NotMapped)
-+        unmap();
-+
-+    /* 释放拷贝的数据 */
-+    delete[] m_dataCopy;
-+    m_dataCopy = nullptr;
-+}
-+
-+QAbstractVideoBuffer::MapMode QOhNativeVideoBuffer::mapMode() const
-+{
-+    return m_mapMode;
-+}
-+
-+uchar *QOhNativeVideoBuffer::map(MapMode mode, int *numBytes, int *bytesPerLine)
-+{
-+    if (m_mapMode != NotMapped || !m_dataCopy) {
-+        qWarning() << "QOhNativeVideoBuffer::map: buffer already mapped or dataCopy is null";
-+        return nullptr;
-+    }
-+
-+    if (mode == NotMapped)
-+        return nullptr;
-+
-+    m_mapMode = mode;
-+
-+    if (bytesPerLine)
-+        *bytesPerLine = m_strideBytes;
-+
-+    if (numBytes)
-+        *numBytes = m_dataSize;
-+
-+    return m_dataCopy;
-+}
-+
-+void QOhNativeVideoBuffer::unmap()
-+{
-+    if (m_mapMode == NotMapped)
-+        return;
-+
-+    m_mapMode = NotMapped;
-+}
-+
-+QT_END_NAMESPACE
-diff --git a/src/plugins/openharmony/src/player/qohnativevideobuffer.h b/src/plugins/openharmony/src/player/qohnativevideobuffer.h
-new file mode 100644
-index 000000000..864bc73cd
---- /dev/null
-+++ b/src/plugins/openharmony/src/player/qohnativevideobuffer.h
-@@ -0,0 +1,35 @@
-+#ifndef QOHNATIVEVIDEOBUFFER_H
-+#define QOHNATIVEVIDEOBUFFER_H
-+
-+#include <QAbstractVideoBuffer>
-+#include <native_image/native_image.h>
-+#include <native_buffer/native_buffer.h>
-+#include <native_window/external_window.h>
-+
-+QT_BEGIN_NAMESPACE
-+
-+class QOhNativeVideoBuffer : public QAbstractVideoBuffer
-+{
-+    Q_DISABLE_COPY_MOVE(QOhNativeVideoBuffer)
-+public:
-+    QOhNativeVideoBuffer(uchar *dataCopy,
-+                         int dataSize,
-+                         const OH_NativeBuffer_Config &config,
-+                         int strideBytes = 0); /* strideBytes=0 时自动根据 config.stride 计算 */
-+    ~QOhNativeVideoBuffer() override;
-+
-+    MapMode mapMode() const override;
-+    uchar *map(MapMode mode, int *numBytes, int *bytesPerLine) override;
-+    void unmap() override;
-+
-+private:
-+    uchar                 *m_dataCopy;      /* 已拷贝的像素数据 */
-+    int                    m_dataSize;      /* 数据总字节数 */
-+    int                    m_strideBytes;   /* 行跳（字节/行）*/
-+    OH_NativeBuffer_Config m_config;
-+    MapMode                m_mapMode;
-+};
-+
-+QT_END_NAMESPACE
-+
-+#endif // QOHNATIVEVIDEOBUFFER_H
 diff --git a/src/plugins/openharmony/src/player/qohplayer.cpp b/src/plugins/openharmony/src/player/qohplayer.cpp
 new file mode 100644
-index 000000000..808179267
+index 000000000..ac5375400
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/qohplayer.cpp
-@@ -0,0 +1,439 @@
+@@ -0,0 +1,446 @@
 +#include <QUrl>
 +#include <QFile>
 +#include <QHash>
@@ -6779,6 +6613,11 @@ index 000000000..808179267
 +        if (!m_surfaceSetted && m_window != nullptr) {
 +            OH_AVErrCode result = OH_AVPlayer_SetVideoSurface(m_player, m_window);
 +            qWarning() << "Set Video Surface Result" << result;
++
++            int32_t height, width;
++            height = width = 0;
++            int32_t ret = OH_NativeWindow_NativeWindowHandleOpt(m_window, GET_BUFFER_GEOMETRY, &height, &width);
++            qWarning() << "get ---- OH_NativeWindow_NativeWindowHandleOpt GET_BUFFER_GEOMETRY ret:" << ret << height << width;
 +            m_surfaceSetted = true;
 +        }
 +        prepare();
@@ -6881,7 +6720,9 @@ index 000000000..808179267
 +    result = OH_AVPlayer_GetVideoHeight(m_player, &h);
 +    if (result != AV_ERR_OK)
 +        return;
-+    emit videoSizeChanged(w, h);    
++    emit videoSizeChanged(w, h);
++
++    qWarning() << "obtainVideoSize ---- get video w, h:" << w << h;
 +}
 +
 +void QOhPlayer::onPlayerInfo(OH_AVPlayer *player, AVPlayerOnInfoType type,
@@ -7000,10 +6841,10 @@ index 000000000..c2ead3ffa
 +#endif // QOHPLAYER_H
 diff --git a/src/plugins/openharmony/src/player/qohplayercontrol.cpp b/src/plugins/openharmony/src/player/qohplayercontrol.cpp
 new file mode 100644
-index 000000000..72d2366e7
+index 000000000..1fe9d3fd1
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/qohplayercontrol.cpp
-@@ -0,0 +1,381 @@
+@@ -0,0 +1,379 @@
 +#include <qaudio.h>
 +#include <QtCore/qmath.h>
 +#include <QtCore/qcoreapplication.h>
@@ -7100,7 +6941,8 @@ index 000000000..72d2366e7
 +        return;
 +
 +    m_player->seekTo(seekPosition);
-+    /* NativeImage 方案下 seek 由 AVPlayer 统一处理，无需单独通知 videoRenderControl */
++    if (m_videoRenderControl)
++        m_videoRenderControl->seekTo(seekPosition);
 +
 +    Q_EMIT positionChanged(seekPosition);
 +}
@@ -7207,14 +7049,9 @@ index 000000000..72d2366e7
 +        m_status = QMediaPlayer::NoMedia;
 +    } else {
 +        m_status = QMediaPlayer::LoadingMedia;
-+
-+        /* 确保 Surface 已设置到 AVPlayer（如果 setVideoRenderOutput 在 setMedia 之后才调用） */
-+        if (m_videoRenderControl && m_videoRenderControl->producerWindow())
-+            m_player->setDisplay(m_videoRenderControl->producerWindow());
-+
 +        m_player->setDataSource(media.request());
-+        /* 注意：不再调用 m_videoRenderControl->setDataSource()
-+         * NativeImage 方案由 AVPlayer Surface 模式直接输出到 ConsumerSurface */
++        if (m_videoRenderControl)
++            m_videoRenderControl->setDataSource(media.request());
 +
 +        m_status = QMediaPlayer::LoadedMedia;
 +    }
@@ -7245,11 +7082,13 @@ index 000000000..72d2366e7
 +
 +    if (state == QMediaPlayer::PausedState) {
 +        m_player->pause();
-+        if (m_videoRenderControl)
++        if (m_videoRenderControl) {
 +            m_videoRenderControl->pause();
++        }
 +    } else {
 +        if (m_videoRenderControl)
 +            m_videoRenderControl->play();
++
 +        m_player->play();
 +    }
 +    emit stateChanged(state);
@@ -7627,92 +7466,91 @@ index 000000000..ec3961879
 +#endif
 diff --git a/src/plugins/openharmony/src/player/qohvideorenderercontrol.cpp b/src/plugins/openharmony/src/player/qohvideorenderercontrol.cpp
 new file mode 100644
-index 000000000..a96f0d98d
+index 000000000..bcc7d4910
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/qohvideorenderercontrol.cpp
-@@ -0,0 +1,270 @@
+@@ -0,0 +1,94 @@
++#include <QFile>
 +#include <QDebug>
++#include <QNetworkRequest>
 +#include <QVideoSurfaceFormat>
 +#include <QAbstractVideoSurface>
-+#include <QVideoFrame>
-+#include <unistd.h>
-+#include <poll.h>
-+#include <cerrno>
-+#include <native_buffer/native_buffer.h>
-+#include <native_buffer/buffer_common.h>
-+#include <native_window/external_window.h>
 +
-+#include "qohnativevideobuffer.h"
++#include "qohdecoder.h"
++#include "qohdemuxer.h"
 +#include "qohvideorenderercontrol.h"
 +
 +QT_BEGIN_NAMESPACE
 +
 +QOhVideoRendererControl::QOhVideoRendererControl(QObject *parent)
-+    : QVideoRendererControl(parent)
++    : QVideoRendererControl { parent }
++    , m_prepare(false)
++    , m_surface(nullptr)
++    , m_demuxer(nullptr)
++    , m_videoDecoder(nullptr)
 +{
-+    m_nativeImage = OH_ConsumerSurface_Create();
-+    if (!m_nativeImage) {
-+        qCritical() << "QOhVideoRendererControl: OH_ConsumerSurface_Create failed";
-+        return;
-+    }
++    m_demuxer.reset(new QOhDemuxer(QOhDemuxer::E_VIDEO));
++    m_videoDecoder.reset(new QOhVideoDecoder(m_demuxer.get()));
++    connect(m_videoDecoder.get(), &QOhVideoDecoder::finished, [this]{ this->stop(); });
++    connect(m_videoDecoder.get(), &QOhVideoDecoder::videoFrameChange, [this](const QVideoFrame &frame){
++        if (!this->m_surface)
++            return;
 +
-+    /* 必须设置 CPU_READ usage，否则 OH_NativeBuffer_Map 返回的是图形内存句柄而非像素数据 */
-+    int32_t usageRet = OH_ConsumerSurface_SetDefaultUsage(
-+            m_nativeImage,
-+            NATIVEBUFFER_USAGE_CPU_READ | NATIVEBUFFER_USAGE_CPU_WRITE | NATIVEBUFFER_USAGE_MEM_DMA);
-+    if (usageRet != 0)
-+        qWarning() << "QOhVideoRendererControl: SetDefaultUsage failed, ret=" << usageRet;
-+
-+    m_producerWindow = OH_NativeImage_AcquireNativeWindow(m_nativeImage);
-+    if (!m_producerWindow) {
-+        qCritical() << "QOhVideoRendererControl: OH_NativeImage_AcquireNativeWindow failed";
-+        return;
-+    }
-+
-+    OH_OnFrameAvailableListener listener;
-+    listener.context = this;
-+    listener.onFrameAvailable = &QOhVideoRendererControl::onFrameAvailable;
-+    int ret = OH_NativeImage_SetOnFrameAvailableListener(m_nativeImage, listener);
-+    if (ret != 0)
-+        qWarning() << "QOhVideoRendererControl: SetOnFrameAvailableListener failed, ret=" << ret;
++        if (!this->m_surface->isActive()) {
++            QVideoSurfaceFormat format(frame.size(), frame.pixelFormat(), QAbstractVideoBuffer::QPixmapHandle);
++            this->m_surface->start(format);
++        }
++        /* Qt内置的QVideoSurfaceGenericPainter没有对帧图片进行格式转换
++         * 因此这里使用frame转换后的RGB32格式的图片
++         */
++        this->m_surface->present(frame.image());
++    });
 +}
 +
 +QOhVideoRendererControl::~QOhVideoRendererControl()
 +{
 +    stop();
-+
-+    if (m_nativeImage) {
-+        OH_NativeImage_Destroy(&m_nativeImage);
-+        m_nativeImage = nullptr;
-+        m_producerWindow = nullptr;
-+    }
-+}
-+
-+OHNativeWindow *QOhVideoRendererControl::producerWindow() const
-+{
-+    return m_producerWindow;
 +}
 +
 +void QOhVideoRendererControl::play()
 +{
-+    m_active = true;
++    if (!m_prepare)
++        m_prepare = m_videoDecoder->prepare();
++
++    m_videoDecoder->start();
 +}
 +
 +void QOhVideoRendererControl::stop()
 +{
-+    m_active = false;
++    m_prepare = false;
++    m_videoDecoder->stop();
++    if (m_surface)
++        m_surface->present(QVideoFrame());
 +
-+    if (m_surface && m_surface->isActive())
-+        m_surface->stop();
-+
-+    m_pixelFormat        = QVideoFrame::Format_Invalid;
-+    m_surfacePixelFormat = QVideoFrame::Format_Invalid;
-+    m_frameSize = QSize();
++    seekTo(0);
 +}
 +
 +void QOhVideoRendererControl::pause()
 +{
-+    m_active = false;
++    /* TODO */
++    stop();
++}
++
++void QOhVideoRendererControl::seekTo(qint64 msec)
++{
++    m_demuxer->seekTime(msec);
++}
++
++void QOhVideoRendererControl::setDataSource(const QNetworkRequest &request)
++{
++    if (!m_demuxer->configure(request.url()))
++        return;
++
++    auto videoInfo = m_demuxer->videoInfo();
++    if (!m_videoDecoder->configure(videoInfo))
++        return;
++
++    seekTo(0);
 +}
 +
 +QAbstractVideoSurface *QOhVideoRendererControl::surface() const
@@ -7722,206 +7560,26 @@ index 000000000..a96f0d98d
 +
 +void QOhVideoRendererControl::setSurface(QAbstractVideoSurface *surface)
 +{
-+    if (m_surface == surface)
-+        return;
-+
-+    if (m_surface && m_surface->isActive())
-+        m_surface->stop();
-+
 +    m_surface = surface;
-+    m_pixelFormat        = QVideoFrame::Format_Invalid;
-+    m_surfacePixelFormat = QVideoFrame::Format_Invalid;
-+    m_frameSize = QSize();
-+}
-+
-+void QOhVideoRendererControl::onFrameAvailable(void *context)
-+{
-+    QOhVideoRendererControl *ctrl = static_cast<QOhVideoRendererControl *>(context);
-+    if (!ctrl)
-+        return;
-+    
-+    QMetaObject::invokeMethod(ctrl, "consumeFrame", Qt::QueuedConnection);
-+}
-+
-+void QOhVideoRendererControl::consumeFrame()
-+{
-+    if (!m_active || !m_surface || !m_nativeImage)
-+        return;
-+
-+    OHNativeWindowBuffer *windowBuffer = nullptr;
-+    int fenceFd = -1;
-+    int ret = OH_NativeImage_AcquireNativeWindowBuffer(m_nativeImage, &windowBuffer, &fenceFd);
-+    if (ret != 0 || !windowBuffer) {
-+        qWarning() << "QOhVideoRendererControl: AcquireNativeWindowBuffer failed, ret=" << ret;
-+        return;
-+    }
-+
-+    OH_NativeBuffer *nativeBuffer = nullptr;
-+    OH_NativeBuffer_FromNativeWindowBuffer(windowBuffer, &nativeBuffer);
-+    if (!nativeBuffer) {
-+        qWarning() << "QOhVideoRendererControl: OH_NativeBuffer_FromNativeWindowBuffer failed";
-+        OH_NativeImage_ReleaseNativeWindowBuffer(m_nativeImage, windowBuffer, fenceFd);
-+        return;
-+    }
-+
-+    if (fenceFd >= 0) {
-+        struct pollfd pollfds = {};
-+        pollfds.fd = fenceFd;
-+        pollfds.events = POLLIN;
-+        
-+        int retCode = -1;
-+        constexpr int MAX_RETRY = 3;
-+        int retryCount = 0;
-+        
-+        do {
-+            retCode = poll(&pollfds, 1, 3000); // 3 秒超时
-+            retryCount++;
-+            
-+            if (retryCount >= MAX_RETRY) {
-+                qWarning() << "QOhVideoRendererControl: poll fence reached max retry, ret=" << retCode 
-+                          << "errno=" << errno;
-+                break;
-+            }
-+        } while (retCode == -1 && (errno == EINTR || errno == EAGAIN));
-+        
-+        close(fenceFd);
-+        fenceFd = -1;
-+        
-+        if (retCode <= 0) {
-+            qWarning() << "QOhVideoRendererControl: poll fence failed, ret=" << retCode;
-+            OH_NativeImage_ReleaseNativeWindowBuffer(m_nativeImage, windowBuffer, -1);
-+            return;
-+        }
-+    }
-+    
-+    void *ptr = nullptr;
-+    int ret2 = OH_NativeBuffer_Map(nativeBuffer, &ptr);
-+    if (ret2 != 0 || !ptr) {
-+        qWarning() << "QOhVideoRendererControl: OH_NativeBuffer_Map failed, ret=" << ret2;
-+        OH_NativeImage_ReleaseNativeWindowBuffer(m_nativeImage, windowBuffer, -1);
-+        return;
-+    }
-+
-+    OH_NativeBuffer_Config config{};
-+    OH_NativeBuffer_GetConfig(nativeBuffer, &config);
-+
-+    if (config.width <= 0 || config.height <= 0) {
-+        qWarning() << "QOhVideoRendererControl: invalid buffer config w=" << config.width
-+                   << " h=" << config.height;
-+        OH_NativeBuffer_Unmap(nativeBuffer);
-+        OH_NativeImage_ReleaseNativeWindowBuffer(m_nativeImage, windowBuffer, -1);
-+        return;
-+    }
-+
-+    const OH_NativeBuffer_Format cfgFmt = static_cast<OH_NativeBuffer_Format>(config.format);
-+
-+    const int safeMax   = config.stride * config.height;
-+    int strideBytes = config.stride;
-+    int dataSize;
-+    switch (cfgFmt) {
-+    case NATIVEBUFFER_PIXEL_FMT_YCBCR_420_SP:
-+    case NATIVEBUFFER_PIXEL_FMT_YCRCB_420_SP:
-+    case NATIVEBUFFER_PIXEL_FMT_YCBCR_420_P:
-+    case NATIVEBUFFER_PIXEL_FMT_YCRCB_420_P:
-+        dataSize = config.stride * config.height * 3 / 2;
-+        break;
-+    default:
-+        dataSize = safeMax;
-+        break;
-+    }
-+    (void)safeMax;
-+    uchar *dataCopy = new uchar[dataSize];
-+    memcpy(dataCopy, ptr, dataSize);
-+    
-+    OH_NativeBuffer_Unmap(nativeBuffer);
-+    OH_NativeImage_ReleaseNativeWindowBuffer(m_nativeImage, windowBuffer, -1);
-+    QVideoFrame::PixelFormat qtFmt = nativeFormatToQtFormat(cfgFmt);
-+
-+    auto *videoBuffer = new QOhNativeVideoBuffer(dataCopy, dataSize, config, strideBytes);
-+    QVideoFrame frame(videoBuffer, QSize(config.width, config.height), qtFmt);
-+    if (!m_surface->isActive()
-+            || m_frameSize != frame.size()
-+            || m_pixelFormat != qtFmt) {
-+        startSurface(frame);
-+    }
-+
-+    if (!m_surface->isActive())
-+        return;
-+
-+    if (m_surfacePixelFormat != qtFmt) {
-+        QImage argb = frame.image();
-+        if (argb.isNull()) {
-+            qWarning() << "QOhVideoRendererControl: frame.image() failed, fmt=" << qtFmt;
-+            return;
-+        }
-+        m_surface->present(QVideoFrame(argb));
-+    } else {
-+        m_surface->present(frame);
-+    }
-+}
-+
-+void QOhVideoRendererControl::startSurface(const QVideoFrame &frame)
-+{
-+    if (!m_surface)
-+        return;
-+
-+    if (m_surface->isActive())
-+        m_surface->stop();
-+
-+    QVideoSurfaceFormat format(frame.size(), frame.pixelFormat());
-+    if (!m_surface->isFormatSupported(format)) {
-+        format = QVideoSurfaceFormat(frame.size(), QVideoFrame::Format_ARGB32);
-+    }
-+
-+    if (!m_surface->start(format)) {
-+        qWarning() << "QOhVideoRendererControl: failed to start surface with format" << format;
-+        return;
-+    }
-+
-+    m_frameSize          = frame.size();
-+    m_pixelFormat        = frame.pixelFormat();      /* 记录原始帧格式 */
-+    m_surfacePixelFormat = format.pixelFormat();     /* 记录 surface 实际启动格式 */
-+}
-+
-+QVideoFrame::PixelFormat QOhVideoRendererControl::nativeFormatToQtFormat(OH_NativeBuffer_Format fmt)
-+{
-+    switch (fmt) {
-+    case NATIVEBUFFER_PIXEL_FMT_YCBCR_420_SP: return QVideoFrame::Format_NV12;
-+    case NATIVEBUFFER_PIXEL_FMT_YCRCB_420_SP: return QVideoFrame::Format_NV21;
-+    case NATIVEBUFFER_PIXEL_FMT_RGBA_8888:    return QVideoFrame::Format_ARGB32;  /* RGBA 内存[R,G,B,A], Qt ARGB32小端 = [B,G,R,A]，小端 ARM 下指向同一内存内容 */
-+    case NATIVEBUFFER_PIXEL_FMT_RGBX_8888:    return QVideoFrame::Format_RGB32;
-+    case NATIVEBUFFER_PIXEL_FMT_BGRA_8888:    return QVideoFrame::Format_ARGB32; /* BGRA 内存小端 = Qt ARGB32 */
-+    case NATIVEBUFFER_PIXEL_FMT_YCBCR_420_P:  return QVideoFrame::Format_YUV420P;
-+    case NATIVEBUFFER_PIXEL_FMT_YCRCB_420_P:  return QVideoFrame::Format_YUV420P;
-+    default:
-+        qWarning() << "QOhVideoRendererControl: unknown native format" << static_cast<int>(fmt)
-+                   << ", fallback to ARGB32";
-+        return QVideoFrame::Format_ARGB32;
-+    }
 +}
 +
 +QT_END_NAMESPACE
 diff --git a/src/plugins/openharmony/src/player/qohvideorenderercontrol.h b/src/plugins/openharmony/src/player/qohvideorenderercontrol.h
 new file mode 100644
-index 000000000..78a562395
+index 000000000..16013e425
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/qohvideorenderercontrol.h
-@@ -0,0 +1,53 @@
+@@ -0,0 +1,38 @@
 +#ifndef QOHVIDEORENDERERCONTROL_H
 +#define QOHVIDEORENDERERCONTROL_H
 +
-+#include <QList>
-+#include <QSize>
-+#include <QVideoFrame>
++#include <QUrl>
 +#include <QVideoRendererControl>
-+#include <native_image/native_image.h>
-+#include <native_window/external_window.h>
-+#include <native_buffer/native_buffer.h>
-+#include <native_buffer/buffer_common.h>
-+#include <atomic>
 +
 +QT_BEGIN_NAMESPACE
-+
++class QOhDemuxer;
++class QOhVideoDecoder;
++class QNetworkRequest;
 +class QOhVideoRendererControl : public QVideoRendererControl
 +{
 +    Q_OBJECT
@@ -7931,30 +7589,20 @@ index 000000000..78a562395
 +    explicit QOhVideoRendererControl(QObject *parent = nullptr);
 +    ~QOhVideoRendererControl();
 +
-+    OHNativeWindow *producerWindow() const;
-+
 +    void play();
 +    void stop();
 +    void pause();
++    void seekTo(qint64 msec);
++    void setDataSource(const QNetworkRequest &request);
 +
 +    QAbstractVideoSurface *surface() const override;
 +    void setSurface(QAbstractVideoSurface *surface) override;
 +
-+private slots:
-+    void consumeFrame();
-+
 +private:
-+    static void onFrameAvailable(void *context);
-+    void startSurface(const QVideoFrame &frame);
-+    static QVideoFrame::PixelFormat nativeFormatToQtFormat(OH_NativeBuffer_Format fmt);
-+
-+    QAbstractVideoSurface    *m_surface             = nullptr;
-+    OH_NativeImage           *m_nativeImage         = nullptr;
-+    OHNativeWindow           *m_producerWindow      = nullptr;
-+    bool                      m_active              = false;
-+    QVideoFrame::PixelFormat  m_pixelFormat         = QVideoFrame::Format_Invalid; /* 原始帧格式 */
-+    QVideoFrame::PixelFormat  m_surfacePixelFormat  = QVideoFrame::Format_Invalid; /* surface 实际启动格式 */
-+    QSize                     m_frameSize;
++    bool m_prepare;
++    QAbstractVideoSurface *m_surface;
++    QScopedPointer<QOhDemuxer> m_demuxer;
++    QScopedPointer<QOhVideoDecoder> m_videoDecoder;
 +};
 +
 +QT_END_NAMESPACE
@@ -7962,10 +7610,10 @@ index 000000000..78a562395
 +#endif // QOHVIDEORENDERERCONTROL_H
 diff --git a/src/plugins/openharmony/src/player/qohwindowcontrol.cpp b/src/plugins/openharmony/src/player/qohwindowcontrol.cpp
 new file mode 100644
-index 000000000..9c1d2ff0d
+index 000000000..723950c06
 --- /dev/null
 +++ b/src/plugins/openharmony/src/player/qohwindowcontrol.cpp
-@@ -0,0 +1,206 @@
+@@ -0,0 +1,210 @@
 +#include "qohwindowcontrol.h"
 +#include <qopenharmonydefines.h>
 +#include <QHash>
@@ -7977,8 +7625,6 @@ index 000000000..9c1d2ff0d
 +#include <QTimer>
 +#include <QWidget>
 +#include <uv.h>
-+
-+#include <QtPlatformHeaders/qohwindowfunctions.h>
 +
 +struct Node {
 +    ArkUI_NodeType nodeType; // Type of the node. The value can be ARKUI_NODE_XCOMPONENT or other types supported in later versions.
@@ -8040,7 +7686,7 @@ index 000000000..9c1d2ff0d
 +    m_widget = new VideoOutWidget(widget);
 +    WId videoId = m_widget->winId();
 +    m_widget->show();
-+    QOhWindowFunctions::setNativeNodeRenderFit(m_widget->windowHandle(), QOhWindowFunctions::NativeNodeRenderFit::FIT_RESIZE_FILL);
++
 +    WindowNode *node = reinterpret_cast<WindowNode*>(videoId);
 +    if (node == nullptr) {
 +        qWarning() << "set player output widget failed";
@@ -8158,6 +7804,12 @@ index 000000000..9c1d2ff0d
 +void QOhWindowControl::setNativeWindow(OHNativeWindow *nativeWindow)
 +{
 +    m_nativeWindow = nativeWindow;
++    int32_t ret = OH_NativeWindow_NativeWindowSetScalingModeV2(m_nativeWindow, OH_SCALING_MODE_SCALE_FIT_V2);
++    qWarning() << "<---OH_NativeWindow_NativeWindowSetScalingModeV2: " << ret;
++
++    ret = OH_NativeWindow_NativeWindowHandleOpt(m_nativeWindow, SET_BUFFER_GEOMETRY, 1080, 1920);
++
++    qWarning() << "<---OH_NativeWindow_NativeWindowHandleOpt SET_BUFFER_GEOMETRY: " << ret <<  m_widget->height() << m_widget->width();
 +    QMetaObject::invokeMethod(this, "windowCreated");
 +}
 +
@@ -8675,10 +8327,10 @@ index 000000000..5da3f8ac5
 +#endif // OHCAMERA_H
 diff --git a/src/plugins/openharmony/src/wrappers/napi/ohmediarecorder.cpp b/src/plugins/openharmony/src/wrappers/napi/ohmediarecorder.cpp
 new file mode 100644
-index 000000000..156ff970a
+index 000000000..37b3be7a3
 --- /dev/null
 +++ b/src/plugins/openharmony/src/wrappers/napi/ohmediarecorder.cpp
-@@ -0,0 +1,232 @@
+@@ -0,0 +1,215 @@
 +#include "ohmediarecorder.h"
 +#include "qopenharmony.h"
 +
@@ -8723,10 +8375,8 @@ index 000000000..156ff970a
 +
 +void OhMediaRecorder::release()
 +{
-+    QtOh::runOnJsUIThreadAndWait([this]{
-+        if(m_mediaRecorder)
-+            m_mediaRecorder->call("release");
-+    });
++    if(m_mediaRecorder)
++        m_mediaRecorder->call("release");
 +}
 +
 +QString OhMediaRecorder::prepare()
@@ -8734,137 +8384,122 @@ index 000000000..156ff970a
 +    if(!m_mediaRecorder)
 +        return QString();
 +
-+    return QtOh::runOnJsUIThreadWithPromise<QString>([this] (auto p){
-+        Napi::Object AVRecorderProfile = Napi::Object::New(m_mediaRecorder->env());
-+        AVRecorderProfile.Set("audioBitrate", m_audioBitrate);
-+        AVRecorderProfile.Set("audioChannels", m_audioChannel);
++    Napi::Object AVRecorderProfile = Napi::Object::New(m_mediaRecorder->env());
++    AVRecorderProfile.Set("audioBitrate", m_audioBitrate);
++    AVRecorderProfile.Set("audioChannels", m_audioChannel);
 +
-+        QJsModule fileInfo("@ohos.file.fs");
-+        QJsObject jsFile = QJsObject(fileInfo.call("openSync", { Napi::String::New(fileInfo.env(), m_outputFile.toStdString()),\
-+                                                                  Napi::Number::New(fileInfo.env(), 02 | 0100)}).As<Napi::Object>());
-+        if (jsFile.object().IsNull() || jsFile.object().IsEmpty()){
-+            qDebug() << "openSync fialed:" << jsFile.lastError();
-+            p->set_value(QString());
-+        }
++    QJsModule fileInfo("@ohos.file.fs");
++    QJsObject jsFile = QJsObject(fileInfo.call("openSync", { Napi::String::New(fileInfo.env(), m_outputFile.toStdString()),\
++                                                              Napi::Number::New(fileInfo.env(), 02 | 0100)}).As<Napi::Object>());
++    if(jsFile.object().IsNull() || jsFile.object().IsEmpty()){
++        qDebug() << "openSync fialed:" << jsFile.lastError();
++        return QString();
++    }
++    
++    int fd = jsFile.get("fd").ToNumber();
++    QString fdStr = QString("fd://%1").arg(fd);
 +
-+        int fd = jsFile.get("fd").ToNumber();
-+        QString fdStr = QString("fd://%1").arg(fd);
++    //TODO 无法构造ts枚举对象，暂时直接使用枚举值
++    switch(m_audioCodeC) {
++    case AAC:
++        AVRecorderProfile.Set("audioCodec", "audio/mp4a-latm");
++    case VORBIS:
++        AVRecorderProfile.Set("audioCodec", "audio/vorbis");
++    case FLAC:
++        AVRecorderProfile.Set("audioCodec", "audio/flac");
++    case MP3:
++        AVRecorderProfile.Set("audioCodec", "audio/mpeg");
++    default:
++        AVRecorderProfile.Set("audioCodec", "audio/mp4a-latm");
++    }
++    AVRecorderProfile.Set("audioSampleRate", m_audioSampleRate);
 +
-+        //TODO 无法构造ts枚举对象，暂时直接使用枚举值
-+        switch(m_audioCodeC) {
-+        case AAC:
-+            AVRecorderProfile.Set("audioCodec", "audio/mp4a-latm");
-+        case VORBIS:
-+            AVRecorderProfile.Set("audioCodec", "audio/vorbis");
-+        case FLAC:
-+            AVRecorderProfile.Set("audioCodec", "audio/flac");
-+        case MP3:
-+            AVRecorderProfile.Set("audioCodec", "audio/mpeg");
-+        default:
-+            AVRecorderProfile.Set("audioCodec", "audio/mp4a-latm");
-+        }
-+        AVRecorderProfile.Set("audioSampleRate", m_audioSampleRate);
++    AVRecorderProfile.Set("fileFormat", "mp4");
 +
-+        AVRecorderProfile.Set("fileFormat", "mp4");
++    AVRecorderProfile.Set("videoBitrate", m_videoBitrate);
++    switch(m_videoCodec) {
++    case H263:
++        AVRecorderProfile.Set("videoCodec", "video/h263");
++    case AVC:
++        AVRecorderProfile.Set("videoCodec", "video/avc");
++    case MPEG_2:
++        AVRecorderProfile.Set("videoCodec", "video/mpeg2");
++    case MPEG_4:
++        AVRecorderProfile.Set("videoCodec", "video/mp4v-es");
++    case VP8:
++        AVRecorderProfile.Set("videoCodec", "video/x-vnd.on2.vp8");
++    default:
++        AVRecorderProfile.Set("videoCodec", "video/avc");
++    }
++    AVRecorderProfile.Set("videoFrameWidth", m_videoFrameSize.width());
++    AVRecorderProfile.Set("videoFrameHeight", m_videoFrameSize.height());
++    AVRecorderProfile.Set("videoFrameRate", m_videoFrameRate);
 +
-+        AVRecorderProfile.Set("videoBitrate", m_videoBitrate);
-+        switch(m_videoCodec) {
-+        case H263:
-+            AVRecorderProfile.Set("videoCodec", "video/h263");
-+        case AVC:
-+            AVRecorderProfile.Set("videoCodec", "video/avc");
-+        case MPEG_2:
-+            AVRecorderProfile.Set("videoCodec", "video/mpeg2");
-+        case MPEG_4:
-+            AVRecorderProfile.Set("videoCodec", "video/mp4v-es");
-+        case VP8:
-+            AVRecorderProfile.Set("videoCodec", "video/x-vnd.on2.vp8");
-+        default:
-+            AVRecorderProfile.Set("videoCodec", "video/avc");
-+        }
-+        AVRecorderProfile.Set("videoFrameWidth", m_videoFrameSize.width());
-+        AVRecorderProfile.Set("videoFrameHeight", m_videoFrameSize.height());
-+        AVRecorderProfile.Set("videoFrameRate", m_videoFrameRate);
++    Napi::Object avRecorderConfig = Napi::Object::New(m_mediaRecorder->env());
++    avRecorderConfig.Set("audioSourceType", 1);
++    avRecorderConfig.Set("videoSourceType", 0);
++    avRecorderConfig.Set("profile", AVRecorderProfile);
++    avRecorderConfig.Set("url", fdStr.toStdString());
++    avRecorderConfig.Set("rotation", 0);
 +
-+        Napi::Object avRecorderConfig = Napi::Object::New(m_mediaRecorder->env());
-+        avRecorderConfig.Set("audioSourceType", 1);
-+        avRecorderConfig.Set("videoSourceType", 0);
-+        avRecorderConfig.Set("profile", AVRecorderProfile);
-+        avRecorderConfig.Set("url", fdStr.toStdString());
-+        avRecorderConfig.Set("rotation", 0);
++    Napi::Object location = Napi::Object::New(m_mediaRecorder->env());
++    location.Set("latitude", 30);
++    location.Set("longitude", 130);
++    avRecorderConfig.Set("location", location);
 +
-+        Napi::Object location = Napi::Object::New(m_mediaRecorder->env());
-+        location.Set("latitude", 30);
-+        location.Set("longitude", 130);
-+        avRecorderConfig.Set("location", location);
++    m_mediaRecorder->call("prepare", { avRecorderConfig });
++    if(m_mediaRecorder->hasError()){
++        qDebug() << "prepare falied:" << m_mediaRecorder->lastError();
++        return QString();
++    }
 +
-+        m_mediaRecorder->call("prepare", { avRecorderConfig });
-+        if(m_mediaRecorder->hasError()){
-+            qDebug() << "prepare falied:" << m_mediaRecorder->lastError();
-+            p->set_value(QString());
-+        }
++    QString ret;
++    Napi::Value value = m_mediaRecorder->call("getInputSurface");
 +
-+        QString ret;
-+        Napi::Value value = m_mediaRecorder->call("getInputSurface");
++    if (value.IsPromise()) {
++        QJsPromise promise(value.As<Napi::Promise>());
++        promise.onThen([&](const Napi::CallbackInfo &info){
++            if (info.Length() < 1)
++            {
++                return;
++            }
 +
-+        if (value.IsPromise()) {
-+            QJsPromise promise(value.As<Napi::Promise>());
-+            promise.onThen([&](const Napi::CallbackInfo &info){
-+                if (info.Length() < 1)
-+                {
-+                    p->set_value(QString());
-+                    return;
-+                }
-+
-+                ret = QString::fromStdString(info[0].As<Napi::String>());
-+                p->set_value(ret);
-+            });
-+        }
-+        else
-+            p->set_value(QString());
-+    });
++            ret = QString::fromStdString(info[0].As<Napi::String>());
++        });
++        return ret;
++    }
++    else
++        return QString();
 +}
 +
 +void OhMediaRecorder::reset()
 +{
-+    QtOh::runOnJsUIThreadAndWait([this] {
-+        if(m_mediaRecorder)
-+            m_mediaRecorder->call("reset");
-+    });
++    if(m_mediaRecorder)
++        m_mediaRecorder->call("reset");
 +}
 +
 +void OhMediaRecorder::pause()
 +{
-+    QtOh::runOnJsUIThreadAndWait([this] {
-+        if(m_mediaRecorder)
-+            m_mediaRecorder->call("pause");
-+    });
++    if(m_mediaRecorder)
++        m_mediaRecorder->call("pause");
 +}
 +
 +void OhMediaRecorder::resume()
 +{
-+    QtOh::runOnJsUIThreadAndWait([this] {
-+        if(m_mediaRecorder)
-+            m_mediaRecorder->call("resume");
-+    });
++    if(m_mediaRecorder)
++        m_mediaRecorder->call("resume");
 +}
 +
 +bool OhMediaRecorder::start()
 +{
-+    return QtOh::runOnJsUIThreadWithResult([this] () -> bool{
-+        if(m_mediaRecorder)
-+            return m_mediaRecorder->call("start").ToBoolean();
-+
-+        return false;
-+    });
++    if(m_mediaRecorder)
++        return m_mediaRecorder->call("start").ToBoolean();
 +}
 +
 +void OhMediaRecorder::stop()
 +{
-+    QtOh::runOnJsUIThreadAndWait([this] {
-+        if(m_mediaRecorder)
-+            m_mediaRecorder->call("stop");
-+    });
++    if(m_mediaRecorder)
++        m_mediaRecorder->call("stop");
 +}
 +
 +void OhMediaRecorder::setAudioChannels(int numChannels)

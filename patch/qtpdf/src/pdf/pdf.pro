@@ -22,18 +22,33 @@ msvc {
 }
 
 SOURCES += \
+    qpdfdestination.cpp \
+    qpdflinkmodel.cpp \
     jsbridge.cpp \
     qpdfbookmarkmodel.cpp \
     qpdfdocument.cpp \
     qpdfpagenavigation.cpp \
-    qpdfpagerenderer.cpp
+    qpdfpagerenderer.cpp \
+    qpdfsearchmodel.cpp \
+    qpdfsearchresult.cpp \
+    qpdfselection.cpp
 
 HEADERS += \
     qpdfbookmarkmodel.h \
+    qpdfdestination.h \
+    qpdfdestination_p.h \
     qpdfdocument.h \
     qpdfdocument_p.h \
     qpdfdocumentrenderoptions.h \
+    qpdflinkmodel_p.h \
+    qpdflinkmodel_p_p.h \
     qpdfnamespace.h \
     qpdfpagenavigation.h \
     qpdfpagerenderer.h \
+    qpdfsearchmodel.h \
+    qpdfsearchmodel_p.h \
+    qpdfsearchresult.h \
+    qpdfsearchresult_p.h \
+    qpdfselection.h \
+    qpdfselection_p.h \
     qtpdfglobal.h

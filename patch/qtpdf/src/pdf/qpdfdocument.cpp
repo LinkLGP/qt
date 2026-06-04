@@ -38,11 +38,14 @@
 #include "qpdfdocument_p.h"
 
 #include "public/fpdf_doc.h"
+#include "public/fpdf_text.h"
 
 #include <QDateTime>
 #include <QDebug>
 #include <QFile>
 #include <QMutex>
+ 
+static const double CharacterHitTolerance = 16.0;
 
 QT_BEGIN_NAMESPACE
 
@@ -297,6 +300,77 @@ void QPdfDocumentPrivate::checkComplete()
     }
 }
 
+bool QPdfDocumentPrivate::checkPageComplete(int page)
+{
+    if (page < 0 || page >= pageCount)
+        return false;
+    if (loadComplete)
+        return true;
+    if (!avail)
+        return false;
+
+    QPdfMutexLocker lock;
+    int result = PDF_DATA_NOTAVAIL;
+    while (result == PDF_DATA_NOTAVAIL)
+        result = FPDFAvail_IsPageAvail(avail, page, this);
+    lock.unlock();
+
+    if (result == PDF_DATA_ERROR)
+        updateLastError();
+    return (result != PDF_DATA_ERROR);
+}
+
+QString QPdfDocumentPrivate::getText(FPDF_TEXTPAGE textPage, int startIndex, int count)
+{
+    QVector<ushort> buf(count + 1);
+    int len = FPDFText_GetText(textPage, startIndex, count, buf.data());
+    Q_ASSERT(len - 1 <= count);
+    return QString::fromUtf16(buf.constData(), len - 1);
+}
+
+QPointF QPdfDocumentPrivate::getCharPosition(FPDF_TEXTPAGE textPage, double pageHeight, int charIndex)
+{
+    double l, t, r, b;
+    int count = FPDFText_CountChars(textPage);
+    if (count <= 0)
+        return QPointF();
+    const int idx = qBound(0, charIndex, count - 1);
+    FPDFText_GetCharBox(textPage, idx, &l, &r, &b, &t);
+    return QPointF(l, pageHeight - t);
+}
+
+QRectF QPdfDocumentPrivate::getCharBox(FPDF_TEXTPAGE textPage, double pageHeight, int charIndex)
+{
+    double l, t, r, b;
+    int count = FPDFText_CountChars(textPage);
+    if (count <= 0 || charIndex < 0 || charIndex >= count)
+        return QRectF();
+    FPDFText_GetCharBox(textPage, charIndex, &l, &r, &b, &t);
+    return QRectF(l, pageHeight - t, r - l, t - b);
+}
+
+QPdfDocumentPrivate::TextPosition QPdfDocumentPrivate::hitTest(int page, QPointF position)
+{
+    const QPdfMutexLocker lock;
+    FPDF_PAGE pdfPage = FPDF_LoadPage(doc, page);
+    double pageHeight = FPDF_GetPageHeight(pdfPage);
+    FPDF_TEXTPAGE textPage = FPDFText_LoadPage(pdfPage);
+    int hitIndex = FPDFText_GetCharIndexAtPos(textPage, position.x(), pageHeight - position.y(),
+                                              CharacterHitTolerance, CharacterHitTolerance);
+    if (hitIndex >= 0) {
+        QPointF charPos = getCharPosition(textPage, pageHeight, hitIndex);
+        if (!charPos.isNull()) {
+            QRectF charBox = getCharBox(textPage, pageHeight, hitIndex);
+            if (qAbs(charBox.right() - position.x()) < qAbs(charPos.x() - position.x())) {
+                charPos.setX(charBox.right());
+                ++hitIndex;
+            }
+            return { charPos, charBox.height(), hitIndex };
+        }
+    }
+    return {};
+}
+
 void QPdfDocumentPrivate::setStatus(QPdfDocument::Status documentStatus)
 {
     if (status == documentStatus)
@@ -546,7 +620,7 @@ int QPdfDocument::pageCount() const
 QSizeF QPdfDocument::pageSize(int page) const
 {
     QSizeF result;
-    if (!d->doc)
+    if (!d->doc || !d->checkPageComplete(page))
         return result;
 
     const QPdfMutexLocker lock;
@@ -567,7 +641,7 @@ QSizeF QPdfDocument::pageSize(int page) const
 */
 QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions renderOptions)
 {
-    if (!d->doc)
+    if (!d->doc || !d->checkPageComplete(page))
         return QImage();
 
     const QPdfMutexLocker lock;
@@ -620,6 +694,104 @@ QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions
     FPDF_ClosePage(pdfPage);
 
     return result;
+}
+
+QPdfSelection QPdfDocument::getSelection(int page, QPointF start, QPointF end)
+{
+    const QPdfMutexLocker lock;
+    FPDF_PAGE pdfPage = FPDF_LoadPage(d->doc, page);
+    double pageHeight = FPDF_GetPageHeight(pdfPage);
+    FPDF_TEXTPAGE textPage = FPDFText_LoadPage(pdfPage);
+    int startIndex = FPDFText_GetCharIndexAtPos(textPage, start.x(), pageHeight - start.y(),
+                                                CharacterHitTolerance, CharacterHitTolerance);
+    int endIndex = FPDFText_GetCharIndexAtPos(textPage, end.x(), pageHeight - end.y(),
+                                              CharacterHitTolerance, CharacterHitTolerance);
+    if (startIndex >= 0 && endIndex != startIndex) {
+        if (startIndex > endIndex)
+            qSwap(startIndex, endIndex);
+
+        QRectF endCharBox = d->getCharBox(textPage, pageHeight, endIndex);
+        if (qAbs(endCharBox.right() - end.x()) < qAbs(endCharBox.x() - end.x()))
+            ++endIndex;
+
+        int count = endIndex - startIndex;
+        QString text = d->getText(textPage, startIndex, count);
+        QVector<QPolygonF> bounds;
+        QRectF hull;
+        int rectCount = FPDFText_CountRects(textPage, startIndex, endIndex - startIndex);
+        for (int i = 0; i < rectCount; ++i) {
+            double l, r, b, t;
+            FPDFText_GetRect(textPage, i, &l, &t, &r, &b);
+            QRectF rect(l, pageHeight - t, r - l, t - b);
+            if (hull.isNull())
+                hull = rect;
+            else
+                hull = hull.united(rect);
+            bounds << QPolygonF(rect);
+        }
+        return QPdfSelection(text, bounds, hull, startIndex, endIndex);
+    }
+    return QPdfSelection();
+}
+
+QPdfSelection QPdfDocument::getSelectionAtIndex(int page, int startIndex, int maxLength)
+{
+    if (page < 0 || startIndex < 0 || maxLength < 0)
+        return {};
+    const QPdfMutexLocker lock;
+    FPDF_PAGE pdfPage = FPDF_LoadPage(d->doc, page);
+    double pageHeight = FPDF_GetPageHeight(pdfPage);
+    FPDF_TEXTPAGE textPage = FPDFText_LoadPage(pdfPage);
+    int pageCharCount = FPDFText_CountChars(textPage);
+    if (startIndex >= pageCharCount)
+        return QPdfSelection();
+    QVector<QPolygonF> bounds;
+    QRectF hull;
+    int rectCount = 0;
+    QString text;
+    if (maxLength > 0) {
+        text = d->getText(textPage, startIndex, maxLength);
+        rectCount = FPDFText_CountRects(textPage, startIndex, text.length());
+        for (int i = 0; i < rectCount; ++i) {
+            double l, r, b, t;
+            FPDFText_GetRect(textPage, i, &l, &t, &r, &b);
+            QRectF rect(l, pageHeight - t, r - l, t - b);
+            if (hull.isNull())
+                hull = rect;
+            else
+                hull = hull.united(rect);
+            bounds << QPolygonF(rect);
+        }
+    }
+    if (bounds.isEmpty())
+        hull = QRectF(d->getCharPosition(textPage, pageHeight, startIndex), QSizeF());
+    return QPdfSelection(text, bounds, hull, startIndex, startIndex + text.length());
+}
+
+QPdfSelection QPdfDocument::getAllText(int page)
+{
+    const QPdfMutexLocker lock;
+    FPDF_PAGE pdfPage = FPDF_LoadPage(d->doc, page);
+    double pageHeight = FPDF_GetPageHeight(pdfPage);
+    FPDF_TEXTPAGE textPage = FPDFText_LoadPage(pdfPage);
+    int count = FPDFText_CountChars(textPage);
+    if (count < 1)
+        return QPdfSelection();
+    QString text = d->getText(textPage, 0, count);
+    QVector<QPolygonF> bounds;
+    QRectF hull;
+    int rectCount = FPDFText_CountRects(textPage, 0, count);
+    for (int i = 0; i < rectCount; ++i) {
+        double l, r, b, t;
+        FPDFText_GetRect(textPage, i, &l, &t, &r, &b);
+        QRectF rect(l, pageHeight - t, r - l, t - b);
+        if (hull.isNull())
+            hull = rect;
+        else
+            hull = hull.united(rect);
+        bounds << QPolygonF(rect);
+    }
+    return QPdfSelection(text, bounds, hull, 0, count);
 }
 
 QT_END_NAMESPACE

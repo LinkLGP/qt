@@ -157,20 +157,16 @@ void QOhAppContextPrivate::registerPcModeChangedCallback()
     QJsObject *obj =
             reinterpret_cast<QJsObject *>(platformNativeInterface->nativeResourceForIntegration("nativeSettings"));
 
-    if (!obj) {
+    if (!obj)
         return;
-    }
     Q_Q(QOhAppContext);
-    Napi::Function pcModeChangedListener =
-        Napi::Function::New(
-            obj->env(),
-            [guard = QPointer<QOhAppContext>(q)](const Napi::CallbackInfo& info) {
-                if (guard.isNull() || info.Length() < 1 || !info[0].IsBoolean()) {
-                    return;
-                }
-                bool pcMode = info[0].ToBoolean();
-                emit guard->pcModeChanged(pcMode);
-            });
+    Napi::Function pcModeChangedListener = Napi::Function::New(obj->env(),
+                                               [guard = QPointer<QOhAppContext>(q)](const Napi::CallbackInfo& info) {
+                                                   if (guard.isNull() || info.Length() < 1 || !info[0].IsBoolean())
+                                                       return;
+                                                   bool pcMode = info[0].ToBoolean();
+                                                   emit guard->pcModeChanged(pcMode);
+                                               });
     obj->object().Set("pcModeChangedListener", pcModeChangedListener);
 }
 

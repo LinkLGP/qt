@@ -100,7 +100,6 @@ Q_OPENHARMONYEXTRAS_EXPORT void startForResult(const QOpenHarmonyWant &want, QAb
 
 Q_OPENHARMONYEXTRAS_EXPORT void terminateSelfWithResult(const QOpenHarmonyAbilityResult &abilityResult);
 
-// 下面接口不是正式接口，随时可能删除
 Q_OPENHARMONYEXTRAS_EXPORT int getSubProcessPid(const QString &processIdent);
 Q_OPENHARMONYEXTRAS_EXPORT bool getSubProcessAliveState(const QString &processIdent);
 Q_OPENHARMONYEXTRAS_EXPORT void killSubProcess(const QString &processIdent);
