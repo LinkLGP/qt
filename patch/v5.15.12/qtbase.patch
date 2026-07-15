@@ -30394,10 +30394,10 @@ index 00000000000..1e5ed10f93f
 +#endif // QOHNATIVEVSYNC_H
 diff --git a/src/plugins/platforms/openharmony/qohnativewindow.cpp b/src/plugins/platforms/openharmony/qohnativewindow.cpp
 new file mode 100644
-index 00000000000..cd3b7fefb59
+index 00000000000..5be09f1a714
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohnativewindow.cpp
-@@ -0,0 +1,1147 @@
+@@ -0,0 +1,1148 @@
 +#include <QDebug>
 +#include <QMargins>
 +#include <QBitArray>
@@ -30814,6 +30814,7 @@ index 00000000000..cd3b7fefb59
 +
 +void QOhNativeWindow::showMinimized()
 +{
++    //return;
 +    HiTracer tracer("QOhNativeWindow::showMinimized");
 +    if (m_isWindowDestroyed.loadAcquire() || !canShowWindow())
 +        return;
@@ -38792,10 +38793,10 @@ index 00000000000..a363f3c4538
 +#endif
 diff --git a/src/plugins/platforms/openharmony/qohplatformtheme.cpp b/src/plugins/platforms/openharmony/qohplatformtheme.cpp
 new file mode 100644
-index 00000000000..52e60396e9b
+index 00000000000..05b71771835
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatformtheme.cpp
-@@ -0,0 +1,1483 @@
+@@ -0,0 +1,1493 @@
 +#include <qcolor.h>
 +#include <qpalette.h>
 +#include <QCoreApplication>
@@ -40123,18 +40124,29 @@ index 00000000000..52e60396e9b
 +
 +QPixmap QOhFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon::State)
 +{
++    if (!m_fileManagerService)
++        return QPixmap();
++
 +    const QString filePath = QDir::toNativeSeparators(fileInfo().filePath());
++    Q_UNUSED(filePath);
 +    QPixmap pixmap = QtOh::runOnJsUIThreadWithResult([](const QString &suffix, const QSize &size){
++        if (!m_fileManagerService)
++            return QPixmap();
++
 +        static QJsModule uniformTypeDescriptor("@ohos.data.uniformTypeDescriptor");
 +        QString ohosSuffix = "." + suffix;
 +        Napi::Value id = uniformTypeDescriptor.call("getUniformDataTypeByFilenameExtension", {Napi::String::New(uniformTypeDescriptor.env(), ohosSuffix.toStdString())});
-+        if (id.IsEmpty() && !m_fileManagerService)
++        if (id.IsEmpty())
 +            return QPixmap();
++
 +        Napi::Value result = m_fileManagerService->call(QString::fromUtf8("getFileIconSync"), {id});
 +        std::string uri;
 +        ResourceManager_ErrorCode code = SUCCESS;
-+        auto mgr = qNativeWindowManager->resourceManager();
-+        QJsObject jsMgr(qNativeWindowManager->jsResourceManager().ToObject());
++        Q_UNUSED(code);
++        Napi::Value jsResourceManager = qNativeWindowManager->jsResourceManager();
++        if (jsResourceManager.IsEmpty() || !jsResourceManager.IsObject())
++            return QPixmap();
++        QJsObject jsMgr(jsResourceManager.ToObject());
 +        ArkUI_DrawableDescriptor *descriptor = nullptr;
 +        Napi::Value jsDescriptor = Napi::Value();
 +        if (result.IsString()) {
@@ -40206,9 +40218,8 @@ index 00000000000..52e60396e9b
 +
 +QIcon QOhPlatformTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions iconOptions) const
 +{
-+    if (QtOh::apiVersion() >= 17) {
++    if (QtOh::apiVersion() >= 17 && QOhFileIconEngine::m_fileManagerService != nullptr)
 +        return QIcon(new QOhFileIconEngine(fileInfo, iconOptions));
-+    }
 +
 +    return QPlatformTheme::fileIcon(fileInfo, iconOptions);
 +}
@@ -44054,10 +44065,10 @@ index 00000000000..8a83d543a29
 +#endif // QOHWINDOWNODEEVENTHANDLER_H
 diff --git a/src/plugins/platforms/openharmony/qohxcomponent.cpp b/src/plugins/platforms/openharmony/qohxcomponent.cpp
 new file mode 100644
-index 00000000000..88dc9a0c626
+index 00000000000..6cc3dc168b4
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohxcomponent.cpp
-@@ -0,0 +1,561 @@
+@@ -0,0 +1,559 @@
 +#include <QtMath>
 +#include <QThread>
 +#include <qopenharmonydefines.h>
@@ -44560,15 +44571,13 @@ index 00000000000..88dc9a0c626
 +        }
 +#endif
 +#endif
-+       // 如果API>=15,则使用多模鼠标事件
-+       // 代码见QOhNormalWindow::windowMouseEventFilter
-+        if (OHOS_SDK_VERSION < 15 || QtOh::isOpenHarmonyDevice()) {
-+            /* 注册界鼠标事件回调 */
-+            ret = OH_NativeXComponent_RegisterMouseEventCallback(component, &m_mouseEventCallback);
-+            if (ret != OH_NATIVEXCOMPONENT_RESULT_SUCCESS) {
-+                LOGE("set surface mouse callback failed");
-+            }
++       // API15+ 客户区鼠标由 NODE_ON_MOUSE 处理；OpenHarmony 若同时注册 XComponent 鼠标回调会导致重复 MouseButtonPress
++#if OHOS_SDK_VERSION <= 14
++        ret = OH_NativeXComponent_RegisterMouseEventCallback(component, &m_mouseEventCallback);
++        if (ret != OH_NATIVEXCOMPONENT_RESULT_SUCCESS) {
++            LOGE("set surface mouse callback failed");
 +        }
++#endif
 +
 +#if OHOS_SDK_VERSION < 17 // API17 使用node的回调
 +        /* 注册键盘事件回调 */
