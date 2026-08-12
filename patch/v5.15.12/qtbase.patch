@@ -35474,7 +35474,7 @@ index 00000000000..c14f493b5d0
 +#endif // QOHPLATFORMFOREIGNWINDOW_H
 diff --git a/src/plugins/platforms/openharmony/qohplatforminputcontext.cpp b/src/plugins/platforms/openharmony/qohplatforminputcontext.cpp
 new file mode 100644
-index 00000000000..0283ca50045
+index 00000000000..019f87ca08a
 --- /dev/null
 +++ b/src/plugins/platforms/openharmony/qohplatforminputcontext.cpp
 @@ -0,0 +1,580 @@
@@ -35978,7 +35978,7 @@ index 00000000000..0283ca50045
 +        return;
 +
 +    if (!m_focusObject.isNull()) {
-+        QInputMethodEvent event(QString(), QList<QInputMethodEvent::Attribute>());
++        QInputMethodEvent event(QString(), QList<QInputMethodEvent::Attribute>{});
 +        QCoreApplication::sendEvent(m_focusObject.data(), &event);
 +    }
 +    m_previewText = QString();
